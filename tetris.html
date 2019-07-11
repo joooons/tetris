@@ -1,9 +1,76 @@
 <!DOCTYPE html>
+
 <head>
     <title>
         Tetris?
     </title>
+
+    <!--internally embedded style. I might change this later-->
+    <style>
+        body {
+            font-family: calibri, sans-serif;
+            font-size: 10pt;
+            color: #BBB;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 10pt;
+        }
+
+        
+        article {
+            text-align: center;
+        }
+
+
+        #toyRoom {
+            background-color: #EFE;
+            width: 300px;
+            height: 600px;
+            padding: 20px;
+            display: inline-block;
+        }
+
+        /* initially there is no element with class='box' */
+        .box {
+            background-color: #EEF;
+            width: 50px;
+            height: 50px;
+            float: left;
+        }
+
+    </style>
 </head>
+
+
+
 <body>
+
+    <header>
+        <h1>F to make object</h1>
+    </header>
+
+
+    <nav>
+    </nav>
+
+
+    <article>
+        <div id="toyRoom">
+
+            <div class='box'>well, this is a box</div>
+
+        </div>
+    </article>
+
+
+    <footer>
+    </footer>
+
+
+    <!--script at end of body tag-->
+    <script src="tetris.js">
+    </script>
 
 </body>
