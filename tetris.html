@@ -26,10 +26,11 @@
 
         #toyRoom {
             background-color: #EFE;
-            width: 300px;
-            height: 600px;
+            width: 280px;
+            height: 560px;      // 600px was too long...
             padding: 20px;
             display: inline-block;
+            overflow: hidden;       // hides overflow. duh.
         }
 
         /* initially there is no element with class='box' */
@@ -48,7 +49,7 @@
 <body>
 
     <header>
-        <h1>F to make object</h1>
+        <h1>N to make new box / D to delete</h1>
     </header>
 
 
@@ -58,9 +59,9 @@
 
     <article>
         <div id="toyRoom">
-
+            <!--
             <div class='box'>well, this is a box</div>
-
+            -->
         </div>
     </article>
 

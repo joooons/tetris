@@ -5,9 +5,19 @@
 // ---------- Declaration Section -------------------------------- //
 
 
-
 // DOM elements
 var toyRoom = document.getElementById('toyRoom');
+var boxExists = false;                  // allow only one box to exist
+
+// dimension variables
+var xDim = toyRoom.offsetWidth;
+var yDim = toyRoom.offsetHeight;
+var xInc = xDim / 10;
+var yInc = yDim / 20;
+
+
+
+
 
 
 
@@ -21,28 +31,48 @@ function keyAction(ev) {
 
     // i chose to use .code instead of .key because i'm a noob. more explicit.
     switch (ev.code) {
-        case 'KeyF':
-            console.log(toyRoom);
-            
-            var p = document.createElement('div');
-            p.innerHTML = 'T^T';
-            p.style = "background-color: #DCC; width: 30px; height: 30px; float: left; margin: 1px; border-radius: 4px; ";
-            p.class = 'box';        // this is wrong syntax
-            p.className = 'box';    // correct syntax
-            toyRoom.appendChild(p);     // a necessary step
-
-
-
+        case 'KeyN':
+            // console.log(toyRoom);
+            makeNewBox();
             break;
+        case 'KeyD':
+            // console.log(toyRoom);
+            breakNewBox();
         default:
             break;
     }
-
-
-
-
 }
 
+function makeNewBox() {
+    if (!boxExists) {
+        console.log('Look! a new box!');
+        var p = document.createElement('div');      // it worries me whether p exists outside this case...
+        p.style.fontSize = '6pt';
+        p.innerHTML = '<br>O__O';
+        p.style.color = 'black';
+        p.style.backgroundColor = '#BDD';
+        p.style.textAlign = 'center';
+        p.style.width = xInc + 'px';
+        p.style.height = yInc + 'px';
+        p.style.cssFloat = 'left';  // it's cssFloat? It's not just float?
+        p.style.position = 'relative';
+        p.style.left = (xInc * 4) + 'px';
+        p.style.top = '0px';
+        p.style.margin = '1px';     // just to give breathing room between blocks
+        p.style.borderRadius = '4px';       // unnecessary, but cooler?
+        toyRoom.appendChild(p);     // a necessary step
+        boxExists = true;
+    }
+}
+
+function breakNewBox() {
+    if (boxExists) {
+        console.log("aw, it's dead");
+        var p = document.getElementById('toyRoom');
+        p.removeChild(p.lastChild);
+        boxExists = false;
+    }
+}
 
 
 
