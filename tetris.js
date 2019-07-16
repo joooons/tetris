@@ -51,15 +51,37 @@ function setBoard() {
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
         p.style.cssFloat = 'left';          // needed to fill horizontally too
-        
-        //p.style.position = 'relative';
-        //p.style.left = '0px';           // positions are set automatically
-        //p.style.top = '0px';
-        
-        // p.style.margin = '1px';     // just to give breathing room between blocks
+
+        /*
+        p.onclick = function() {
+            console.log('offsetLeft is ' + p.offsetLeft);
+            console.log('offsetTop is ' + p.offsetTop);
+            p.style.visibility = 'hidden';
+        }
+        */
         
         toyRoom.appendChild(p);
-    }
+        //console.log(boardCounter);
+        //console.log(toyRoom.lastChild);
+        toyRoom.lastChild.onclick = function() {
+            let x = this.offsetLeft;
+            let y = this.offsetTop;
+            let viz = this.style.visibility;
+            console.log('viz is ' + viz);
+            console.log('x, y is ' + x + ', ' + y);
+            console.log(viz == 'visible');
+
+            if (viz != 'visible') {
+                this.style.visibility = 'visible';
+            } else {
+                this.style.visibility = 'hidden';
+            }
+            
+
+        }
+
+
+    }   // end of for loop
 
 }
 
