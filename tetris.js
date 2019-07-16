@@ -1,6 +1,9 @@
 // JS for tetris
 
+// Notes:
 // I intend to work with vanilla JS for now. Need to learn basics first.
+//
+
 
 // ---------- Declaration Section -------------------------------- //
 
@@ -28,25 +31,20 @@ var boardCounter = 0;       // interator for loop that fills screen with blocks
 
 // ---------- Functions ------------------------------------------ //
 
+
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
     console.log(toyRoom.childNodes);
 
-    for ( ; boardCounter < 190 ; boardCounter++ ) {
+    for ( ; boardCounter < 200 ; boardCounter++ ) {
     // can be run only once, due to for loop condish.
-    // i will change condish to 200 later.
 
         var p = document.createElement('div');
 
-        p.style.fontSize = '6pt';
-        p.style.color = 'black';
-        p.style.textAlign = 'center';
-        p.innerHTML = '';               // kind of unnecessary, but who knows...
-
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
-        p.style.opacity = 0;
+        p.style.opacity = 0.5;
         p.style.border = '3px solid rgba(0, 0, 0, 0.05)';
         p.style.borderRadius = '4px';       // unnecessary, but cooler?
         p.style.visibility = 'visible';     // i plan to toggle to hidden later
@@ -54,31 +52,36 @@ function setBoard() {
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
         p.style.cssFloat = 'left';          // needed to fill horizontally too
-
-        /*
-        p.onclick = function() {
-            console.log('offsetLeft is ' + p.offsetLeft);
-            console.log('offsetTop is ' + p.offsetTop);
-            p.style.visibility = 'hidden';
-        }
-        */
         
         toyRoom.appendChild(p);
-        //console.log(boardCounter);
-        //console.log(toyRoom.lastChild);
+                
         toyRoom.lastChild.onclick = function() {
+
             let x = this.offsetLeft;
             let y = this.offsetTop;
-
-            this.style.opacity = -1 * (this.style.opacity - 1);
             console.log('x, y is ' + x + ', ' + y);
-            console.log('opacity is ' + this.style.opacity);
-        }
 
+            //this.style.opacity = -1 * (this.style.opacity - 1);
+            this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
+            console.log('opacity is ' + this.style.opacity);
+            
+            //console.log(toyRoom.childNodes[1]);
+            
+            var temp = Array.prototype.slice.call(toyRoom.children);
+            console.log(temp.indexOf(this));
+            
+            /*
+            var nodes = Array.prototype.slice.call( document.getElementById('list').children ),
+            liRef = document.getElementsByClassName('match')[0];
+            console.log( nodes.indexOf( liRef ) );
+            */
+
+
+        }   // onclick function
 
     }   // end of for loop
 
-}
+}   // end of setBoard()
 
 
 
@@ -152,7 +155,7 @@ function checkRow() {
     for (i = 181; i <= 190; i++) {
         count += eval(toyRoom.childNodes[i].style.opacity);
     }
-    console.log(count);
+    console.log(count);         // ASSUMING that opacity is either 1 or 0
     console.log(count==10);
 }
 
