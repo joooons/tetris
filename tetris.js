@@ -44,6 +44,7 @@ function setBoard() {
 
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
+        p.style.opacity = 0;
         p.style.border = '3px solid rgba(0, 0, 0, 0.05)';
         p.style.borderRadius = '4px';       // unnecessary, but cooler?
         p.style.visibility = 'visible';     // i plan to toggle to hidden later
@@ -66,18 +67,9 @@ function setBoard() {
         toyRoom.lastChild.onclick = function() {
             let x = this.offsetLeft;
             let y = this.offsetTop;
-            let viz = this.style.visibility;
-            console.log('viz is ' + viz);
-            console.log('x, y is ' + x + ', ' + y);
-            console.log(viz == 'visible');
 
-            if (viz != 'visible') {
-                this.style.visibility = 'visible';
-            } else {
-                this.style.visibility = 'hidden';
-            }
-            
-
+            this.style.opacity = -1 * (this.style.opacity - 1);
+            console.log('x, y, opacity is ' + x + ', ' + y + ', ' + this.style.opacity);
         }
 
 
