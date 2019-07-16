@@ -31,6 +31,8 @@ var boardCounter = 0;       // interator for loop that fills screen with blocks
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
+    console.log(toyRoom.childNodes);
+
     for ( ; boardCounter < 190 ; boardCounter++ ) {
     // can be run only once, due to for loop condish.
     // i will change condish to 200 later.
@@ -69,7 +71,8 @@ function setBoard() {
             let y = this.offsetTop;
 
             this.style.opacity = -1 * (this.style.opacity - 1);
-            console.log('x, y, opacity is ' + x + ', ' + y + ', ' + this.style.opacity);
+            console.log('x, y is ' + x + ', ' + y);
+            console.log('opacity is ' + this.style.opacity);
         }
 
 
@@ -86,6 +89,9 @@ function keyAction(ev) {
 
     // i chose to use .code instead of .key because i'm a noob. more explicit.
     switch (ev.code) {
+        case 'KeyC':
+            checkRow();
+            break;
         case 'KeyN':
             // console.log(toyRoom);
             makeNewBox();
@@ -139,6 +145,15 @@ function breakNewBox() {
         p.removeChild(p.lastChild);
         boxExists = false;
     }
+}
+
+function checkRow() {
+    var count = 0;
+    for (i = 181; i <= 190; i++) {
+        count += eval(toyRoom.childNodes[i].style.opacity);
+    }
+    console.log(count);
+    console.log(count==10);
 }
 
 
