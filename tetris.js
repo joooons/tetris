@@ -44,7 +44,7 @@ function setBoard() {
 
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
-        p.style.opacity = 0.5;
+        p.style.opacity = 1;
         p.style.border = '3px solid rgba(0, 0, 0, 0.05)';
         p.style.borderRadius = '4px';       // unnecessary, but cooler?
 
@@ -63,16 +63,32 @@ function setBoard() {
             this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
             
             // this gives index number of the block i clicked.
+            // I should consider defining this outside the setBoard() function...
             var temp = Array.prototype.slice.call(toyRoom.children);
+            var indexTemp = temp.indexOf(this);
 
-            console.log (`x, y, index = ${x}, ${y}, ${temp.indexOf(this)}`);
+            //console.log (`x, y, index = ${x}, ${y}, ${temp.indexOf(this)}`);
+            console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
+            // actually this is misleading. the index of the DOM object is off by 1
 
+            var t = setInterval(radiusSqueeze,10);
+            var b = -10;
+            function radiusSqueeze() {
+                
+                //console.log(temp[indexTemp].style.borderRadius);
+                temp[indexTemp].style.borderRadius = 14 - Math.abs(b) + 'px';
+                // disadvantage of using <div> elements: can't translate without messing with other <div> blocks
+
+                b++
+                if ( b === 11 ) clearInterval(t);
+            }
 
         }   // onclick function
 
     }   // end of for loop, iterated over 200 blocks
 
 }   // end of setBoard()
+
 
 
 
@@ -91,13 +107,6 @@ function keyAction(ev) {
         case 'KeyD':
             breakNewBox();
             break;
-        
-        /*
-        case 'KeyG':
-            setBoard();
-            break;
-        */
-
         default:
             break;
     }
@@ -144,12 +153,31 @@ function breakNewBox() {
 
 function checkRow() {
     var count = 0;
+
     for (i = 181; i <= 190; i++) {
         count += eval(toyRoom.childNodes[i].style.opacity);
     }
-    console.log(count);         // ASSUMING that opacity is either 1 or 0
-    console.log(count==10);
-}
+    if (count==10) {
+        
+        let r = 0;
+        let t = setInterval(rowSpin,50);
+        
+        function rowSpin() {
+            for (i = 181; i <=190; i++) {
+                toyRoom.children[i-1].style.transform = "rotate(" + r + "deg)";
+            }
+            r += 2;
+            if (r == 92) {
+                clearInterval(t);
+                for (i = 181; i <= 190; i++ ) {
+                    toyRoom.children[i-1].style.opacity = -(toyRoom.children[i-1].style.opacity - 1.5);
+                }    
+            }   // if r reaches 92
+        }   // end of rowSpin()
+
+    }   // end of if count is 10
+
+}   // end of checkRow()
 
 
 
