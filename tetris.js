@@ -42,6 +42,14 @@ function setBoard() {
 
         var p = document.createElement('div');
 
+        p.style.color = 'black';
+        p.style.fontSize = '9pt';
+        p.style.lineHeight = 1.8;
+        p.style.textAlign = 'center';
+        p.innerText = boardCounter;
+        
+        p.style.cursor = 'pointer';
+
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
         p.style.opacity = 1;
@@ -53,6 +61,8 @@ function setBoard() {
         p.style.cssFloat = 'left';          // needed to fill horizontally too
         
         toyRoom.appendChild(p);
+
+
                 
         toyRoom.lastChild.onclick = function() {
 
@@ -71,16 +81,12 @@ function setBoard() {
             console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
             // actually this is misleading. the index of the DOM object is off by 1
 
-            var t = setInterval(radiusSqueeze,10);
-            var b = -10;
+            var t = setInterval(radiusSqueeze,50);
+            var b = -(Math.ceil(xInc/2) - 4);
             function radiusSqueeze() {
                 
-                //console.log(temp[indexTemp].style.borderRadius);
-                temp[indexTemp].style.borderRadius = 14 - Math.abs(b) + 'px';
-                // disadvantage of using <div> elements: can't translate without messing with other <div> blocks
-
-                b++
-                if ( b === 11 ) clearInterval(t);
+                temp[indexTemp].style.borderRadius = Math.ceil(xInc/2) - Math.abs(b++) + 'px';
+                if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
 
         }   // onclick function
@@ -119,10 +125,12 @@ function makeNewBox() {
     if (!boxExists) {
         var p = document.createElement('div');
         
-        p.style.fontSize = '5pt';
+        p.style.fontSize = '6pt';
         p.style.color = 'black';
+        p.style.fontWeight = 'bold';
         p.style.textAlign = 'center';
-        p.innerHTML = '<br>O__O';
+        p.style.lineHeight = 2.4;
+        p.innerText = 'o__o';
         
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#F85';
@@ -132,11 +140,11 @@ function makeNewBox() {
         
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
-        p.style.cssFloat = 'left';      // does float even make sense if position:absolute?
+        //p.style.cssFloat = 'left';
 
-        p.style.position = 'absolute';      // not relative?
-        p.style.left = (xInc * 4) + xOffset + 'px';     // need xOffset cuz position:absolute
-        p.style.top = yOffset + 'px';      // need yOffset cuz position:absolute
+        p.style.position = 'absolute';
+        p.style.left = (xInc * 4) + 'px';     // need xOffset cuz position:absolute
+        p.style.top = '0px';      // need yOffset cuz position:absolute
         
         toyRoom.appendChild(p); 
         boxExists = true;
