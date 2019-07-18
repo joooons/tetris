@@ -22,7 +22,8 @@ var xInc = xDim / 10;           // box size in x direction
 var yInc = yDim / 20;           // box size in y direction. basically same as xInc
 
 // other settings
-var timeInc = 500;              // used in timeFlow()
+var timeInc = 100;              // used in timeFlow()
+var stepX = 0;              // used to set direction, left or right
 
 
 
@@ -111,6 +112,19 @@ function keyAction(ev) {
             boxFalling = !boxFalling;
             console.log('is the box falling? ' + boxFalling);
             break;
+        case 'ArrowLeft':
+            stepX = -xInc;
+            console.log(stepX);
+            moveHorizontal();
+            break;
+        case 'ArrowRight':
+            stepX = xInc;
+            moveHorizontal();
+            break;
+        case 'ArrowUp':
+            break;
+        case 'ArrowDown':
+            break;
         default:
             break;
     }
@@ -177,7 +191,7 @@ function checkRow() {
     if (count==10) {
         
         let r = 0;
-        let t = setInterval(rowSpin,50);
+        let t = setInterval(rowSpin,20);
         
         function rowSpin() {
             for ( let i = 180 ; i <= 189 ; i++ ) {
@@ -191,11 +205,11 @@ function checkRow() {
                     toyRoom.children[i].style.opacity = 0.5;
                 }
                 dropMountain();
-            }   // if r reaches 90 deg...
+            }   // end of if
 
         }   // end of rowSpin()
 
-    }   // end of if count is 10
+    }   // end of if
 
 }   // end of checkRow()
 
@@ -215,24 +229,32 @@ function dropMountain() {
 
 
 
-function timeTick() {
+function timeAction() {
     
     if (boxFalling && boxExists) {
         boxFall();
-        
-
-        //console.log('tick');
-        
     }
+
+
 }
 
 function boxFall() {
     let a = toyRoom.lastChild.style.top;
     let b = a.substring(0,a.length-2);
     let c = eval(b) + 1;
-    toyRoom.lastChild.style.top = c + 'px'
+    toyRoom.lastChild.style.top = c + 'px';
 }
 
+
+function moveHorizontal() {
+// moves box left or right depending on stepX
+
+    if (boxExists) {
+        let a = toyRoom.lastChild.style.left;
+        let b = eval(a.substring(0,a.length-2)) + stepX;
+        if ( (b>=0) && (b<xDim) ) toyRoom.lastChild.style.left = b + 'px';
+    }
+}   // end of moveHorizontal()
 
 
 // ---------- Main Body ----------------------------------------- //
@@ -240,7 +262,7 @@ function boxFall() {
 
 setBoard();
 
-var timeFlow = setInterval(timeTick,timeInc);
+var timeFlow = setInterval(timeAction,timeInc);
 
 document.addEventListener('keydown', keyAction);
 
