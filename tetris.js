@@ -10,18 +10,20 @@
 
 // DOM elements
 var toyRoom = document.getElementById('toyRoom');
-var boxExists = false;                  // allow only one box to exist
+
+// booleans
+var boxExists = false;          // allow only one box to exist
+var boxFalling = false;         // toggle to let box fall
 
 // dimension variables
-var xOffset = toyRoom.offsetLeft;   // needed for absolute elements later
-var yOffset = toyRoom.offsetTop;    // needed for absolute elements later
-
 var xDim = toyRoom.offsetWidth;
 var yDim = toyRoom.offsetHeight;
 var xInc = xDim / 10;           // box size in x direction
 var yInc = yDim / 20;           // box size in y direction. basically same as xInc
 
-var boardCounter = 0;       // interator for loop that fills screen with blocks
+// other settings
+var timeInc = 500;              // used in timeFlow()
+
 
 
 
@@ -35,10 +37,7 @@ var boardCounter = 0;       // interator for loop that fills screen with blocks
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
-    //console.log(toyRoom.childNodes);
-
-    for ( ; boardCounter < 200 ; boardCounter++ ) {
-    // can be run only once, due to for loop condish.
+    for ( var boardCounter = 0 ; boardCounter < 200 ; boardCounter++ ) {
 
         var p = document.createElement('div');
 
@@ -63,28 +62,23 @@ function setBoard() {
         toyRoom.appendChild(p);
 
 
-                
+        // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
 
             let x = this.offsetLeft;
             let y = this.offsetTop;
 
-            // this.style.opacity = -1 * (this.style.opacity - 1);
+            // this.style.opacity = -1 * (this.style.opacity - 1);      // toggles 0 to 1
             this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
             
             // this gives index number of the block i clicked.
-            // I should consider defining this outside the setBoard() function...
             var temp = Array.prototype.slice.call(toyRoom.children);
             var indexTemp = temp.indexOf(this);
-
-            //console.log (`x, y, index = ${x}, ${y}, ${temp.indexOf(this)}`);
             console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
-            // actually this is misleading. the index of the DOM object is off by 1
 
-            var t = setInterval(radiusSqueeze,50);
             var b = -(Math.ceil(xInc/2) - 4);
+            var t = setInterval(radiusSqueeze,50);
             function radiusSqueeze() {
-                
                 temp[indexTemp].style.borderRadius = Math.ceil(xInc/2) - Math.abs(b++) + 'px';
                 if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
@@ -113,10 +107,16 @@ function keyAction(ev) {
         case 'KeyD':
             breakNewBox();
             break;
+        case 'KeyF':
+            boxFalling = !boxFalling;
+            console.log('is the box falling? ' + boxFalling);
+            break;
         default:
             break;
     }
-}
+}   // end of keyAction()
+
+
 
 function makeNewBox() {
     // makes new box ONLY if there is none already
@@ -140,47 +140,54 @@ function makeNewBox() {
         
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
-        //p.style.cssFloat = 'left';
-
+        
         p.style.position = 'absolute';
-        p.style.left = (xInc * 4) + 'px';     // need xOffset cuz position:absolute
-        p.style.top = '0px';      // need yOffset cuz position:absolute
+        p.style.left = (xInc * 4) + 'px';
+        p.style.top = '0px';
         
         toyRoom.appendChild(p); 
         boxExists = true;
     }
 }
 
+
+
 function breakNewBox() {
     if (boxExists) {
-        //var p = document.getElementById('toyRoom');
         toyRoom.removeChild(toyRoom.lastChild);
         boxExists = false;
+        boxFalling = false;
     }
 }
 
+
+
 function checkRow() {
+
     var count = 0;
 
     // just the second row from the bottom.
     // i will make this iterate over the whole screen, later.
+    // first, counting number of visible blocks on this row
     for (i = 181; i <= 190; i++) {
         count += eval(toyRoom.childNodes[i].style.opacity);
     }
 
+    // if the row is all filled up...
     if (count==10) {
         
         let r = 0;
-        let t = setInterval(rowSpin,10);
+        let t = setInterval(rowSpin,50);
         
         function rowSpin() {
-            for (i = 180; i <=189; i++) {
+            for ( let i = 180 ; i <= 189 ; i++ ) {
                 toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
             }
             r += 2;
-            if (r > 90) {
+
+            if ( r > 90 ) {
                 clearInterval(t);
-                for (i = 180; i <= 189; i++ ) {
+                for ( let i = 180 ; i <= 189 ; i++ ) {
                     toyRoom.children[i].style.opacity = 0.5;
                 }
                 dropMountain();
@@ -195,24 +202,36 @@ function checkRow() {
 
 function dropMountain() {
     var dummy;
-    for ( let i = 180 ; i >=10 ; i -= 10 ) {
+    for ( let i = 180 ; i >= 10 ; i -= 10 ) {
         for ( let j = i ; j <= i+9 ; j++ ) {
             dummy = toyRoom.children[j-10].style.opacity;
-            //console.log('opacity is ' + dummy);
             toyRoom.children[j].style.opacity = dummy;
         }
     }
-    
-    
     for ( let k = 0 ; k <= 9 ; k++ ) {
         toyRoom.children[k].style.opacity = 0.5;
     }
-    
-    
-    //toyRoom.children[9].style.opacity = 0.5;
+}   // end of dropMountain()
 
+
+
+function timeTick() {
+    
+    if (boxFalling && boxExists) {
+        boxFall();
+        
+
+        //console.log('tick');
+        
+    }
 }
 
+function boxFall() {
+    let a = toyRoom.lastChild.style.top;
+    let b = a.substring(0,a.length-2);
+    let c = eval(b) + 1;
+    toyRoom.lastChild.style.top = c + 'px'
+}
 
 
 
@@ -220,6 +239,9 @@ function dropMountain() {
 
 
 setBoard();
+
+var timeFlow = setInterval(timeTick,timeInc);
+
 document.addEventListener('keydown', keyAction);
 
 
