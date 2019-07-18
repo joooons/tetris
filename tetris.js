@@ -154,30 +154,56 @@ function breakNewBox() {
 function checkRow() {
     var count = 0;
 
+    // just the second row from the bottom.
+    // i will make this iterate over the whole screen, later.
     for (i = 181; i <= 190; i++) {
         count += eval(toyRoom.childNodes[i].style.opacity);
     }
+
     if (count==10) {
         
         let r = 0;
-        let t = setInterval(rowSpin,50);
+        let t = setInterval(rowSpin,10);
         
         function rowSpin() {
-            for (i = 181; i <=190; i++) {
-                toyRoom.children[i-1].style.transform = "rotate(" + r + "deg)";
+            for (i = 180; i <=189; i++) {
+                toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
             }
             r += 2;
-            if (r == 92) {
+            if (r > 90) {
                 clearInterval(t);
-                for (i = 181; i <= 190; i++ ) {
-                    toyRoom.children[i-1].style.opacity = -(toyRoom.children[i-1].style.opacity - 1.5);
-                }    
-            }   // if r reaches 92
+                for (i = 180; i <= 189; i++ ) {
+                    toyRoom.children[i].style.opacity = 0.5;
+                }
+                dropMountain();
+            }   // if r reaches 90 deg...
+
         }   // end of rowSpin()
 
     }   // end of if count is 10
 
 }   // end of checkRow()
+
+
+function dropMountain() {
+    var dummy;
+    for ( let i = 180 ; i >=10 ; i -= 10 ) {
+        for ( let j = i ; j <= i+9 ; j++ ) {
+            dummy = toyRoom.children[j-10].style.opacity;
+            //console.log('opacity is ' + dummy);
+            toyRoom.children[j].style.opacity = dummy;
+        }
+    }
+    
+    
+    for ( let k = 0 ; k <= 9 ; k++ ) {
+        toyRoom.children[k].style.opacity = 0.5;
+    }
+    
+    
+    //toyRoom.children[9].style.opacity = 0.5;
+
+}
 
 
 
