@@ -25,6 +25,7 @@ var yInc = yDim / 20;           // box size in y direction. basically same as xI
 var timeInc = 100;              // used in timeFlow()
 var stepX = 0;              // used to set direction, left or right
 
+//var zCount = 0;             // useless?
 
 
 
@@ -42,9 +43,10 @@ function setBoard() {
 
         var p = document.createElement('div');
 
-        p.style.color = 'black';
-        p.style.fontSize = '9pt';
-        p.style.lineHeight = 1.8;
+        p.style.color = 'orange';
+        p.style.fontFamily = 'helvetica, san-serif';
+        p.style.fontSize = '7pt';
+        p.style.lineHeight = 3;
         p.style.textAlign = 'center';
         p.innerText = boardCounter;
         
@@ -53,15 +55,27 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
         p.style.opacity = 1;
-        p.style.border = '3px solid rgba(0, 0, 0, 0.05)';
-        p.style.borderRadius = '4px';       // unnecessary, but cooler?
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
+        p.style.borderRadius = '2px';       // unnecessary, but cooler?
 
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
         p.style.cssFloat = 'left';          // needed to fill horizontally too
-        
+        p.style.position = 'relative';
+
         toyRoom.appendChild(p);
 
+        toyRoom.lastChild.onmouseover = function() {
+            //this.style.zindex = zCount++;
+            //this.style.boxShadow = '0px 0px 15px 0px gray';
+            this.style.lineHeight = 2;
+            this.style.border = '5px solid rgba(0, 0, 0, 0.05)';
+        }
+
+        toyRoom.lastChild.onmouseout = function() {
+            this.style.lineHeight = 3;
+            this.style.border = '0.5px solid rgba(255, 255, 255, 1)';
+        }
 
         // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
@@ -83,6 +97,8 @@ function setBoard() {
                 temp[indexTemp].style.borderRadius = Math.ceil(xInc/2) - Math.abs(b++) + 'px';
                 if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
+
+            
 
         }   // onclick function
 
@@ -143,12 +159,14 @@ function makeNewBox() {
         p.style.color = 'black';
         p.style.fontWeight = 'bold';
         p.style.textAlign = 'center';
-        p.style.lineHeight = 2.4;
+        p.style.lineHeight = 2.8;
         p.innerText = 'o__o';
+
+        p.style.boxShadow = '0px 0px 15px 5px white';
         
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#F85';
-        p.style.border = '3px solid rgba(0, 0, 0, 0.05)';
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = '4px';
         p.style.visibility = 'visible';
         
@@ -191,7 +209,7 @@ function checkRow() {
     if (count==10) {
         
         let r = 0;
-        let t = setInterval(rowSpin,20);
+        let t = setInterval(rowSpin,10);
         
         function rowSpin() {
             for ( let i = 180 ; i <= 189 ; i++ ) {
