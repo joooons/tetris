@@ -40,7 +40,7 @@ function setBoard() {
     for ( var boardCounter = 0 ; boardCounter < 200 ; boardCounter++ ) {
 
         var p = document.createElement('div');
-        
+
         p.style.color = 'orange';
         p.style.fontFamily = 'helvetica, san-serif';
         p.style.fontSize = '7pt';
@@ -52,7 +52,11 @@ function setBoard() {
 
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
-        p.style.opacity = 1;
+        
+        // opacity=1 blocks rare at top, more frequent at bottom
+        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? 0.5: 1;
+
+
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
 
@@ -242,6 +246,8 @@ function checkRow() {
     for (i = 181; i <= 190; i++) {
         count += eval(toyRoom.childNodes[i].style.opacity);
     }
+
+    console.log(count);
 
     // if the row is all filled up...
     if (count==10) {
