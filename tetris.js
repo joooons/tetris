@@ -140,7 +140,7 @@ function timeAction() {
 function keyDownAction(ev) {
     // all keyboard action inside this function
 
-    console.log('you pressed ' + ev.code);
+    //console.log('you pressed ' + ev.code);
 
     switch (ev.code) {
         case 'KeyC':
@@ -154,6 +154,9 @@ function keyDownAction(ev) {
             break;
         case 'KeyF':
             boxFalling = !boxFalling;
+            break;
+        case 'KeyG':
+            checkGround();
             break;
         case 'ArrowLeft':
             moveHorizontal(-xInc);
@@ -176,7 +179,7 @@ function keyDownAction(ev) {
 
 function keyUpAction(ev) {
 
-    console.log('you released ' + ev.code);
+    //console.log('you released ' + ev.code);
     
     switch (ev.code) {
         case 'ArrowUp':
@@ -315,7 +318,17 @@ function boxFall() {
     let a = toyRoom.lastChild.style.top;
     let b = a.substring(0,a.length-2);
     let c = eval(b) + 1;
+    
+    //if (checkGround()) toyRoom.lastChild.style.top = c + 'px';
+    
     toyRoom.lastChild.style.top = c + 'px';
+    if (!checkGround()) {
+        toyRoom.lastChild.style.top = a;
+        console.log('back off!');
+    }
+
+
+    
     toyRoom.lastChild.innerText = '>__<';
 
 }
@@ -335,10 +348,59 @@ function moveHorizontal(step) {
 function moveVertical(step) {
     if (boxExists) {
         let a = toyRoom.lastChild.style.top;
+
+
         let b = eval(a.substring(0,a.length-2)) + step;
-        if (b>=0) toyRoom.lastChild.style.top = b + 'px';
-        if (b>(yDim-yInc)) toyRoom.lastChild.style.top = (yDim-yInc) + 'px';
+
+
+        if ( b>=0 ) {
+            toyRoom.lastChild.style.top = b + 'px';
+            if (!checkGround()) {
+                toyRoom.lastChild.style.top = a;
+                console.log('back off!');
+            }
+        } else {
+            toyRoom.lastChild.style.top = '0px';
+        }
+
+
+
+
+
+        //console.log('b is ' + b);
+
+        /*
+        if ( (b>=0) && checkGround() ) {
+            toyRoom.lastChild.style.top = b + 'px';
+        }
+        */
+
+        //if (b>(yDim-yInc)) toyRoom.lastChild.style.top = (yDim-yInc) + 'px';
+        //if (checkGround()) toyRoom.lastChild.style.top = b + 'px';
     }
+}
+
+
+
+function checkGround() {
+
+    if (boxExists) {
+
+        let a = toyRoom.lastChild.style.left;
+        let x = (a.substring(0,a.length-2) / xInc);
+        //console.log(x);
+
+        let b = toyRoom.lastChild.style.top;
+        let y = Math.ceil( (b.substring(0,b.length-2) / yInc) );
+        console.log(x + ' is x, y is ' + y);
+
+        let c = 10 * y + x;
+        //console.log(c);
+
+        return (toyRoom.children[c].style.opacity==1) ? false : true;
+        
+    }
+
 }
 
 
