@@ -56,7 +56,6 @@ function setBoard() {
         // opacity=1 blocks rare at top, more frequent at bottom
         p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? 0.5: 1;
 
-
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
 
