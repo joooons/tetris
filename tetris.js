@@ -101,6 +101,8 @@ function setBoard() {
                 if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
 
+
+
         }   // onclick function
 
     }   // end of for loop, iterated over 200 blocks
@@ -128,6 +130,8 @@ function timeAction() {
 
     // UP and DOWN motion, continuous
     moveVertical(stepY);
+
+
 
 }   // end of timeAction()
 
@@ -242,54 +246,66 @@ function checkRow() {
     // just the second row from the bottom.
     // i will make this iterate over the whole screen, later.
     // first, counting number of visible blocks on this row
-    for (i = 181; i <= 190; i++) {
-        count += eval(toyRoom.childNodes[i].style.opacity);
-    }
 
-    console.log(count);
-
-    // if the row is all filled up...
-    if (count==10) {
+    for (let i = 0 ; i <= 190 ; i += 10 ) {
         
-        let r = 0;
-        let t = setInterval(rowSpin,10);
-        
-        function rowSpin() {
-            for ( let i = 180 ; i <= 189 ; i++ ) {
-                //toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
-                toyRoom.children[i].style.transformOrigin = '50% 100%';
-                toyRoom.children[i].style.transform = "rotateX(" + r + "deg)";
-            }
-            r += 4;
+        count = 0;
 
-            if ( r > 90 ) {
-                clearInterval(t);
-                for ( let i = 180 ; i <= 189 ; i++ ) {
-                    toyRoom.children[i].style.opacity = 0.5;
-                    toyRoom.children[i].style.transform = "rotateX(0deg)";
+        for (let j = i; j <= i+9 ; j++) {
+            count += eval(toyRoom.children[j].style.opacity);
+        }
+        
+        console.log(i + ' row, count ' + (2*count-10));
+        
+        // if the row is all filled up...
+        if (count==10) {
+
+            
+            let r = 0;
+            let t = setInterval(rowSpin,10);
+            function rowSpin() {
+                r += 4;
+                for ( let j = i ; j <= i+9 ; j++ ) {
+                    //toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
+                    toyRoom.children[j].style.transformOrigin = '50% 100%';
+                    toyRoom.children[j].style.transform = "rotateX(" + r + "deg)";
                 }
-                
-                dropMountain();
-            }   // end of if
+                if ( r > 90 ) {
+                    clearInterval(t);
+                    for ( let j = i ; j <= i+9 ; j++ ) {
+                        toyRoom.children[j].style.opacity = 0.5;
+                        toyRoom.children[j].style.transform = "rotateX(0deg)";
+                    }
+                    
+                    dropMountain(i);    // i refers to the row that filled up
+                }
+            }   // end of rowSpin()
 
-        }   // end of rowSpin()
+        }   // end of if
 
-    }   // end of if
+    }   // end of for
 
 }   // end of checkRow()
 
 
-function dropMountain() {
+
+
+function dropMountain(filledRow) {
+// from the filled row up, drop the pile of blocks
+
     var dummy;
-    for ( let i = 180 ; i >= 10 ; i -= 10 ) {
+    
+    for ( let i = filledRow ; i >= 10 ; i -= 10 ) {
         for ( let j = i ; j <= i+9 ; j++ ) {
             dummy = toyRoom.children[j-10].style.opacity;
             toyRoom.children[j].style.opacity = dummy;
         }
     }
+
     for ( let k = 0 ; k <= 9 ; k++ ) {
         toyRoom.children[k].style.opacity = 0.5;
     }
+
 }   // end of dropMountain()
 
 
