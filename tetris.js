@@ -101,7 +101,7 @@ function setBoard() {
                 if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
 
-
+            checkRow();
 
         }   // onclick function
 
