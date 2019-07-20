@@ -22,12 +22,10 @@ var xInc = xDim / 10;           // box size in x direction
 var yInc = yDim / 20;           // box size in y direction. basically same as xInc
 
 // other settings
-var timeInc = 100;              // used in timeFlow()
-var stepX = 0;              // used to set direction, left or right
-
-//var zCount = 0;             // useless?
-
-
+var timeInc = 100;              // used in 'var timeFlow'
+var timeTick = 0;               // timeTick++ in timeAction()
+//var stepX = 0;                  // = -xDim to move left, xDim to move right
+var stepY = 0;                  // negative to move up, positive to move down
 
 
 
@@ -42,7 +40,7 @@ function setBoard() {
     for ( var boardCounter = 0 ; boardCounter < 200 ; boardCounter++ ) {
 
         var p = document.createElement('div');
-
+        
         p.style.color = 'orange';
         p.style.fontFamily = 'helvetica, san-serif';
         p.style.fontSize = '7pt';
@@ -66,8 +64,6 @@ function setBoard() {
         toyRoom.appendChild(p);
 
         toyRoom.lastChild.onmouseover = function() {
-            //this.style.zindex = zCount++;
-            //this.style.boxShadow = '0px 0px 15px 0px gray';
             this.style.lineHeight = 2;
             this.style.border = '5px solid rgba(0, 0, 0, 0.05)';
         }
@@ -79,7 +75,10 @@ function setBoard() {
 
         // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
+            // I need this for now to directly control what the board looks like
+            // I will remove this function in a later version
 
+            // x and y needed just to show numbers on console. Remove this in a later version
             let x = this.offsetLeft;
             let y = this.offsetTop;
 
@@ -91,14 +90,13 @@ function setBoard() {
             var indexTemp = temp.indexOf(this);
             console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
 
+            // animates the border radius temporarily. Remove this later.
             var b = -(Math.ceil(xInc/2) - 4);
             var t = setInterval(radiusSqueeze,50);
             function radiusSqueeze() {
                 temp[indexTemp].style.borderRadius = Math.ceil(xInc/2) - Math.abs(b++) + 'px';
                 if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
             }
-
-            
 
         }   // onclick function
 
@@ -109,7 +107,30 @@ function setBoard() {
 
 
 
-function keyAction(ev) {
+
+// this function runs in --> var timeFlow = setInterval(timeAction,timeInc);
+function timeAction() {
+    
+    // general use clicker
+    timeTick++;
+
+    // "blink" 3 times out of 40
+    let a = timeTick % 40;
+    let b = ( (a>0) && (a<3));
+    let c = toyRoom.lastChild;
+    if (boxExists)(b)? c.innerText = ">__<": c.innerText = "o__o";
+    
+    // make box fall, continuos
+    if (boxFalling && boxExists) boxFall();
+
+    // UP and DOWN motion, continuous
+    moveVertical(stepY);
+
+}   // end of timeAction()
+
+
+
+function keyDownAction(ev) {
     // all keyboard action inside this function
 
     console.log('you pressed ' + ev.code);
@@ -126,26 +147,43 @@ function keyAction(ev) {
             break;
         case 'KeyF':
             boxFalling = !boxFalling;
-            console.log('is the box falling? ' + boxFalling);
             break;
         case 'ArrowLeft':
-            stepX = -xInc;
-            console.log(stepX);
-            moveHorizontal();
+            moveHorizontal(-xInc);
             break;
         case 'ArrowRight':
-            stepX = xInc;
-            moveHorizontal();
+            moveHorizontal(xInc);
             break;
         case 'ArrowUp':
+            stepY = -yInc/4;        // up movement uses both keydown and keyup
             break;
         case 'ArrowDown':
+            stepY = yInc/4;         // down movement uses both keydown and keyup
             break;
         default:
             break;
     }
-}   // end of keyAction()
+}   // end of keyDownAction()
 
+
+
+function keyUpAction(ev) {
+
+    console.log('you released ' + ev.code);
+    
+    switch (ev.code) {
+        case 'ArrowUp':
+            stepY = 0;
+
+            break;
+        case 'ArrowDown':
+            stepY = 0;
+            
+            break;
+        default:
+            break;
+    }
+}
 
 
 function makeNewBox() {
@@ -155,19 +193,19 @@ function makeNewBox() {
     if (!boxExists) {
         var p = document.createElement('div');
         
-        p.style.fontSize = '6pt';
+        p.style.fontSize = '8pt';
         p.style.color = 'black';
         p.style.fontWeight = 'bold';
         p.style.textAlign = 'center';
-        p.style.lineHeight = 2.8;
+        p.style.lineHeight = 2.4;
         p.innerText = 'o__o';
 
         p.style.boxShadow = '0px 0px 15px 5px white';
         
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = '#F85';
+        p.style.backgroundColor = '#69F';
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = '4px';
+        p.style.borderRadius = '8px';
         p.style.visibility = 'visible';
         
         p.style.width = xInc + 'px';
@@ -213,15 +251,19 @@ function checkRow() {
         
         function rowSpin() {
             for ( let i = 180 ; i <= 189 ; i++ ) {
-                toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
+                //toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
+                toyRoom.children[i].style.transformOrigin = '50% 100%';
+                toyRoom.children[i].style.transform = "rotateX(" + r + "deg)";
             }
-            r += 2;
+            r += 4;
 
             if ( r > 90 ) {
                 clearInterval(t);
                 for ( let i = 180 ; i <= 189 ; i++ ) {
                     toyRoom.children[i].style.opacity = 0.5;
+                    toyRoom.children[i].style.transform = "rotateX(0deg)";
                 }
+                
                 dropMountain();
             }   // end of if
 
@@ -247,42 +289,51 @@ function dropMountain() {
 
 
 
-function timeAction() {
-    
-    if (boxFalling && boxExists) {
-        boxFall();
-    }
-
-
-}
 
 function boxFall() {
     let a = toyRoom.lastChild.style.top;
     let b = a.substring(0,a.length-2);
     let c = eval(b) + 1;
     toyRoom.lastChild.style.top = c + 'px';
+    toyRoom.lastChild.innerText = '>__<';
+
 }
 
 
-function moveHorizontal() {
+function moveHorizontal(step) {
 // moves box left or right depending on stepX
 
     if (boxExists) {
         let a = toyRoom.lastChild.style.left;
-        let b = eval(a.substring(0,a.length-2)) + stepX;
+        let b = eval(a.substring(0,a.length-2)) + step;
         if ( (b>=0) && (b<xDim) ) toyRoom.lastChild.style.left = b + 'px';
     }
 }   // end of moveHorizontal()
 
 
-// ---------- Main Body ----------------------------------------- //
+function moveVertical(step) {
+    if (boxExists) {
+        let a = toyRoom.lastChild.style.top;
+        let b = eval(a.substring(0,a.length-2)) + step;
+        if (b>=0) toyRoom.lastChild.style.top = b + 'px';
+        if (b>(yDim-yInc)) toyRoom.lastChild.style.top = (yDim-yInc) + 'px';
+    }
+}
+
+
+
+// ----------------- MAIN BODY ----------------------------------------- //
 
 
 setBoard();
 
+// runs continuously
 var timeFlow = setInterval(timeAction,timeInc);
 
-document.addEventListener('keydown', keyAction);
+// event listeners
+document.addEventListener('keydown', keyDownAction);
+document.addEventListener('keyup', keyUpAction);
+
 
 
 
