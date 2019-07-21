@@ -13,7 +13,7 @@ var toyRoom = document.getElementById('toyRoom');
 
 // booleans
 var boxExists = false;          // allow only one box to exist
-var boxFalling = false;         // toggle to let box fall
+var boxFalling = true;         // toggle to let box fall
 
 // dimension variables
 var xDim = toyRoom.offsetWidth;
@@ -347,6 +347,9 @@ function moveVertical(step) {
 
 
 setBoard();
+checkRow();         // must do setBoard() first
+makeNewBox();       // must do setBoard() first
+
 
 // runs continuously
 var timeFlow = setInterval(timeAction,timeInc);
