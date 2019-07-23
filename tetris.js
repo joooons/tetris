@@ -393,13 +393,25 @@ function moveHorizontal(step) {
 
 
 function moveVertical(step) {
-    if (boxExists) {
-        let a = toyRoom.lastChild.style.top;
 
+    let a = [];
+    let b = [];
 
-        let b = eval(a.substring(0,a.length-2)) + step;
+    for (let i = 0 ; i <= 3 ; i++ ) {
+        a[i] = blockPile[i+200].style.top;
+        b[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+    }
 
+    let min = Math.min(...b);
+    let max = Math.max(...b) + yInc;
+    
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = b[i] + 'px';
+    }
 
+        
+
+    /*
         if ( b>=0 ) {
             toyRoom.lastChild.style.top = b + 'px';
             if (!checkGround()) {
@@ -409,8 +421,8 @@ function moveVertical(step) {
         } else {
             toyRoom.lastChild.style.top = '0px';
         }
+    */
 
-    }
 }
 
 
