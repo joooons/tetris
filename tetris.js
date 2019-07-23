@@ -14,6 +14,7 @@
 
 // DOM elements
 var toyRoom = document.getElementById('toyRoom');
+var blockPile = toyRoom.children;       // this is shallow copying, i think
 
 // booleans
 var boxExists = false;          // allow only one box to exist
@@ -29,6 +30,13 @@ var yInc = yDim / 20;           // box size in y direction. basically same as xI
 var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
+var opacitySetting = { 
+    low : 0 , 
+    high : 1 ,
+    flip : function(num) {
+        return (num == this.low) ? this.high : this.low ;
+    }
+};
 
 // objects and arrays definitions
 var tetrisForms = [];
@@ -41,30 +49,22 @@ var tetrisForms = [];
     tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
     tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-var tetrisChance = [0, 1, 1, 0, 0, 0, 0, 0];
+var tetrisChance = [0, 1, 1, 0, 0, 1, 1, 0];
 // ratio of how likely each tetris pattern will appear.
 // does not need to add up to 100.
 // please make sure there are exactly 8 items.
 // I might want to change the appearance rates later.
 
 var randomMatrix = {
-    matrix : [],
+// object that contains the array of probability of each shape and...
+// ... the method for reconfiguring the probability when the tetrisChance array is modified.
+    matrix : [0],
     randomize : function() {
-        
-        for ( let n = 0 ; n < tetrisChance.reduce(function(sum, num) {return sum + num;} ) ; n++ ) {
-            this.matrix[n] = 0;
-        }
-        //console.log(this.matrix);
+        for ( let n=0 ; n<tetrisChance.reduce(function(sum,num){return sum + num;} ) ; n++ ) this.matrix[n] = 0;
         let k = 0;
-        for ( let i = 0 ; i <= tetrisChance.length ; i++ ) {
-            for ( let j = 0 ; j < tetrisChance[i] ; j++ ) this.matrix[k++] = i;
-        }
-        //console.log(this.matrix);
+        for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i;
     }
 }   // end of randomMatrix def
-
-randomMatrix.randomize();
-
 
 
 function blockType(a,b,c) { 
@@ -104,7 +104,7 @@ function setBoard() {
         p.style.backgroundColor = '#FD5';
         
         // opacity=1 blocks rare at top, more frequent at bottom
-        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? 0.5: 1;
+        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? opacitySetting.low: opacitySetting.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
@@ -117,7 +117,6 @@ function setBoard() {
         toyRoom.appendChild(p);
 
 
-
         // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
             // I need this for now to directly control what the board looks like
@@ -128,7 +127,10 @@ function setBoard() {
             let y = this.offsetTop;
 
             // this.style.opacity = -1 * (this.style.opacity - 1);      // toggles 0 to 1
-            this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
+            // this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
+            this.style.opacity = opacitySetting.flip(this.style.opacity);
+
+
             
             // this gives index number of the block i clicked.
             var temp = Array.prototype.slice.call(toyRoom.children);
@@ -278,6 +280,8 @@ function createBlockAgent() {
 function makeNewBox() {
 // sets the shape of the tetris piece
 
+    randomMatrix.randomize();
+
     let a = Math.floor( randomMatrix.matrix.length * Math.random() );
     let b = randomMatrix.matrix[a];
 
@@ -339,7 +343,7 @@ function checkRow() {
                 if ( r > 90 ) {
                     clearInterval(t);
                     for ( let j = i ; j <= i+9 ; j++ ) {
-                        toyRoom.children[j].style.opacity = 0.5;
+                        toyRoom.children[j].style.opacity = opacitySetting.low;
                         toyRoom.children[j].style.transform = "rotateX(0deg)";
                     }
                     
@@ -369,7 +373,7 @@ function dropMountain(filledRow) {
     }
 
     for ( let k = 0 ; k <= 9 ; k++ ) {
-        toyRoom.children[k].style.opacity = 0.5;
+        toyRoom.children[k].style.opacity = opacitySetting.low;
     }
 
 }   // end of dropMountain()
@@ -467,9 +471,6 @@ function copyBlock() {
 
 
 setBoard();
-
-var blockPile = toyRoom.children;       // this is shallow copying, i think
-
 
 checkRow();         // must do setBoard() first
 
