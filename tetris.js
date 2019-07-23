@@ -56,7 +56,7 @@ function setBoard() {
         // opacity=1 blocks rare at top, more frequent at bottom
         p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? 0.5: 1;
 
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
 
         p.style.width = xInc + 'px';
@@ -66,15 +66,7 @@ function setBoard() {
 
         toyRoom.appendChild(p);
 
-        toyRoom.lastChild.onmouseover = function() {
-            this.style.lineHeight = 2;
-            this.style.border = '5px solid rgba(0, 0, 0, 0.05)';
-        }
 
-        toyRoom.lastChild.onmouseout = function() {
-            this.style.lineHeight = 3;
-            this.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        }
 
         // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
@@ -92,14 +84,6 @@ function setBoard() {
             var temp = Array.prototype.slice.call(toyRoom.children);
             var indexTemp = temp.indexOf(this);
             console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
-
-            // animates the border radius temporarily. Remove this later.
-            var b = -(Math.ceil(xInc/2) - 4);
-            var t = setInterval(radiusSqueeze,50);
-            function radiusSqueeze() {
-                temp[indexTemp].style.borderRadius = Math.ceil(xInc/2) - Math.abs(b++) + 'px';
-                if ( b > (Math.ceil(xInc/2)-4) ) clearInterval(t);
-            }
 
             checkRow();
 
@@ -258,7 +242,7 @@ function checkRow() {
             count += eval(toyRoom.children[j].style.opacity);
         }
         
-        console.log(i + ' row, count ' + (2*count-10));
+        //console.log(i + ' row, count ' + (2*count-10));
         
         // if the row is all filled up...
         if (count==10) {
@@ -378,7 +362,7 @@ function checkGround() {
 
         let b = toyRoom.lastChild.style.top;
         let y = Math.ceil( (b.substring(0,b.length-2) / yInc) );
-        console.log(x + ' is x, y is ' + y);
+        //console.log(x + ' is x, y is ' + y);
 
         let c = 10 * y + x;
         //console.log(c);
