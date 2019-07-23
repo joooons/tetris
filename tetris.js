@@ -32,21 +32,31 @@ var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 
 var tetrisForms = [];
-tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];
+tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];    // long bar
+tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L'
+tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
+tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
+tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
+tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];    // 'T' tilted right
+tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
+tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];
+var tetrisChance = [1, 1, 1, 1, 1, 1, 1, 1];
+// ratio of how likely each tetris pattern will appear.
+// does not need to add up to 100.
+// I might want to change the appearance rates later.
 
-tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];
+var randomMatrix = [];
+// Array that contains the tetris piece index numbers in the ratio specified by tetrisChance.
+randomIzer();
+function randomIzer() {
+    let k = 0;
+    for ( let i = 0 ; i <= tetrisChance.length ; i++ ) {
+        for ( let j = 0 ; j < tetrisChance[i] ; j++ ) randomMatrix[k++] = i;
+    }
+}
 
-tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];
 
-tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];
-
-tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];
-
-tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];
-
-tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];
 
 
 
@@ -261,69 +271,13 @@ function createBlockAgent() {
 function makeNewBox() {
 // sets the shape of the tetris piece
 
-    //console.log(blockPile[200]);
-
-    var a = prompt('enter number (0-7)', '0-7');
-    
-    //console.log(numNum);
-    //console.log(tetrisForms[numNum-1]);
-    //console.log(tetrisForms[0]);
-
-    var b = Math.random();
-    console.log(b);
-
-    switch (b) {
-        case (b<0.5):
-            console.log('wow!');
-            break;
-        default:
-            break;
-    }
-
-
+    let a = Math.floor( randomMatrix.length * Math.random() );
+    let b = randomMatrix[a];
 
     for ( let i = 0 ; i <=3 ; i++ ) {
-        console.log(tetrisForms[0][i]);        
-        blockPile[i+200].style.left = xInc * tetrisForms[a][i].x + 'px';
-        blockPile[i+200].style.top = yInc * tetrisForms[a][i].y + 'px';
+        blockPile[i+200].style.left = xInc * tetrisForms[b][i].x + 'px';
+        blockPile[i+200].style.top = yInc * tetrisForms[b][i].y + 'px';
     }
-
-
-
-
-    /*
-    if (!boxExists) {
-        var p = document.createElement('div');
-        
-        p.style.fontSize = '8pt';
-        p.style.color = 'black';
-        p.style.fontWeight = 'bold';
-        p.style.textAlign = 'center';
-        p.style.lineHeight = 2.4;
-        p.innerText = 'o__o';
-
-        p.style.boxShadow = '0px 0px 15px 5px white';
-        
-        p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = '#69F';
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = '8px';
-        p.style.visibility = 'visible';
-        
-        p.style.width = xInc + 'px';
-        p.style.height = yInc + 'px';
-        
-        p.style.position = 'absolute';
-        p.style.left = (xInc * 4) + 'px';
-        p.style.top = '0px';
-        
-        toyRoom.appendChild(p); 
-
-
-        boxExists = true;
-    }
-    */
-
 
 }
 
