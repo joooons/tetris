@@ -129,8 +129,6 @@ function timeAction() {
     // UP and DOWN motion, continuous
     moveVertical(stepY);
 
-
-
 }   // end of timeAction()
 
 
@@ -145,16 +143,16 @@ function keyDownAction(ev) {
             copyBlock();
             break;
         case 'KeyN':
-            makeNewBox();
+            //makeNewBox();
             break;
         case 'KeyD':
-            breakNewBox();
+            //breakNewBox();
             break;
         case 'KeyF':
             boxFalling = !boxFalling;
             break;
-        case 'KeyG':        // doesn't do anything right now
-            // checkGround();   
+        case 'KeyG':
+            createBlockAgent();
             break;
 
         // directional movement
@@ -191,6 +189,45 @@ function keyUpAction(ev) {
         default:
             break;
     }
+}
+
+
+function createBlockAgent() {
+
+    for ( let i = 0 ; i <=3 ; i++ ) {
+        var p = document.createElement('div');
+        
+        p.style.fontSize = '8pt';
+        p.style.color = 'black';
+        p.style.fontWeight = 'bold';
+        p.style.textAlign = 'center';
+        p.style.lineHeight = 2.4;
+        p.innerText = 'o__o';
+
+        p.style.boxShadow = '0px 0px 15px 5px white';   // might have to remove shadow... 
+        
+        p.style.boxSizing = 'border-box';
+        p.style.backgroundColor = '#69F';
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
+        p.style.borderRadius = '8px';
+        p.style.visibility = 'visible';
+        
+        p.style.width = xInc + 'px';
+        p.style.height = yInc + 'px';
+        
+        p.style.position = 'absolute';
+        
+        
+        p.style.left = (xInc * (i+4) ) + 'px';
+        //p.style.top = '0px';
+        p.style.top = '0px';
+
+        toyRoom.appendChild(p); 
+    
+    }   
+
+
+
 }
 
 
@@ -403,10 +440,15 @@ function copyBlock() {
 
 setBoard();
 
-var gridBlocks = toyRoom.children;
+var blockPile = toyRoom.children;       // this is shallow copying, i think
+
 
 checkRow();         // must do setBoard() first
-makeNewBox();       // must do setBoard() first
+
+//makeNewBox();       // must do setBoard() first
+createBlockAgent();
+
+console.log(blockPile);
 
 
 // runs continuously
