@@ -18,7 +18,7 @@ var blockPile = toyRoom.children;       // this is shallow copying, i think
 
 // booleans
 var boxExists = false;          // allow only one box to exist
-var boxFalling = true;         // toggle to let box fall
+var boxFalling = false;         // toggle to let box fall
 
 // dimension variables
 var xDim = toyRoom.offsetWidth;
@@ -31,11 +31,9 @@ var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 var opacitySetting = { 
-    low : 0 , 
+    low : 0.2 , 
     high : 1 ,
-    flip : function(num) {
-        return (num == this.low) ? this.high : this.low ;
-    }
+    flip : function(num) {return (num == this.low) ? this.high : this.low;}
 };
 
 // objects and arrays definitions
@@ -103,7 +101,6 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
         
-        // opacity=1 blocks rare at top, more frequent at bottom
         p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? opacitySetting.low: opacitySetting.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
@@ -116,35 +113,16 @@ function setBoard() {
 
         toyRoom.appendChild(p);
 
-
         // the ONCLICK function
         toyRoom.lastChild.onclick = function() {
             // I need this for now to directly control what the board looks like
             // I will remove this function in a later version
 
-            // x and y needed just to show numbers on console. Remove this in a later version
-            let x = this.offsetLeft;
-            let y = this.offsetTop;
-
-            // this.style.opacity = -1 * (this.style.opacity - 1);      // toggles 0 to 1
-            // this.style.opacity = -(this.style.opacity - 1.5);   // toggles 0.5 and 1
             this.style.opacity = opacitySetting.flip(this.style.opacity);
-
-
-            
-            // this gives index number of the block i clicked.
-            var temp = Array.prototype.slice.call(toyRoom.children);
-            var indexTemp = temp.indexOf(this);
-            console.log (`(${x}, ${y}) index = ${indexTemp}`);
-
             checkRow();
+        }   // end of onclick function def
 
-        }   // onclick function
-
-    }   // end of for loop, iterated over 200 blocks
-
-
-
+    }   // end of for loop, iterated over only the first 200 blocks
 
 }   // end of setBoard()
 
@@ -166,7 +144,7 @@ function timeAction() {
     if (boxExists)(b)? c.innerText = ">__<": c.innerText = "o__o";
     
     // make box fall, continuous
-    if (boxFalling && boxExists) boxFall();
+    if (boxFalling) boxFall();
 
     // UP and DOWN motion, continuous
     moveVertical(stepY);
@@ -176,7 +154,7 @@ function timeAction() {
 
 
 function keyDownAction(ev) {
-    // all keyboard action inside this function
+// all keyboard action inside this function
 
     //console.log('you pressed ' + ev.code);
 
@@ -238,7 +216,6 @@ function createBlockAgent() {
 // creates the four blocks of the tetris piece.
 // But the shape is not initiated. The shape should be initiated by a different function.
 
-
     for ( let i = 0 ; i <=3 ; i++ ) {
         var p = document.createElement('div');
         
@@ -249,8 +226,7 @@ function createBlockAgent() {
         p.style.lineHeight = 2.4;
         p.innerText = 'o__o';
 
-        //p.style.boxShadow = '0px 0px 15px 5px white';
-
+        //p.style.boxShadow = '0px 0px 15px 5px white';     // shadows don't work well for multiple blocks.
         
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#69F';
@@ -263,18 +239,14 @@ function createBlockAgent() {
         
         p.style.position = 'absolute';
         
-        
-        p.style.left = (xInc * (i+3) ) + 'px';
-        //p.style.top = '0px';
-        p.style.top = '0px';
+        p.style.left = (xInc * (i+3) ) + 'px';      // actually, this doesn't matter...
+        p.style.top = -yInc + 'px';                 // ... cuz this puts it outside the boundary. invisible.
 
         toyRoom.appendChild(p); 
     
-    }   
+    }   // end of for loop
 
-
-
-}
+}   // end of createBlockAgent()
 
 
 function makeNewBox() {
@@ -310,41 +282,33 @@ function breakNewBox() {
 
 
 function checkRow() {
+// 
 
     var count = 0;
 
-    // just the second row from the bottom.
-    // i will make this iterate over the whole screen, later.
-    // first, counting number of visible blocks on this row
-
     for (let i = 0 ; i <= 190 ; i += 10 ) {
+    // 'i' refers to the first index of each row
         
         count = 0;
 
-        for (let j = i; j <= i+9 ; j++) {
-            count += eval(toyRoom.children[j].style.opacity);
-        }
+        for (let j = i; j <= i+9 ; j++) count += eval(blockPile[j].style.opacity);
         
-        //console.log(i + ' row, count ' + (2*count-10));
-        
-        // if the row is all filled up...
         if (count==10) {
 
-            
             let r = 0;
             let t = setInterval(rowSpin,10);
             function rowSpin() {
                 r += 4;
                 for ( let j = i ; j <= i+9 ; j++ ) {
                     //toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
-                    toyRoom.children[j].style.transformOrigin = '50% 100%';
-                    toyRoom.children[j].style.transform = "rotateX(" + r + "deg)";
+                    blockPile[j].style.transformOrigin = '50% 100%';
+                    blockPile[j].style.transform = "rotateX(" + r + "deg)";
                 }
                 if ( r > 90 ) {
                     clearInterval(t);
                     for ( let j = i ; j <= i+9 ; j++ ) {
-                        toyRoom.children[j].style.opacity = opacitySetting.low;
-                        toyRoom.children[j].style.transform = "rotateX(0deg)";
+                        blockPile[j].style.opacity = opacitySetting.low;
+                        blockPile[j].style.transform = "rotateX(0deg)";
                     }
                     
                     dropMountain(i);    // i refers to the row that filled up
@@ -367,13 +331,13 @@ function dropMountain(filledRow) {
     
     for ( let i = filledRow ; i >= 10 ; i -= 10 ) {
         for ( let j = i ; j <= i+9 ; j++ ) {
-            dummy = toyRoom.children[j-10].style.opacity;
-            toyRoom.children[j].style.opacity = dummy;
+            dummy = blockPile[j-10].style.opacity;
+            blockPile[j].style.opacity = dummy;
         }
     }
 
     for ( let k = 0 ; k <= 9 ; k++ ) {
-        toyRoom.children[k].style.opacity = opacitySetting.low;
+        blockPile[k].style.opacity = opacitySetting.low;
     }
 
 }   // end of dropMountain()
@@ -382,21 +346,27 @@ function dropMountain(filledRow) {
 
 
 function boxFall() {
-    let a = toyRoom.lastChild.style.top;
-    let b = a.substring(0,a.length-2);
-    let c = eval(b) + 1;
+// makes the tetris piece (agent) drop slowly...
+    let a, b, c;
+
+    for ( let i = 200 ; i <= 203 ; i++ ) {
+        a = blockPile[i].style.top;
+        b = a.substring(0, a.length-2);
+        c = eval(b) + 1;
+        blockPile[i].style.top = c + 'px';
+        blockPile[i].innerText = '>__<';
+    }
     
     //if (checkGround()) toyRoom.lastChild.style.top = c + 'px';
     
-    toyRoom.lastChild.style.top = c + 'px';
+    
+
+    /*
     if (!checkGround()) {
         toyRoom.lastChild.style.top = a;
         //console.log('back off!');
     }
-
-
-    
-    toyRoom.lastChild.innerText = '>__<';
+    */
 
 }
 
@@ -404,11 +374,21 @@ function boxFall() {
 function moveHorizontal(step) {
 // moves box left or right depending on stepX
 
-    if (boxExists) {
-        let a = toyRoom.lastChild.style.left;
-        let b = eval(a.substring(0,a.length-2)) + step;
-        if ( (b>=0) && (b<xDim) ) toyRoom.lastChild.style.left = b + 'px';
+    let a = [];
+    let b = [];
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        a[i] = blockPile[i+200].style.left;
+        b[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
     }
+
+    let min = Math.min(...b);
+    let max = Math.max(...b);
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        if ( (min>=0) && (max<xDim) ) blockPile[i+200].style.left = b[i] + 'px';
+    }
+
 }   // end of moveHorizontal()
 
 
@@ -474,10 +454,7 @@ setBoard();
 
 checkRow();         // must do setBoard() first
 
-//makeNewBox();       // must do setBoard() first
-createBlockAgent();
-
-//console.log(blockPile);
+createBlockAgent();     // must do setBoard() first
 
 
 // runs continuously
