@@ -6,7 +6,7 @@
 // blockPile[] contains both the blocks in the background and the tetris piece.
 // blockPile[0] to [199] are the background blocks.
 // blockPile[200] to [203] are the four blocks forming the tetris piece.
-// this is a shallow copy.
+// blockPile[] is a shallow copy, I think...
 
 
 // ---------- Declaration Section -------------------------------- //
@@ -28,44 +28,51 @@ var yInc = yDim / 20;           // box size in y direction. basically same as xI
 // other settings
 var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
-//var stepX = 0;                  // = -xDim to move left, xDim to move right
 var stepY = 0;                  // negative to move up, positive to move down
 
+// objects and arrays definitions
 var tetrisForms = [];
-tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];    // long bar
-tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L'
-tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
-tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
-tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
-tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];    // 'T' tilted right
-tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
-tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
+    tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];    // long bar
+    tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L'
+    tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
+    tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
+    tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
+    tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];    // 'T' tilted right
+    tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
+    tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-var tetrisChance = [1, 1, 1, 1, 1, 1, 1, 1];
+var tetrisChance = [0, 1, 1, 0, 0, 0, 0, 0];
 // ratio of how likely each tetris pattern will appear.
 // does not need to add up to 100.
+// please make sure there are exactly 8 items.
 // I might want to change the appearance rates later.
 
-var randomMatrix = [];
-// Array that contains the tetris piece index numbers in the ratio specified by tetrisChance.
-randomIzer();
-function randomIzer() {
-    let k = 0;
-    for ( let i = 0 ; i <= tetrisChance.length ; i++ ) {
-        for ( let j = 0 ; j < tetrisChance[i] ; j++ ) randomMatrix[k++] = i;
+var randomMatrix = {
+    matrix : [],
+    randomize : function() {
+        
+        for ( let n = 0 ; n < tetrisChance.reduce(function(sum, num) {return sum + num;} ) ; n++ ) {
+            this.matrix[n] = 0;
+        }
+        //console.log(this.matrix);
+        let k = 0;
+        for ( let i = 0 ; i <= tetrisChance.length ; i++ ) {
+            for ( let j = 0 ; j < tetrisChance[i] ; j++ ) this.matrix[k++] = i;
+        }
+        //console.log(this.matrix);
     }
-}
+}   // end of randomMatrix def
 
-
+randomMatrix.randomize();
 
 
 
 function blockType(a,b,c) { 
+// I haven't used this yet. I will though. Soon...
     this.x = a;
     this.y = b;
     this.index = c;
 }
-
 
 var clone = new blockType(0,0,0);           // will be used later for collision test
 var ghost = new blockType(0,0,0);           // will be used later for collision test
@@ -271,8 +278,8 @@ function createBlockAgent() {
 function makeNewBox() {
 // sets the shape of the tetris piece
 
-    let a = Math.floor( randomMatrix.length * Math.random() );
-    let b = randomMatrix[a];
+    let a = Math.floor( randomMatrix.matrix.length * Math.random() );
+    let b = randomMatrix.matrix[a];
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         blockPile[i+200].style.left = xInc * tetrisForms[b][i].x + 'px';
