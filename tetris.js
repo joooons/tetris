@@ -3,6 +3,10 @@
 // Notes:
 // I intend to work with vanilla JS for now. Need to learn basics first.
 //
+// blockPile[] contains both the blocks in the background and the tetris piece.
+// blockPile[0] to [199] are the background blocks.
+// blockPile[200] to [203] are the four blocks forming the tetris piece.
+// this is a shallow copy.
 
 
 // ---------- Declaration Section -------------------------------- //
@@ -27,6 +31,24 @@ var timeTick = 0;               // timeTick++ in timeAction()
 //var stepX = 0;                  // = -xDim to move left, xDim to move right
 var stepY = 0;                  // negative to move up, positive to move down
 
+var tetrisForms = [];
+tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];
+
+tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];
+
+tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];
+
+tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];
+
+tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];
+
+tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];
+
+tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];
+
+tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];
+
+
 
 function blockType(a,b,c) { 
     this.x = a;
@@ -35,8 +57,8 @@ function blockType(a,b,c) {
 }
 
 
-var clone = new blockType(0,0,0);
-var ghost = new blockType(0,0,0);
+var clone = new blockType(0,0,0);           // will be used later for collision test
+var ghost = new blockType(0,0,0);           // will be used later for collision test
 
 
 
@@ -118,12 +140,13 @@ function timeAction() {
     timeTick++;
 
     // "blink" 3 times out of 40
+    // I really should put this as separate function... later.
     let a = timeTick % 40;
     let b = ( (a>0) && (a<3));
     let c = toyRoom.lastChild;
     if (boxExists)(b)? c.innerText = ">__<": c.innerText = "o__o";
     
-    // make box fall, continuos
+    // make box fall, continuous
     if (boxFalling && boxExists) boxFall();
 
     // UP and DOWN motion, continuous
@@ -143,7 +166,7 @@ function keyDownAction(ev) {
             copyBlock();
             break;
         case 'KeyN':
-            //makeNewBox();
+            makeNewBox();
             break;
         case 'KeyD':
             //breakNewBox();
@@ -193,6 +216,9 @@ function keyUpAction(ev) {
 
 
 function createBlockAgent() {
+// creates the four blocks of the tetris piece.
+// But the shape is not initiated. The shape should be initiated by a different function.
+
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         var p = document.createElement('div');
@@ -204,7 +230,8 @@ function createBlockAgent() {
         p.style.lineHeight = 2.4;
         p.innerText = 'o__o';
 
-        p.style.boxShadow = '0px 0px 15px 5px white';   // might have to remove shadow... 
+        //p.style.boxShadow = '0px 0px 15px 5px white';
+
         
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#69F';
@@ -218,7 +245,7 @@ function createBlockAgent() {
         p.style.position = 'absolute';
         
         
-        p.style.left = (xInc * (i+4) ) + 'px';
+        p.style.left = (xInc * (i+3) ) + 'px';
         //p.style.top = '0px';
         p.style.top = '0px';
 
@@ -232,9 +259,39 @@ function createBlockAgent() {
 
 
 function makeNewBox() {
-    // makes new box ONLY if there is none already
-    // this function will become obsolete later
+// sets the shape of the tetris piece
 
+    //console.log(blockPile[200]);
+
+    var a = prompt('enter number (0-7)', '0-7');
+    
+    //console.log(numNum);
+    //console.log(tetrisForms[numNum-1]);
+    //console.log(tetrisForms[0]);
+
+    var b = Math.random();
+    console.log(b);
+
+    switch (b) {
+        case (b<0.5):
+            console.log('wow!');
+            break;
+        default:
+            break;
+    }
+
+
+
+    for ( let i = 0 ; i <=3 ; i++ ) {
+        console.log(tetrisForms[0][i]);        
+        blockPile[i+200].style.left = xInc * tetrisForms[a][i].x + 'px';
+        blockPile[i+200].style.top = yInc * tetrisForms[a][i].y + 'px';
+    }
+
+
+
+
+    /*
     if (!boxExists) {
         var p = document.createElement('div');
         
@@ -261,18 +318,28 @@ function makeNewBox() {
         p.style.top = '0px';
         
         toyRoom.appendChild(p); 
+
+
         boxExists = true;
     }
+    */
+
+
 }
 
 
 
 function breakNewBox() {
+    
+    /*
     if (boxExists) {
         toyRoom.removeChild(toyRoom.lastChild);
         boxExists = false;
         boxFalling = false;
     }
+    */
+
+
 }
 
 
@@ -448,7 +515,7 @@ checkRow();         // must do setBoard() first
 //makeNewBox();       // must do setBoard() first
 createBlockAgent();
 
-console.log(blockPile);
+//console.log(blockPile);
 
 
 // runs continuously
