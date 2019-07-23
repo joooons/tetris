@@ -28,6 +28,17 @@ var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 
 
+function blockType(a,b,c) { 
+    this.x = a;
+    this.y = b;
+    this.index = c;
+}
+
+
+var clone = new blockType(0,0,0);
+var ghost = new blockType(0,0,0);
+
+
 
 
 
@@ -83,13 +94,16 @@ function setBoard() {
             // this gives index number of the block i clicked.
             var temp = Array.prototype.slice.call(toyRoom.children);
             var indexTemp = temp.indexOf(this);
-            console.log (`x, y, index = ${x}, ${y}, ${indexTemp}`);
+            console.log (`(${x}, ${y}) index = ${indexTemp}`);
 
             checkRow();
 
         }   // onclick function
 
     }   // end of for loop, iterated over 200 blocks
+
+
+
 
 }   // end of setBoard()
 
@@ -128,7 +142,7 @@ function keyDownAction(ev) {
 
     switch (ev.code) {
         case 'KeyC':
-            checkRow();
+            copyBlock();
             break;
         case 'KeyN':
             makeNewBox();
@@ -139,9 +153,11 @@ function keyDownAction(ev) {
         case 'KeyF':
             boxFalling = !boxFalling;
             break;
-        case 'KeyG':
-            checkGround();
+        case 'KeyG':        // doesn't do anything right now
+            // checkGround();   
             break;
+
+        // directional movement
         case 'ArrowLeft':
             moveHorizontal(-xInc);
             break;
@@ -149,10 +165,10 @@ function keyDownAction(ev) {
             moveHorizontal(xInc);
             break;
         case 'ArrowUp':
-            stepY = -yInc/4;        // up movement uses both keydown and keyup
+            stepY = -yInc/4;        // stepY used in timeAction()
             break;
         case 'ArrowDown':
-            stepY = yInc/4;         // down movement uses both keydown and keyup
+            stepY = yInc/4;         // stepY used in timeAction()
             break;
         default:
             break;
@@ -167,12 +183,10 @@ function keyUpAction(ev) {
     
     switch (ev.code) {
         case 'ArrowUp':
-            stepY = 0;
-
+            stepY = 0;         // stepY used in timeAction()
             break;
         case 'ArrowDown':
-            stepY = 0;
-            
+            stepY = 0;         // stepY used in timeAction()
             break;
         default:
             break;
@@ -308,7 +322,7 @@ function boxFall() {
     toyRoom.lastChild.style.top = c + 'px';
     if (!checkGround()) {
         toyRoom.lastChild.style.top = a;
-        console.log('back off!');
+        //console.log('back off!');
     }
 
 
@@ -375,10 +389,22 @@ function checkGround() {
 
 
 
+function copyBlock() {
+    //console.log(clone);
+    //console.log(ghost);
+    //console.log(gridBlocks);
+    //console.log(gridBlocks[13].style.opacity);
+
+}
+
+
 // ----------------- MAIN BODY ----------------------------------------- //
 
 
 setBoard();
+
+var gridBlocks = toyRoom.children;
+
 checkRow();         // must do setBoard() first
 makeNewBox();       // must do setBoard() first
 
