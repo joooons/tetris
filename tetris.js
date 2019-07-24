@@ -64,26 +64,23 @@ var randomMatrix = {
     }
 }   // end of randomMatrix def
 
-/*
-function blockType(a,b,c) { 
-// I haven't used this yet. I will though. Soon...
-    this.x = a;
-    this.y = b;
-    this.index = c;
+function ghostType(x, y) {
+    this.x = x,
+    this.y = y,
+    this.fill = function(left, top, xStep, yStep) {
+        this.x = eval(left.substring(0,left.length-2)) + xStep;
+        this.y = eval(top.substring(0,top.length-2)) + yStep;
+    }
+    this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },
+    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); }
 }
 
-var clone = new blockType(0,0,0);           // will be used later for collision test
-var ghost = new blockType(0,0,0);           // will be used later for collision test
+/*
+a[i] = blockPile[i+200].style.top;
+a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
 */
 
-
-var ghost = {
-    now : { x : 0, y : 0 },
-    new : { x : 0, y : 0 },
-    floor : function() { return 10 * (Math.floor(ghost.new.y/yInc)) + (ghost.new.x/xInc); },
-    ceil : function() { return 10 * (Math.ceil(ghost.new.y/yInc)) + (ghost.new.x/xInc); }
-}
-
+var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
 
 
 // ---------- Functions ------------------------------------------ //
@@ -157,12 +154,7 @@ function timeAction() {
 function tetrisBlink() {
 // making the tetris piece facial expression blink
 
-    let a = timeTick % 40;
-    //let b = [];
-    //b[0] = ( (a>0) && (a<4));
-    //b[1] = ( (a>2) && (a<6));
-    //b[2] = ( (a>4) && (a<8));
-    //b[3] = ( (a>6) && (a<10));
+    let a = timeTick % 30;
     let b = [ ( (a>0) && (a<4) ),
               ( (a>2) && (a<6) ),
               ( (a>4) && (a<8) ),
@@ -186,7 +178,7 @@ function keyDownAction(ev) {
 
     switch (ev.code) {
         case 'KeyC':
-            copyBlock();
+            console.log(crashImminent(0,0));
             break;
         case 'KeyN':
             makeNewBox();
@@ -259,8 +251,9 @@ function createBlockAgent() {
         //p.style.boxShadow = '0px 0px 15px 5px white';     // shadows don't work well for multiple blocks.
         
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = '#8AF';
-        p.style.border = '0.5px solid rgba(30, 30, 30, 1)';
+        //p.style.backgroundColor = '#8AF';
+        p.style.backgroundColor = 'rgba(100, 130, 250, 0.1)';
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = '1px 11px 11px 11px';
         p.style.visibility = 'visible';
         p.style.boxShadow = '-2px -2px 9px 0px #05A inset';
@@ -373,22 +366,26 @@ function boxFall() {
 
     let a = [];
 
-    for ( let i = 0 ; i <= 3 ; i++ ) {
-        a[i] = blockPile[i+200].style.top;
-        a[i] = eval(a[i].substring(0,a[i].length-2));    
-    }
 
-    let max = Math.max(...a);
-
-    if (max <= (yDim - yInc)) {
-        for ( let i = 200 ; i <= 203 ; i++ ) {
-            let b = blockPile[i].style.top;
-            b = b.substring(0, b.length-2);
-            b = eval(b) + 1;
-            blockPile[i].style.top = b + 'px';
-            blockPile[i].innerText = '>__<';
+    if (!crashImminent(0,1)) {
+        for ( let i = 0 ; i <= 3 ; i++ ) {
+            a[i] = blockPile[i+200].style.top;
+            a[i] = eval(a[i].substring(0,a[i].length-2));    
         }
-    }   
+
+        let max = Math.max(...a);
+
+        if (max <= (yDim - yInc)) {
+            for ( let i = 200 ; i <= 203 ; i++ ) {
+                let b = blockPile[i].style.top;
+                b = b.substring(0, b.length-2);
+                b = eval(b) + 1;
+                blockPile[i].style.top = b + 'px';
+                blockPile[i].innerText = '>__<';
+            }
+        }   
+    }   // end of if
+
 
 }
 
@@ -398,15 +395,18 @@ function moveHorizontal(step) {
 
     let a = [];
 
-    for ( let i = 0 ; i <= 3 ; i++ ) {
-        a[i] = blockPile[i+200].style.left;
-        a[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
-    }
+    if (!crashImminent(step,0)) {
 
-    let min = Math.min(...a);
-    let max = Math.max(...a);
+        for ( let i = 0 ; i <= 3 ; i++ ) {
+            a[i] = blockPile[i+200].style.left;
+            a[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
+        }
 
-    for ( let i=0 ; i<=3 ; i++ ) if ( (min>=0)&&(max<xDim) ) blockPile[i+200].style.left = a[i] + 'px';
+        let min = Math.min(...a);
+        let max = Math.max(...a);
+
+        for ( let i=0 ; i<=3 ; i++ ) if ( (min>=0)&&(max<xDim) ) blockPile[i+200].style.left = a[i] + 'px';
+    }   // end of if
 
 }   // end of moveHorizontal()
 
@@ -415,42 +415,32 @@ function moveVertical(step) {
 
     let a = [];
 
-    for (let i = 0 ; i <= 3 ; i++ ) {
-        a[i] = blockPile[i+200].style.top;
-        a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
-    }
+    if (!crashImminent(0,step)) {
+        for (let i = 0 ; i <= 3 ; i++ ) {
+        // puts into a[] the proposed y coorinates for all four tetris pieces
+            a[i] = blockPile[i+200].style.top;
+            a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+        }
 
-    let min = Math.min(...a);
-    let max = Math.max(...a) + yInc;
+        let min = Math.min(...a);
+        let max = Math.max(...a) + yInc;
 
-    for ( let i = 0 ; i <= 3 ; i++ ) {
-        if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = a[i] + 'px';
-        else if ( max > yDim ) blockPile[i+200].style.top = a[i] + yDim - max + 'px';
-        else blockPile[i+200].style.top = a[i] - min + 'px';
-    }
+        for ( let i = 0 ; i <= 3 ; i++ ) {
+            if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = a[i] + 'px';
+            else if ( max > yDim ) blockPile[i+200].style.top = a[i] + yDim - max + 'px';
+            else blockPile[i+200].style.top = a[i] - min + 'px';
+        }
+    }   // end of if
 
 }
 
 
 
 function checkGround() {
+    // not in use???
 
     if (boxExists) {
 
-        /*
-        let a = toyRoom.lastChild.style.left;
-        let x = (a.substring(0,a.length-2) / xInc);
-        //console.log(x);
-
-        let b = toyRoom.lastChild.style.top;
-        let y = Math.ceil( (b.substring(0,b.length-2) / yInc) );
-        //console.log(x + ' is x, y is ' + y);
-
-        let c = 10 * y + x;
-        //console.log(c);
-
-        return (toyRoom.children[c].style.opacity==setOpacity.high) ? false : true;
-        */
 
     }
 
@@ -458,28 +448,17 @@ function checkGround() {
 
 
 
-function copyBlock() {
-    //console.log(clone);
-    //console.log(ghost);
-    //console.log(gridBlocks);
-    //console.log(gridBlocks[13].style.opacity);
+function crashImminent(x, y) {
 
-    let a = blockPile[200].style.left;
-    ghost.new.x = a.substring(0, a.length - 2);
-
-    a = blockPile[200].style.top;
-    ghost.new.y = a.substring(0, a.length - 2);
-
-    console.log('done!');
-    
-
+    let crashed = false;
     for (let i = 0 ; i <= 3 ; i++ ) {
-
+        ghost[i].fill(blockPile[i+200].style.left, blockPile[i+200].style.top, x, y);
+        if ( blockPile[ghost[i].floor()].style.opacity == setOpacity.high ) crashed = true;
+        if ( blockPile[ghost[i].ceil()].style.opacity == setOpacity.high ) crashed = true;
     }
 
-
-
-
+    console.log('done!');
+    return crashed;
 
 }
 
