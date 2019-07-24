@@ -31,7 +31,7 @@ var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 var setOpacity = { 
-    low : 0.1 , 
+    low : 0.6 , 
     high : 1 ,
     flip : function(num) {return (num == this.low) ? this.high : this.low;}
 };
@@ -64,7 +64,7 @@ var randomMatrix = {
     }
 }   // end of randomMatrix def
 
-
+/*
 function blockType(a,b,c) { 
 // I haven't used this yet. I will though. Soon...
     this.x = a;
@@ -74,8 +74,15 @@ function blockType(a,b,c) {
 
 var clone = new blockType(0,0,0);           // will be used later for collision test
 var ghost = new blockType(0,0,0);           // will be used later for collision test
+*/
 
 
+var ghost = {
+    now : { x : 0, y : 0 },
+    new : { x : 0, y : 0 },
+    floor : function() { return 10 * (Math.floor(ghost.new.y/yInc)) + (ghost.new.x/xInc); },
+    ceil : function() { return 10 * (Math.ceil(ghost.new.y/yInc)) + (ghost.new.x/xInc); }
+}
 
 
 
@@ -456,6 +463,23 @@ function copyBlock() {
     //console.log(ghost);
     //console.log(gridBlocks);
     //console.log(gridBlocks[13].style.opacity);
+
+    let a = blockPile[200].style.left;
+    ghost.new.x = a.substring(0, a.length - 2);
+
+    a = blockPile[200].style.top;
+    ghost.new.y = a.substring(0, a.length - 2);
+
+    console.log('done!');
+    
+
+    for (let i = 0 ; i <= 3 ; i++ ) {
+
+    }
+
+
+
+
 
 }
 
