@@ -13,12 +13,12 @@
 
 
 // DOM elements
-var toyRoom = document.getElementById('toyRoom');
+var toyRoom = document.getElementById('toyRoom');   
 var blockPile = toyRoom.children;       // this is shallow copying, i think
 
 // booleans
-var boxExists = false;          // allow only one box to exist
-var boxFalling = false;         // toggle to let box fall
+//var boxExists = false;          // allow only one box to exist
+var boxFalling = true;         // toggle to let box fall
 
 // dimension variables
 var xDim = toyRoom.offsetWidth;
@@ -31,7 +31,7 @@ var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 var setOpacity = { 
-    low : 0.6 , 
+    low : 0.3 , 
     high : 1 ,
     flip : function(num) {return (num == this.low) ? this.high : this.low;}
 };
@@ -93,7 +93,7 @@ function setBoard() {
 
         var p = document.createElement('div');
 
-        p.style.color = 'orange';
+        p.style.color = 'black';
         p.style.fontFamily = 'helvetica, san-serif';
         p.style.fontSize = '7pt';
         p.style.lineHeight = 3;
@@ -103,7 +103,7 @@ function setBoard() {
         p.style.cursor = 'pointer';
 
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = '#FD5';
+        p.style.backgroundColor = '#9D5';
         
         p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? setOpacity.low: setOpacity.high;
 
@@ -160,13 +160,10 @@ function tetrisBlink() {
               ( (a>4) && (a<8) ),
               ( (a>6) && (a<10) ) ];
 
-
-
     for ( let i = 0 ; i <= 3 ; i++ ) {
         (b[i])? blockPile[i+200].innerText = "-__-": blockPile[i+200].innerText = "o__o";
     }
     
-
 }
 
 
@@ -183,8 +180,8 @@ function keyDownAction(ev) {
         case 'KeyN':
             makeNewBox();
             break;
-        case 'KeyD':
-            //breakNewBox();
+        case 'KeyI':
+            integrateBlocks();
             break;
         case 'KeyF':
             boxFalling = !boxFalling;
@@ -366,7 +363,6 @@ function boxFall() {
 
     let a = [];
 
-
     if (!crashImminent(0,1)) {
         for ( let i = 0 ; i <= 3 ; i++ ) {
             a[i] = blockPile[i+200].style.top;
@@ -435,14 +431,23 @@ function moveVertical(step) {
 }
 
 
+function integrateBlocks() {
+// wait, what is this???
 
-function checkGround() {
-    // not in use???
-
-    if (boxExists) {
-
-
+    let stopped = ( ghost[0].floor() == ghost[0].ceil() );
+    //console.log(ghost[0].floor());
+    //console.log(ghost[0].ceil());
+    //console.log('did tetris stop? ' + stopped);
+    if (stopped && boxFalling) {
+        for (let i = 0 ; i <= 3 ; i++ ) {
+            blockPile[ghost[i].ceil()].style.opacity = setOpacity.high;
+        }
+        makeNewBox();
+        checkRow();
     }
+
+    
+
 
 }
 
@@ -457,7 +462,7 @@ function crashImminent(x, y) {
         if ( blockPile[ghost[i].ceil()].style.opacity == setOpacity.high ) crashed = true;
     }
 
-    console.log('done!');
+    //console.log('done!');
     return crashed;
 
 }
