@@ -30,8 +30,8 @@ var yInc = yDim / 20;           // box size in y direction. basically same as xI
 var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
-var opacitySetting = { 
-    low : 0.2 , 
+var setOpacity = { 
+    low : 0.1 , 
     high : 1 ,
     flip : function(num) {return (num == this.low) ? this.high : this.low;}
 };
@@ -47,7 +47,7 @@ var tetrisForms = [];
     tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
     tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-var tetrisChance = [0, 1, 1, 0, 0, 1, 1, 0];
+var tetrisChance = [1, 1, 1, 1, 1, 1, 1, 1];
 // ratio of how likely each tetris pattern will appear.
 // does not need to add up to 100.
 // please make sure there are exactly 8 items.
@@ -101,7 +101,7 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FD5';
         
-        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? opacitySetting.low: opacitySetting.high;
+        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? setOpacity.low: setOpacity.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
@@ -118,7 +118,7 @@ function setBoard() {
             // I need this for now to directly control what the board looks like
             // I will remove this function in a later version
 
-            this.style.opacity = opacitySetting.flip(this.style.opacity);
+            this.style.opacity = setOpacity.flip(this.style.opacity);
             checkRow();
         }   // end of onclick function def
 
@@ -136,13 +136,8 @@ function timeAction() {
     // general use clicker
     timeTick++;
 
-    // "blink" 3 times out of 40
-    // I really should put this as separate function... later.
-    let a = timeTick % 40;
-    let b = ( (a>0) && (a<3));
-    let c = toyRoom.lastChild;
-    if (boxExists)(b)? c.innerText = ">__<": c.innerText = "o__o";
-    
+    tetrisBlink();
+
     // make box fall, continuous
     if (boxFalling) boxFall();
 
@@ -150,6 +145,30 @@ function timeAction() {
     moveVertical(stepY);
 
 }   // end of timeAction()
+
+
+function tetrisBlink() {
+// making the tetris piece facial expression blink
+
+    let a = timeTick % 40;
+    //let b = [];
+    //b[0] = ( (a>0) && (a<4));
+    //b[1] = ( (a>2) && (a<6));
+    //b[2] = ( (a>4) && (a<8));
+    //b[3] = ( (a>6) && (a<10));
+    let b = [ ( (a>0) && (a<4) ),
+              ( (a>2) && (a<6) ),
+              ( (a>4) && (a<8) ),
+              ( (a>6) && (a<10) ) ];
+
+
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        (b[i])? blockPile[i+200].innerText = "-__-": blockPile[i+200].innerText = "o__o";
+    }
+    
+
+}
 
 
 
@@ -172,7 +191,7 @@ function keyDownAction(ev) {
             boxFalling = !boxFalling;
             break;
         case 'KeyG':
-            createBlockAgent();
+            //createBlockAgent();
             break;
 
         // directional movement
@@ -217,6 +236,10 @@ function createBlockAgent() {
 // But the shape is not initiated. The shape should be initiated by a different function.
 
     for ( let i = 0 ; i <=3 ; i++ ) {
+    // creates four new elements inside toyRoom.
+    // running createBlockAgent() is a waste of time. This script ignores blockPile[] with...
+    // ... index higher than 203.
+
         var p = document.createElement('div');
         
         p.style.fontSize = '8pt';
@@ -229,10 +252,11 @@ function createBlockAgent() {
         //p.style.boxShadow = '0px 0px 15px 5px white';     // shadows don't work well for multiple blocks.
         
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = '#69F';
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = '8px';
+        p.style.backgroundColor = '#8AF';
+        p.style.border = '0.5px solid rgba(30, 30, 30, 1)';
+        p.style.borderRadius = '1px 11px 11px 11px';
         p.style.visibility = 'visible';
+        p.style.boxShadow = '-2px -2px 9px 0px #05A inset';
         
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
@@ -255,11 +279,11 @@ function makeNewBox() {
     randomMatrix.randomize();
 
     let a = Math.floor( randomMatrix.matrix.length * Math.random() );
-    let b = randomMatrix.matrix[a];
+    a = randomMatrix.matrix[a];
 
     for ( let i = 0 ; i <=3 ; i++ ) {
-        blockPile[i+200].style.left = xInc * tetrisForms[b][i].x + 'px';
-        blockPile[i+200].style.top = yInc * tetrisForms[b][i].y + 'px';
+        blockPile[i+200].style.left = xInc * tetrisForms[a][i].x + 'px';
+        blockPile[i+200].style.top = yInc * tetrisForms[a][i].y + 'px';
     }
 
 }
@@ -282,14 +306,11 @@ function breakNewBox() {
 
 
 function checkRow() {
-// 
-
-    var count = 0;
 
     for (let i = 0 ; i <= 190 ; i += 10 ) {
     // 'i' refers to the first index of each row
         
-        count = 0;
+        let count = 0;
 
         for (let j = i; j <= i+9 ; j++) count += eval(blockPile[j].style.opacity);
         
@@ -300,18 +321,17 @@ function checkRow() {
             function rowSpin() {
                 r += 4;
                 for ( let j = i ; j <= i+9 ; j++ ) {
-                    //toyRoom.children[i].style.transform = "rotate(" + r + "deg)";
                     blockPile[j].style.transformOrigin = '50% 100%';
                     blockPile[j].style.transform = "rotateX(" + r + "deg)";
                 }
                 if ( r > 90 ) {
                     clearInterval(t);
                     for ( let j = i ; j <= i+9 ; j++ ) {
-                        blockPile[j].style.opacity = opacitySetting.low;
+                        blockPile[j].style.opacity = setOpacity.low;
                         blockPile[j].style.transform = "rotateX(0deg)";
                     }
                     
-                    dropMountain(i);    // i refers to the row that filled up
+                    dropMountain(i);    // 'i' refers to the row that filled up
                 }
             }   // end of rowSpin()
 
@@ -326,19 +346,15 @@ function checkRow() {
 
 function dropMountain(filledRow) {
 // from the filled row up, drop the pile of blocks
-
-    var dummy;
     
     for ( let i = filledRow ; i >= 10 ; i -= 10 ) {
         for ( let j = i ; j <= i+9 ; j++ ) {
-            dummy = blockPile[j-10].style.opacity;
-            blockPile[j].style.opacity = dummy;
+            let a = blockPile[j-10].style.opacity;
+            blockPile[j].style.opacity = a;
         }
     }
 
-    for ( let k = 0 ; k <= 9 ; k++ ) {
-        blockPile[k].style.opacity = opacitySetting.low;
-    }
+    for ( let k = 0 ; k <= 9 ; k++ ) blockPile[k].style.opacity = setOpacity.low;
 
 }   // end of dropMountain()
 
@@ -347,26 +363,25 @@ function dropMountain(filledRow) {
 
 function boxFall() {
 // makes the tetris piece (agent) drop slowly...
-    let a, b, c;
 
-    for ( let i = 200 ; i <= 203 ; i++ ) {
-        a = blockPile[i].style.top;
-        b = a.substring(0, a.length-2);
-        c = eval(b) + 1;
-        blockPile[i].style.top = c + 'px';
-        blockPile[i].innerText = '>__<';
-    }
-    
-    //if (checkGround()) toyRoom.lastChild.style.top = c + 'px';
-    
-    
+    let a = [];
 
-    /*
-    if (!checkGround()) {
-        toyRoom.lastChild.style.top = a;
-        //console.log('back off!');
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        a[i] = blockPile[i+200].style.top;
+        a[i] = eval(a[i].substring(0,a[i].length-2));    
     }
-    */
+
+    let max = Math.max(...a);
+
+    if (max <= (yDim - yInc)) {
+        for ( let i = 200 ; i <= 203 ; i++ ) {
+            let b = blockPile[i].style.top;
+            b = b.substring(0, b.length-2);
+            b = eval(b) + 1;
+            blockPile[i].style.top = b + 'px';
+            blockPile[i].innerText = '>__<';
+        }
+    }   
 
 }
 
@@ -375,19 +390,16 @@ function moveHorizontal(step) {
 // moves box left or right depending on stepX
 
     let a = [];
-    let b = [];
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
         a[i] = blockPile[i+200].style.left;
-        b[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
+        a[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
     }
 
-    let min = Math.min(...b);
-    let max = Math.max(...b);
+    let min = Math.min(...a);
+    let max = Math.max(...a);
 
-    for ( let i = 0 ; i <= 3 ; i++ ) {
-        if ( (min>=0) && (max<xDim) ) blockPile[i+200].style.left = b[i] + 'px';
-    }
+    for ( let i=0 ; i<=3 ; i++ ) if ( (min>=0)&&(max<xDim) ) blockPile[i+200].style.left = a[i] + 'px';
 
 }   // end of moveHorizontal()
 
@@ -395,33 +407,20 @@ function moveHorizontal(step) {
 function moveVertical(step) {
 
     let a = [];
-    let b = [];
 
     for (let i = 0 ; i <= 3 ; i++ ) {
         a[i] = blockPile[i+200].style.top;
-        b[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+        a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
     }
 
-    let min = Math.min(...b);
-    let max = Math.max(...b) + yInc;
-    
+    let min = Math.min(...a);
+    let max = Math.max(...a) + yInc;
+
     for ( let i = 0 ; i <= 3 ; i++ ) {
-        if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = b[i] + 'px';
+        if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = a[i] + 'px';
+        else if ( max > yDim ) blockPile[i+200].style.top = a[i] + yDim - max + 'px';
+        else blockPile[i+200].style.top = a[i] - min + 'px';
     }
-
-        
-
-    /*
-        if ( b>=0 ) {
-            toyRoom.lastChild.style.top = b + 'px';
-            if (!checkGround()) {
-                toyRoom.lastChild.style.top = a;
-                console.log('back off!');
-            }
-        } else {
-            toyRoom.lastChild.style.top = '0px';
-        }
-    */
 
 }
 
@@ -431,6 +430,7 @@ function checkGround() {
 
     if (boxExists) {
 
+        /*
         let a = toyRoom.lastChild.style.left;
         let x = (a.substring(0,a.length-2) / xInc);
         //console.log(x);
@@ -442,8 +442,9 @@ function checkGround() {
         let c = 10 * y + x;
         //console.log(c);
 
-        return (toyRoom.children[c].style.opacity==1) ? false : true;
-        
+        return (toyRoom.children[c].style.opacity==setOpacity.high) ? false : true;
+        */
+
     }
 
 }
@@ -467,6 +468,8 @@ setBoard();
 checkRow();         // must do setBoard() first
 
 createBlockAgent();     // must do setBoard() first
+
+makeNewBox();
 
 
 // runs continuously
