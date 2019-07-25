@@ -81,9 +81,10 @@ var randomMatrix = {
 var currentTetris = { 
     form : 0 , 
     pose : 0 ,
-    flip : function() {
-        this.pose++;
+    flip : function(num) {
+        this.pose = this.pose + num;
         if (this.pose == transformMatrix[this.form].length) this.pose = 0;
+        if (this.pose < 0 ) this.pose = transformMatrix[this.form].length - 1;
     }
 };
 // global variable that contains key for the shape and orientation the tetris piece.
@@ -460,7 +461,7 @@ function resetTetrisShape() {
         blockPile[i+200].style.top = tetrisForms[currentTetris.form][i].y + 'px';
     }
 
-
+    console.log('form: ' + currentTetris.form + ' pose: ' + currentTetris.pose);
 
 }
 
@@ -643,7 +644,18 @@ function moveVertical(step) {
 function moveRotate(direction) {
 // rotates tetris cluster clockwise or counterclockwise
     
-    let a = (direction == 'left')? -1 : 1;
+    let a = (direction == 'left')? 1 : -1;
+    let b = currentTetris.form;
+    let c = currentTetris.pose;
+    if (direction == 'right' ) {
+        c = ( c==0 )? transformMatrix[b].length - 1 : c - 1;
+    }
+    
+
+    
+    // must flip to the previous element
+    // must multiply scalar of -1 to the array
+
 
     //console.log(direction);     // 'left' or 'right'. really should be clockwise or counter, but oh well...
     //console.log(a);
@@ -654,14 +666,15 @@ function moveRotate(direction) {
     //console.log('pose is ' + currentTetris.pose);
 
     for ( let i = 0 ; i <= 3 ; i++ ){
-        let b = pxOff(blockPile[i+200].style.left) + transformMatrix[currentTetris.form][currentTetris.pose][i].x;
-        blockPile[i+200].style.left = pxOn(b);
-        b = pxOff(blockPile[i+200].style.top) + transformMatrix[currentTetris.form][currentTetris.pose][i].y;
-        blockPile[i+200].style.top = pxOn(b);
+        let z = pxOff(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
+        blockPile[i+200].style.left = pxOn(z);
+        z = pxOff(blockPile[i+200].style.top) + a * transformMatrix[b][c][i].y;
+        blockPile[i+200].style.top = pxOn(z);
     }
 
-    currentTetris.flip();
+    currentTetris.flip(a);
 
+    console.log('form: ' + currentTetris.form + ' pose: ' + currentTetris.pose);
 
 }   // end of moveRotate()
 
