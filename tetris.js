@@ -15,6 +15,22 @@
 // DOM elements
 var toyRoom = document.getElementById('toyRoom');   
 var blockPile = toyRoom.children;       // this is shallow copying, i think
+var moveButtons = document.getElementById('controller');
+
+
+// mouse click to move tetris possible!!!
+moveButtons.children[0].onclick = function() {
+    moveHorizontal(-xInc);
+}
+moveButtons.children[1].onclick = function() {
+    moveHorizontal(xInc);
+}
+moveButtons.children[2].onclick = function() {
+    integrateBlocks();
+}
+
+
+
 
 // booleans
 //var boxExists = false;          // allow only one box to exist
@@ -105,7 +121,7 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#9D5';
         
-        p.style.opacity = (0==(Math.floor(0.03*boardCounter*Math.random())))? setOpacity.low: setOpacity.high;
+        p.style.opacity = (0==(Math.floor(0.012*boardCounter*Math.random())))? setOpacity.low: setOpacity.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '2px';       // unnecessary, but cooler?
