@@ -54,14 +54,16 @@ var tetrisForms = [];
     tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
     tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
     tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
-    tetrisForms[5] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:5, y:2} ];    // 'T' tilted right
-    tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
-    tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
+    tetrisForms[5] = [ {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:4, y:0} ];    // upside down 'T'
+    //tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
+    //tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
+    tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-var tetrisChance = [1, 1, 0, 0, 0, 0, 0, 0];
+
+var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
 // ratio of how likely each tetris pattern will appear.
 // does not need to add up to 100%.
-// please make sure there are exactly 8 items. The first element refers to appearance rate of the long bar.
+// please make sure there are exactly 7 items. The first element refers to appearance rate of the long bar.
 // the second element refers to relative appearance ratio of the inverse 'L' shape. And so on...
 // I might want to change the appearance rates later.
 
@@ -95,7 +97,38 @@ var transformMatrix = [];
 transformMatrix[0] = [];
 transformMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
 transformMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
-//transformMatrix[1][0] = [ { x:}]
+transformMatrix[1] = [];
+transformMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
+transformMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
+transformMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
+transformMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
+transformMatrix[2] = [];
+transformMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
+transformMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
+transformMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
+transformMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
+transformMatrix[3] = [];
+transformMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+transformMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+transformMatrix[4] = [];
+transformMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+transformMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+transformMatrix[5] = [];
+transformMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
+transformMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
+transformMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
+transformMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
+transformMatrix[6] = [];
+transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
+// this is the transformation matrix. For the given form and pose, this is the tranformation...
+// ... that must take place to get to the next pose in line.
+// it assumes that the rotation is happening in the counterclockwise direction.
+// after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
+
+
+
+
+
 
 
 
@@ -203,6 +236,20 @@ function setBoard() {
         }   // end of onclick function def
 
     }   // end of for loop, iterated over only the first 200 blocks
+
+
+
+
+    // multiplies scalar xInc and yInc to the tetrisForms[]
+    for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
+        for ( let j = 0 ; j < tetrisForms[i].length ; j++ ) {
+            tetrisForms[i][j].x *= xInc;
+            tetrisForms[i][j].y *= yInc;
+        }
+    }
+
+
+
 
     // multiplies scalar xInc and yInc to the transformMatrix[]
     for ( let i = 0 ; i < transformMatrix.length ; i++ ) {
@@ -409,8 +456,8 @@ function resetTetrisShape() {
     currentTetris.pose = 0;
 
     for ( let i = 0 ; i <=3 ; i++ ) {
-        blockPile[i+200].style.left = xInc * tetrisForms[currentTetris.form][i].x + 'px';
-        blockPile[i+200].style.top = yInc * tetrisForms[currentTetris.form][i].y + 'px';
+        blockPile[i+200].style.left = tetrisForms[currentTetris.form][i].x + 'px';
+        blockPile[i+200].style.top = tetrisForms[currentTetris.form][i].y + 'px';
     }
 
 
@@ -598,13 +645,13 @@ function moveRotate(direction) {
     
     let a = (direction == 'left')? -1 : 1;
 
-    console.log(direction);     // 'left' or 'right'. really should be clockwise or counter, but oh well...
-    console.log(a);
+    //console.log(direction);     // 'left' or 'right'. really should be clockwise or counter, but oh well...
+    //console.log(a);
 
     // Let's assume for simplicity that we only have the long bar shape!!!
 
-    console.log('form is ' + currentTetris.form);
-    console.log('pose is ' + currentTetris.pose);
+    //console.log('form is ' + currentTetris.form);
+    //console.log('pose is ' + currentTetris.pose);
 
     for ( let i = 0 ; i <= 3 ; i++ ){
         let b = pxOff(blockPile[i+200].style.left) + transformMatrix[currentTetris.form][currentTetris.pose][i].x;
@@ -614,8 +661,6 @@ function moveRotate(direction) {
     }
 
     currentTetris.flip();
-
-
 
 
 }   // end of moveRotate()
