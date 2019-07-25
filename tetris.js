@@ -58,7 +58,7 @@ var tetrisForms = [];
     tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
     tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-var tetrisChance = [1, 0, 0, 0, 0, 0, 0, 0];
+var tetrisChance = [1, 1, 0, 0, 0, 0, 0, 0];
 // ratio of how likely each tetris pattern will appear.
 // does not need to add up to 100%.
 // please make sure there are exactly 8 items. The first element refers to appearance rate of the long bar.
@@ -76,7 +76,14 @@ var randomMatrix = {
     }
 }   // end of randomMatrix def
 
-var currentTetris = { form : 0 , pose : 0 };
+var currentTetris = { 
+    form : 0 , 
+    pose : 0 ,
+    flip : function() {
+        this.pose++;
+        if (this.pose == transformMatrix[this.form].length) this.pose = 0;
+    }
+};
 // global variable that contains key for the shape and orientation the tetris piece.
 // 'form' is the shape. Is the tetris piece a long bar or a 'T' shape?
 // there are 0 to 7 forms.
@@ -86,8 +93,13 @@ var currentTetris = { form : 0 , pose : 0 };
 
 var transformMatrix = [];
 transformMatrix[0] = [];
-transformMatrix[0][0] = [
-    {x : -xInc , y : yInc }, {x : 0 , y : 0 }, { x : xInc , y : -yInc }, { x : 2*xInc , y : -2*yInc } ];
+transformMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
+transformMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
+//transformMatrix[1][0] = [ { x:}]
+
+
+
+
 
 
 
@@ -191,6 +203,17 @@ function setBoard() {
         }   // end of onclick function def
 
     }   // end of for loop, iterated over only the first 200 blocks
+
+    // multiplies scalar xInc and yInc to the transformMatrix[]
+    for ( let i = 0 ; i < transformMatrix.length ; i++ ) {
+        for ( let j = 0 ; j < transformMatrix[i].length ; j++ ) {
+            for ( let k = 0 ; k < transformMatrix[i][j].length ; k++ ) {
+                transformMatrix[i][j][k].x *= xInc;
+                transformMatrix[i][j][k].y *= yInc;
+            }
+        }
+    }
+
 
     // mouse click to move tetris possible!!!
     moveButtons.children[0].onclick = function() {
@@ -580,9 +603,18 @@ function moveRotate(direction) {
 
     // Let's assume for simplicity that we only have the long bar shape!!!
 
-    for ( let i = 0 ; i <= 3 ; i++ ){
+    console.log('form is ' + currentTetris.form);
+    console.log('pose is ' + currentTetris.pose);
 
+    for ( let i = 0 ; i <= 3 ; i++ ){
+        let b = pxOff(blockPile[i+200].style.left) + transformMatrix[currentTetris.form][currentTetris.pose][i].x;
+        blockPile[i+200].style.left = pxOn(b);
+        b = pxOff(blockPile[i+200].style.top) + transformMatrix[currentTetris.form][currentTetris.pose][i].y;
+        blockPile[i+200].style.top = pxOn(b);
     }
+
+    currentTetris.flip();
+
 
 
 
