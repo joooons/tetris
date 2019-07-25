@@ -37,6 +37,7 @@
             width: 50px;
             height: 50px;
             display: inline-block;
+            user-select: none;
         }
 
 
@@ -63,8 +64,8 @@
 <body>
 
     <header>
-        <h1>C: copy block? / N: reset to top / F: toggle fall / I: integrate<br>
-        Arrows: to move / click: flip block</h1>
+        <h1>N: reset to top / F: toggle fall / I: integrate<br>
+        Arrows: to move / A&S: rotate / click: flip block</h1>
     </header>
 
 
@@ -72,15 +73,9 @@
     </nav>
 
     <div id='controller'>
-        <div class='button' id='leftButton'>
-            ←
-        </div>
-        <div class='button' id='rightButton'>
-            →
-        </div>
-        <div class='button' id='integrate'>
-            !
-        </div>
+        <div class='button' id='leftButton'>←</div>
+        <div class='button' id='rightButton'>→</div>
+        <div class='button' id='integrate'>!</div>
     </div>
 
     <br>
