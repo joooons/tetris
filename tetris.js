@@ -14,12 +14,12 @@
 
 // DOM elements
 var toyRoom = document.getElementById('toyRoom');   
-var blockPile = toyRoom.children;       // this is shallow copying, i think
+var blockPile = toyRoom.children;
 var moveButtons = document.getElementById('controller');
 
 
 // booleans
-var boxFalling = true;         // toggle to let box fall
+var boxFalling = true;
 
 
 // dimension variables
@@ -30,15 +30,15 @@ var yInc = yDim / 20;           // box size in y direction. basically same as xI
 
 
 // color settings
-var blockBackgroundColor = '#5AF';
+var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
 var blockBoxShadow = '0px 0px 5px 0px inset blue';
 var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
 var tetrisBoxShadow = '-2px -2px 9px 0px #05A inset';
 
 
 // other settings
-var timeInc = 100;              // used in 'var timeFlow'
-var timeTick = 0;               // timeTick++ in timeAction()
+var timeInc = 100;              // time interval used in 'var timeFlow'
+var timeTick = 0;               // setInterval counter in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 var setOpacity = { 
     low : 0.2,                  // low setting of opacity
@@ -70,7 +70,12 @@ var randomMatrix = {
 // ... the method for reconfiguring the probability when the tetrisChance array is modified.
     matrix : [],
     randomize : function() {
-        for ( let n=0 ; n<tetrisChance.reduce(function(sum,num){return sum + num;} ) ; n++ ) this.matrix[n] = 0;
+        //for ( let n=0 ; n<tetrisChance.reduce(function(sum,num){return sum + num;} ) ; n++ ) this.matrix[n] = 0;
+        this.matrix = this.matrix.slice(0,tetrisChance.reduce(function(sum,num){return sum + num;} ));
+
+        //console.log(tetrisChance.reduce(function(sum,num){return sum + num;} ));
+        //console.log(this.matrix);
+
         let k = 0;
         for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i;
     }
@@ -176,30 +181,21 @@ var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
+    let rarity = 0.01;
+
     for ( let i = 0 ; i < 200 ; i++ ) {
 
         var p = document.createElement('div');
 
-        /*
-        p.style.color = 'black';
-        p.style.fontFamily = 'helvetica, san-serif';
-        p.style.fontSize = '7pt';
-        p.style.lineHeight = 3;
-        p.style.textAlign = 'center';
-        p.innerText = i;
-        */
-
         p.style.cursor = 'pointer';
 
         p.style.boxSizing = 'border-box';
-        //p.style.backgroundColor = '#9D5';
         p.style.backgroundColor = blockBackgroundColor;
         
-        p.style.opacity = (0==(Math.floor(0.012*i*Math.random())))? setOpacity.low: setOpacity.high;
+        p.style.opacity = (0==(Math.floor(rarity*i*Math.random())))? setOpacity.low: setOpacity.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '12px';       // unnecessary, but cooler?
-        //p.style.boxShadow = '0px 0px 5px 0px inset blue';
         p.style.boxShadow = blockBoxShadow;
 
         p.style.width = xInc + 'px';
@@ -210,34 +206,13 @@ function setBoard() {
         p.style.transformOrigin = '50% 100%';
 
         toyRoom.appendChild(p);
-        //checkRow();
 
-        // the ONCLICK function
+
         toyRoom.lastChild.onclick = function() {
             // I need this for now to directly control what the board looks like
             // I will remove this function in a later version
 
-            let a = setOpacity.flip(this.style.opacity);
-            var b = 0;
-            this.style.opacity = a;
-
-            /*
-            let t = setInterval(blockRotate, 10);
-            function blockRotate() {
-                
-                this.style.transform = "rotateY(" + b + "deg)";
-                b += 5;
-                if (b > 90) {
-                    if (!(this.style.opacity == a)) {
-                        this.style.opacity = a;
-                    }
-                }
-                if (b > 180) {
-                    clearInterval(t);
-                }
-            }
-            */
-            
+            this.style.opacity = setOpacity.flip(this.style.opacity);
             checkRow();
 
         }   // end of onclick function def
@@ -254,9 +229,6 @@ function setBoard() {
             tetrisForms[i][j].y *= yInc;
         }
     }
-    // there's gotta be an easier way to do this...
-
-
 
     // multiplies scalar xInc and yInc to the transformMatrix[]
     for ( let i = 0 ; i < transformMatrix.length ; i++ ) {
@@ -688,7 +660,7 @@ function moveRotate(direction) {
     //console.log('pose is ' + currentTetris.pose);
 
     for ( let i = 0 ; i <= 3 ; i++ ){
-        let z = px.ff(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
+        let z = px.off(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
         blockPile[i+200].style.left = px.on(z);
         z = px.off(blockPile[i+200].style.top) + a * transformMatrix[b][c][i].y;
         blockPile[i+200].style.top = px.on(z);
