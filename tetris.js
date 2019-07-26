@@ -34,100 +34,101 @@ var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
 var blockBoxShadow = '0px 0px 5px 0px inset blue';
 var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
 var tetrisBoxShadow = '-2px -2px 9px 0px #05A inset';
-
-
-// other settings
-var timeInc = 100;              // time interval used in 'var timeFlow'
-var timeTick = 0;               // setInterval counter in timeAction()
-var stepY = 0;                  // negative to move up, positive to move down
 var setOpacity = { 
     low : 0.2,                  // low setting of opacity
     high : 1,                   // high setting of opacity
-    flip : function(num) {return (num == this.low) ? this.high : this.low;}
-};
+    flip : function(num) {return (num == this.low) ? this.high : this.low;} };
+
+// other settings
+var timeInc = 10;              // time interval used in 'var timeFlow'
+var timeTick = 0;               // setInterval counter in timeAction()
+//var stepY = 0;                  // negative to move up, positive to move down
+var yMove = {
+    setting : { fallV : 5, downV : 1 },
+    actual : { fallV : 0, downV : 0 },
+    flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
+    press : {
+        down : function() { yMove.actual.downV = yMove.setting.downV; },
+        up : function() { yMove.actual.downV = 0 } },
+    check : {
+        fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
+        downV : function() { return (yMove.actual.downV==0) ? false : true; } },
+    demand : function() {
+        if (yMove.check.downV()) { 
+            return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
+        } else {
+            return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
+        } } 
+    };
+    
+    
+
 
 
 // complex object definitions
 var tetrisForms = [];
     tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];    // long bar
-    tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L'
+    tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L' shape
     tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
-    tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
+    tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // inverse 'Z' shape
     tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
-    tetrisForms[5] = [ {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:4, y:0} ];    // upside down 'T'
+    tetrisForms[5] = [ {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:4, y:0} ];    // upside down 'T' shape
     tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
-
 var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
-// ratio of how likely each tetris pattern will appear.
-// does not need to add up to 100%.
-// please make sure there are exactly 7 items. The first element refers to appearance rate of the long bar.
-// the second element refers to relative appearance ratio of the inverse 'L' shape. And so on...
-// I might want to change the appearance rates later.
+    // ratio of how likely each tetrisForm[] is to appear.
 
 var randomMatrix = {
-// object that contains the array of probability of each shape and...
-// ... the method for reconfiguring the probability when the tetrisChance array is modified.
+    // object that contains the array of probability of each shape and...
+    // ... the method for reconfiguring the probability when the tetrisChance array is modified.
     matrix : [],
     randomize : function() {
-        //for ( let n=0 ; n<tetrisChance.reduce(function(sum,num){return sum + num;} ) ; n++ ) this.matrix[n] = 0;
         this.matrix = this.matrix.slice(0,tetrisChance.reduce(function(sum,num){return sum + num;} ));
-
-        //console.log(tetrisChance.reduce(function(sum,num){return sum + num;} ));
-        //console.log(this.matrix);
-
         let k = 0;
         for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i;
-    }
-}   // end of randomMatrix def
+    } };   // end of randomMatrix def
 
 var currentTetris = { 
-    form : 0 , 
-    pose : 0 ,
+    form : 0,           // there are 7 forms total.
+    pose : 0,           // number of poses for each form varies. At most four.
     flip : function(num) {
         this.pose = this.pose + num;
         if (this.pose == transformMatrix[this.form].length) this.pose = 0;
         if (this.pose < 0 ) this.pose = transformMatrix[this.form].length - 1;
-    }
-};
-// global variable that contains key for the shape and orientation the tetris piece.
-// 'form' is the shape. Is the tetris piece a long bar or a 'T' shape?
-// there are 0 to 7 forms.
-// 'pose' is the orientation. Is the long bar piece upright or flat?
-// the number of poses vary among shapes. the 'T' shape has 4 poses. the square has only 1 pose.
-// this will change how the moveRotate() function behaves.
+    } };
 
 var transformMatrix = [];
-transformMatrix[0] = [];
-transformMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
-transformMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
-transformMatrix[1] = [];
-transformMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
-transformMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
-transformMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
-transformMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
-transformMatrix[2] = [];
-transformMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
-transformMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
-transformMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
-transformMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
-transformMatrix[3] = [];
-transformMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-transformMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-transformMatrix[4] = [];
-transformMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-transformMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-transformMatrix[5] = [];
-transformMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
-transformMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
-transformMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
-transformMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
-transformMatrix[6] = [];
-transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
-// this is the transformation matrix. For the given form and pose, this is the tranformation...
-// ... that must take place to get to the next pose in line.
-// it assumes that the rotation is happening in the counterclockwise direction.
-// after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
+    // this is the transformation matrix. For the given form and pose, this is the tranformation...
+    // ... that must take place to get to the next pose in line.
+    // it assumes that the rotation is happening in the counterclockwise direction.
+    // after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
+    transformMatrix[0] = [];
+        transformMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
+        transformMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
+    transformMatrix[1] = [];
+        transformMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
+        transformMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
+        transformMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
+        transformMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
+    transformMatrix[2] = [];
+        transformMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
+        transformMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
+        transformMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
+        transformMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
+    transformMatrix[3] = [];
+        transformMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+        transformMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+    transformMatrix[4] = [];
+        transformMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+        transformMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+    transformMatrix[5] = [];
+        transformMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
+        transformMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
+        transformMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
+        transformMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
+    transformMatrix[6] = [];
+        transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
+
 
 
 
@@ -135,7 +136,7 @@ transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }
 var px = {
 // px.off removes the 'px'.  px.on puts the 'px' back on, plus it adds one more thing.
     off : function(text) { return eval( text.substring(0, text.length - 2) ) },
-    on : function(number) { return eval(number) + 'px'}
+    on : function(number) { return eval(number) + 'px'}             // maybe px.on() useless...
 }
 
 
@@ -152,14 +153,10 @@ function ghostType(x, y) {
     this.x = x,
     this.y = y,
     this.fill = function(left, top, xStep, yStep) {
-        //this.x = eval(left.substring(0,left.length-2)) + xStep;
         this.x = px.off(left) + xStep;
-        //this.y = eval(top.substring(0,top.length-2)) + yStep;
-        this.y = px.off(top) + yStep;
-    },
+        this.y = px.off(top) + yStep; },
     this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },
-    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); }
-}
+    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };
 
 var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
 
@@ -181,9 +178,10 @@ var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
-    let rarity = 0.01;
+    let rarity = 0.01;                   // used for randomly placing blocks on board. delete later.
 
     for ( let i = 0 ; i < 200 ; i++ ) {
+        // creating four elements to makeup the tetris piece
 
         var p = document.createElement('div');
 
@@ -220,8 +218,6 @@ function setBoard() {
     }   // end of for loop, iterated over only the first 200 blocks
 
 
-
-
     // multiplies scalar xInc and yInc to the tetrisForms[]
     for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
         for ( let j = 0 ; j < tetrisForms[i].length ; j++ ) {
@@ -240,15 +236,33 @@ function setBoard() {
         }
     }
 
+    // set up the movement speed of the falling tetris piece
+
+
 
     // mouse click to move tetris possible!!!
     moveButtons.children[0].onclick = function() {
         moveHorizontal(-xInc);
     }
+
     moveButtons.children[1].onclick = function() {
+        //stepY = (stepY <= 0) ? stepY = yInc/8 : 0;
+        //moveVertical(stepY);
+    }
+
+    moveButtons.children[2].onclick = function() {
         moveHorizontal(xInc);
     }
-    moveButtons.children[2].onclick = function() {
+
+    moveButtons.children[3].onclick = function() {
+        moveRotate('left');
+    }
+
+    moveButtons.children[4].onclick = function() {
+        resetTetrisShape();
+    }
+
+    moveButtons.children[5].onclick = function() {
         integrateBlocks();
     }
 
@@ -260,19 +274,18 @@ function setBoard() {
 
 
 
-// this function runs in --> var timeFlow = setInterval(timeAction,timeInc);
+
 function timeAction() {
-    
-    // general use clicker
-    timeTick++;
+    // this function runs in --> var timeFlow = setInterval(timeAction,timeInc);    
 
-    tetrisBlink();
+    timeTick++;                     // general use clicker
+    //console.log('timeTick:' + timeTick + ' demand:' + yMove.demand() + ' ' + yMove.actualV );
 
-    // make box fall, continuous
-    if (boxFalling) boxFall();
+    tetrisBlink();                  // animates the facial expression. pretty useless.
 
-    // UP and DOWN motion, continuous
-    moveVertical(stepY);
+    boxFall();                      // make tetris fall continually
+
+    //moveVertical(stepY);            // controls vertical motion
 
 }   // end of timeAction()
 
@@ -284,11 +297,11 @@ function timeAction() {
 function tetrisBlink() {
 // making the tetris piece facial expression blink
 
-    let a = timeTick % 30;
-    let b = [ ( (a>0) && (a<4) ),
-              ( (a>2) && (a<6) ),
-              ( (a>4) && (a<8) ),
-              ( (a>6) && (a<10) ) ];
+    let a = timeTick % 300;
+    let b = [ ( (a>0) && (a<40) ),
+              ( (a>20) && (a<60) ),
+              ( (a>40) && (a<80) ),
+              ( (a>60) && (a<100) ) ];
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
         (b[i])? blockPile[i+200].innerText = "-__-": blockPile[i+200].innerText = "o__o";
@@ -321,7 +334,10 @@ function keyDownAction(ev) {
             integrateBlocks();
             break;
         case 'KeyF':
-            boxFalling = !boxFalling;
+            yMove.flip.fallV();
+            console.log('yMove.actual.fallV = ' + yMove.actual.fallV);
+
+
             break;
         case 'KeyG':
             //createBlockAgent();
@@ -335,10 +351,14 @@ function keyDownAction(ev) {
             moveHorizontal(xInc);
             break;
         case 'ArrowUp':
-            stepY = -yInc/4;        // stepY used in timeAction()
+            
+
             break;
         case 'ArrowDown':
-            stepY = yInc/4;         // stepY used in timeAction()
+            //stepY = yInc/4;         // stepY used in timeAction()
+            yMove.press.down();
+
+
             break;
         default:
             break;
@@ -357,10 +377,11 @@ function keyUpAction(ev) {
     
     switch (ev.code) {
         case 'ArrowUp':
-            stepY = 0;         // stepY used in timeAction()
+            //stepY = 0;         // stepY used in timeAction()
             break;
         case 'ArrowDown':
-            stepY = 0;         // stepY used in timeAction()
+            //stepY = 0;         // stepY used in timeAction()
+            yMove.press.up();
             break;
         default:
             break;
@@ -523,7 +544,21 @@ function dropMountain(filledRow) {
 function boxFall() {
 // makes the tetris piece (agent) drop slowly...
 
-    let a = [];
+    a = [];
+
+    //console.log(yMove.demand());
+
+    if ( yMove.demand() ) {
+        for ( let i = 0 ; i <= 3 ; i++ ) {
+            a[i] = px.off(blockPile[i+200].style.top) + 1 + 'px';
+            
+            blockPile[i+200].style.top = a[i];
+        }
+        //console.log('top is ' + a[1]);
+    }
+    
+
+    /*
 
     if (!crashImminent(0,1)) {
         for ( let i = 0 ; i <= 3 ; i++ ) {
@@ -549,10 +584,10 @@ function boxFall() {
             }
         }   
     }   // end of if
+    */
+
 
 }   // end of boxFall()
-
-
 
 
 
@@ -644,20 +679,6 @@ function moveRotate(direction) {
     if (direction == 'right' ) {
         c = ( c==0 )? transformMatrix[b].length - 1 : c - 1;
     }
-    
-
-    
-    // must flip to the previous element
-    // must multiply scalar of -1 to the array
-
-
-    //console.log(direction);     // 'left' or 'right'. really should be clockwise or counter, but oh well...
-    //console.log(a);
-
-    // Let's assume for simplicity that we only have the long bar shape!!!
-
-    //console.log('form is ' + currentTetris.form);
-    //console.log('pose is ' + currentTetris.pose);
 
     for ( let i = 0 ; i <= 3 ; i++ ){
         let z = px.off(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
@@ -733,13 +754,11 @@ function crashImminent(x, y) {
 // ----------------- MAIN BODY ----------------------------------------- //
 
 
+// before the game starts...
 setBoard();
-
-checkRow();         // must do setBoard() first
-
-createBlockAgent();     // must do setBoard() first
-
-resetTetrisShape();
+checkRow();             // after random blocks are generated, check for row completion
+createBlockAgent();     // create the four elements for the tetris block
+resetTetrisShape();     // put the tetris piece on the board
 
 
 // runs continuously
