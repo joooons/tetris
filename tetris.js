@@ -41,8 +41,8 @@ var timeInc = 100;              // used in 'var timeFlow'
 var timeTick = 0;               // timeTick++ in timeAction()
 var stepY = 0;                  // negative to move up, positive to move down
 var setOpacity = { 
-    low : 0.2 , 
-    high : 1 ,
+    low : 0.2,                  // low setting of opacity
+    high : 1,                   // high setting of opacity
     flip : function(num) {return (num == this.low) ? this.high : this.low;}
 };
 
@@ -55,8 +55,6 @@ var tetrisForms = [];
     tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // 'S' shape
     tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
     tetrisForms[5] = [ {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:4, y:0} ];    // upside down 'T'
-    //tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:4, y:2} ];    // 'T' tilted left
-    //tetrisForms[7] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
     tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
 
 
@@ -129,6 +127,12 @@ transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }
 
 
 
+var px = {
+// px.off removes the 'px'.  px.on puts the 'px' back on, plus it adds one more thing.
+    off : function(text) { return eval( text.substring(0, text.length - 2) ) },
+    on : function(number) { return eval(number) + 'px'}
+}
+
 
 
 
@@ -143,9 +147,11 @@ function ghostType(x, y) {
     this.x = x,
     this.y = y,
     this.fill = function(left, top, xStep, yStep) {
-        this.x = eval(left.substring(0,left.length-2)) + xStep;
-        this.y = eval(top.substring(0,top.length-2)) + yStep;
-    }
+        //this.x = eval(left.substring(0,left.length-2)) + xStep;
+        this.x = px.off(left) + xStep;
+        //this.y = eval(top.substring(0,top.length-2)) + yStep;
+        this.y = px.off(top) + yStep;
+    },
     this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },
     this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); }
 }
@@ -248,7 +254,7 @@ function setBoard() {
             tetrisForms[i][j].y *= yInc;
         }
     }
-
+    // there's gotta be an easier way to do this...
 
 
 
@@ -549,18 +555,24 @@ function boxFall() {
 
     if (!crashImminent(0,1)) {
         for ( let i = 0 ; i <= 3 ; i++ ) {
-            a[i] = blockPile[i+200].style.top;
-            a[i] = eval(a[i].substring(0,a[i].length-2));    
+            //a[i] = blockPile[i+200].style.top;
+            //a[i] = eval(a[i].substring(0,a[i].length-2)); 
+            a[i] = px.off(blockPile[i+200].style.top);
         }
 
         let max = Math.max(...a);
 
         if (max <= (yDim - yInc)) {
             for ( let i = 200 ; i <= 203 ; i++ ) {
-                let b = blockPile[i].style.top;
-                b = b.substring(0, b.length-2);
-                b = eval(b) + 1;
-                blockPile[i].style.top = b + 'px';
+                //let b = blockPile[i].style.top;
+                //b = b.substring(0, b.length-2);
+
+                let b = px.off(blockPile[i].style.top);
+
+                //b = eval(b) + 1;
+                //blockPile[i].style.top = b + 'px';
+                
+                blockPile[i].style.top = px.on(b + 1);
                 blockPile[i].innerText = '>__<';
             }
         }   
@@ -584,8 +596,15 @@ function moveHorizontal(step) {
     if (!crashImminent(step,0)) {
 
         for ( let i = 0 ; i <= 3 ; i++ ) {
-            a[i] = blockPile[i+200].style.left;
-            a[i] = eval(a[i].substring(0,a[i].length-2)) + step;    
+            //a[i] = blockPile[i+200].style.left;
+            //a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+
+            
+
+            a[i] = px.off(blockPile[i+200].style.left) + step;
+            //console.log( i + ' is ' + a[i]);
+            
+
         }
 
         let min = Math.min(...a);
@@ -614,8 +633,11 @@ function moveVertical(step) {
     if (!crashImminent(0,step)) {
         for (let i = 0 ; i <= 3 ; i++ ) {
         // puts into a[] the proposed y coorinates for all four tetris pieces
-            a[i] = blockPile[i+200].style.top;
-            a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+            //a[i] = blockPile[i+200].style.top;
+            //a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
+
+            a[i] = px.off(blockPile[i+200].style.top) + step;
+
         }
 
         let min = Math.min(...a);
@@ -666,10 +688,10 @@ function moveRotate(direction) {
     //console.log('pose is ' + currentTetris.pose);
 
     for ( let i = 0 ; i <= 3 ; i++ ){
-        let z = pxOff(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
-        blockPile[i+200].style.left = pxOn(z);
-        z = pxOff(blockPile[i+200].style.top) + a * transformMatrix[b][c][i].y;
-        blockPile[i+200].style.top = pxOn(z);
+        let z = px.ff(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
+        blockPile[i+200].style.left = px.on(z);
+        z = px.off(blockPile[i+200].style.top) + a * transformMatrix[b][c][i].y;
+        blockPile[i+200].style.top = px.on(z);
     }
 
     currentTetris.flip(a);
@@ -729,14 +751,6 @@ function crashImminent(x, y) {
 
 
 
-
-function pxOff(text) {
-    return eval( text.substring(0, text.length - 2) );
-}
-
-function pxOn(number) {
-    return eval(number) + 'px';
-}
 
 
 
