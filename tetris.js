@@ -18,10 +18,6 @@ var blockPile = toyRoom.children;
 var moveButtons = document.getElementById('controller');
 
 
-// booleans
-var boxFalling = true;
-
-
 // dimension variables
 var xDim = toyRoom.offsetWidth;
 var yDim = toyRoom.offsetHeight;
@@ -40,11 +36,11 @@ var setOpacity = {
     flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
 // other settings
-var timeInc = 10;              // time interval used in 'var timeFlow'
+var timeInc = 5;              // time interval used in 'var timeFlow'
 var timeTick = 0;               // setInterval counter in timeAction()
 //var stepY = 0;                  // negative to move up, positive to move down
 var yMove = {
-    setting : { fallV : 5, downV : 1 },         // set these manually to adjust speed
+    setting : { fallV : 10, downV : 1 },         // set these manually to adjust speed
     actual : { fallV : 0, downV : 0 },
     flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
     press : {
@@ -54,6 +50,7 @@ var yMove = {
         fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
         downV : function() { return (yMove.actual.downV==0) ? false : true; } },
     demand : function() {
+        // if true, there is demand to move 1 pixel down on this time iteration.
         if (yMove.check.downV()) { 
             return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
         } else {
@@ -271,16 +268,15 @@ function setBoard() {
 
     // mouse click to move tetris possible!!!
     moveButtons.children[0].onclick = function() {
-        moveHorizontal(-xInc);
+        moveHorizontal(translateMatrix.left);
     }
 
     moveButtons.children[1].onclick = function() {
-        //stepY = (stepY <= 0) ? stepY = yInc/8 : 0;
-        //moveVertical(stepY);
+        ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down() ;
     }
 
     moveButtons.children[2].onclick = function() {
-        moveHorizontal(xInc);
+        moveHorizontal(translateMatrix.right);
     }
 
     moveButtons.children[3].onclick = function() {
@@ -308,13 +304,8 @@ function timeAction() {
     // this function runs in --> var timeFlow = setInterval(timeAction,timeInc);    
 
     timeTick++;                     // general use clicker
-    //console.log('timeTick:' + timeTick + ' demand:' + yMove.demand() + ' ' + yMove.actualV );
-
     tetrisBlink();                  // animates the facial expression. pretty useless.
-
     boxFall();                      // make tetris fall continually
-
-    //moveVertical(stepY);            // controls vertical motion
 
 }   // end of timeAction()
 
@@ -586,7 +577,13 @@ function boxFall() {
 
     if ( yMove.demand() ) {
         blockToGhost(translateMatrix.down);
-        if (crashFree()) ghostToBlock();
+        if (crashFree()) {
+            ghostToBlock();
+            for ( let i = 0 ; i <= 3 ; i++ ) {
+                blockPile[i+200].innerText = '>__<';
+            }
+
+        }
     }
 
 }   // end of boxFall()
@@ -659,13 +656,13 @@ function moveRotate(text) {
 
 
 function integrateBlocks() {
-// wait, what is this???
+    // wait, what is this???
 
-    let stopped = ( ghost[0].floor() == ghost[0].ceil() );
-    //console.log(ghost[0].floor());
-    //console.log(ghost[0].ceil());
-    //console.log('did tetris stop? ' + stopped);
-    if (stopped && boxFalling) {
+    blockToGhost(translateMatrix.stay);
+    let a = ( ghost[0].floor() == ghost[0].ceil() );
+    a = ( a && yMove.check.fallV() );
+
+    if (a) {
         for (let i = 0 ; i <= 3 ; i++ ) {
             blockPile[ghost[i].ceil()].style.opacity = setOpacity.high;
         }
