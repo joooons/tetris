@@ -44,7 +44,7 @@ var timeInc = 10;              // time interval used in 'var timeFlow'
 var timeTick = 0;               // setInterval counter in timeAction()
 //var stepY = 0;                  // negative to move up, positive to move down
 var yMove = {
-    setting : { fallV : 5, downV : 1 },
+    setting : { fallV : 5, downV : 1 },         // set these manually to adjust speed
     actual : { fallV : 0, downV : 0 },
     flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
     press : {
@@ -82,8 +82,8 @@ var tetrisForms = [];
             tetrisForms[i][j].y *= yInc;
         }
     }
-    console.log('tetrisForms is...');
-    console.log(tetrisForms);
+    //console.log('tetrisForms is...');
+    //console.log(tetrisForms);
 
 
 
@@ -150,9 +150,8 @@ var rotateMatrix = [];
             }
         }
     }
-
-    console.log('rotateMatrix is...');
-    console.log(rotateMatrix);
+    //console.log('rotateMatrix is...');
+    //console.log(rotateMatrix);
 
 
 
@@ -162,14 +161,13 @@ var translateMatrix = {
     down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
     stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ]
 }
-
     // multiplies scalar xInc to translateMatrix left and right only
     for ( let i = 0 ; i <=3 ; i++ ) {
         translateMatrix.left[i].x *= xInc;
         translateMatrix.right[i].x *= xInc;
     }
-    console.log('translateMatrix is...');
-    console.log(translateMatrix);
+    //console.log('translateMatrix is...');
+    //console.log(translateMatrix);
 
 
 
@@ -180,7 +178,12 @@ var px = {
 }
 
 
-
+var wall = {
+    // used for collision check
+    left : 0,
+    right : xDim - xInc,
+    floor : yDim - yInc
+}
 
 
 
@@ -371,10 +374,10 @@ function keyDownAction(ev) {
 
         // directional movement
         case 'ArrowLeft':
-            moveHorizontal(-xInc);
+            moveHorizontal(translateMatrix.left);
             break;
         case 'ArrowRight':
-            moveHorizontal(xInc);
+            moveHorizontal(translateMatrix.right);
             break;
         case 'ArrowUp':
             
@@ -596,6 +599,15 @@ function dropMountain(filledRow) {
 function boxFall() {
 // makes the tetris piece (agent) drop slowly...
 
+
+
+    if ( yMove.demand() ) {
+        blockToGhost(translateMatrix.down);
+        if (crashFree()) ghostToBlock();
+    }
+
+
+    /*
     a = [];
 
     //console.log(yMove.demand());
@@ -608,7 +620,9 @@ function boxFall() {
         }
         //console.log('top is ' + a[1]);
     }
-    
+    */
+
+
 
     /*
 
@@ -647,33 +661,17 @@ function boxFall() {
 
 
 
-function moveHorizontal(step) {
-// moves box left or right depending on stepX
+function moveHorizontal(arr) {
+    // moves box left or right depending on stepX
+    // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
+
+    blockToGhost(arr);
+
+    if (crashFree()) ghostToBlock();
 
 
-    /*
-    let a = [];
-
-    if (!crashImminent(step,0)) {
-
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            //a[i] = blockPile[i+200].style.left;
-            //a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
-
-            
-
-            a[i] = px.off(blockPile[i+200].style.left) + step;
-            //console.log( i + ' is ' + a[i]);
-            
-
-        }
-
-        let min = Math.min(...a);
-        let max = Math.max(...a);
-
-        for ( let i=0 ; i<=3 ; i++ ) if ( (min>=0)&&(max<xDim) ) blockPile[i+200].style.left = a[i] + 'px';
-    }   // end of if
-    */
+    
+    
 
 
 
@@ -690,8 +688,13 @@ function moveHorizontal(step) {
 
 
 
-function moveVertical(step) {
+function moveVertical(arr) {
 
+
+
+    blockToGhost(arr);
+
+    if (crashFree()) ghostToBlock();
 
     /*
     let a = [];
@@ -796,8 +799,26 @@ function integrateBlocks() {
 
 
 
-function crashImminent(x, y) {
+function crashFree() {
+    // compares the ghost object to crash points, such as walls, floors, and other blocks.
+    // yields TRUE if no collisions.
+    // takes ghost as input... or maybe not...
 
+    // check walls first
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        if (ghost[i].x < wall.left) return false;
+        if (ghost[i].x > wall.right) return false;
+        if (ghost[i].y > wall.floor) return false;
+    }
+
+
+
+    // check other blocks
+
+
+
+
+    return true;
 
     /*
     let crashed = false;
