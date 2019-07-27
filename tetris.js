@@ -152,11 +152,13 @@ var px = {
 function ghostType(x, y) {
     this.x = x,
     this.y = y,
+    
     this.fill = function(left, top, xStep, yStep) {
         this.x = px.off(left) + xStep;
         this.y = px.off(top) + yStep; },
-    this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },
-    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };
+        
+    this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },     // outputs index
+    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };     // outputs index
 
 var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
 
@@ -357,7 +359,7 @@ function keyDownAction(ev) {
         case 'ArrowDown':
             //stepY = yInc/4;         // stepY used in timeAction()
             yMove.press.down();
-
+            console.log('yMove.actual.downV = ' + yMove.actual.downV);
 
             break;
         default:
@@ -598,6 +600,8 @@ function boxFall() {
 function moveHorizontal(step) {
 // moves box left or right depending on stepX
 
+
+    /*
     let a = [];
 
     if (!crashImminent(step,0)) {
@@ -619,6 +623,9 @@ function moveHorizontal(step) {
 
         for ( let i=0 ; i<=3 ; i++ ) if ( (min>=0)&&(max<xDim) ) blockPile[i+200].style.left = a[i] + 'px';
     }   // end of if
+    */
+
+
 
 }   // end of moveHorizontal()
 
@@ -635,6 +642,8 @@ function moveHorizontal(step) {
 
 function moveVertical(step) {
 
+
+    /*
     let a = [];
 
     if (!crashImminent(0,step)) {
@@ -655,7 +664,11 @@ function moveVertical(step) {
             else if ( max > yDim ) blockPile[i+200].style.top = a[i] + yDim - max + 'px';
             else blockPile[i+200].style.top = a[i] - min + 'px';
         }
+
     }   // end of if
+
+    */
+
 
 }   // end of moveVertical()
 
@@ -673,9 +686,13 @@ function moveVertical(step) {
 function moveRotate(direction) {
 // rotates tetris cluster clockwise or counterclockwise
     
+
+    /*
+
     let a = (direction == 'left')? 1 : -1;
     let b = currentTetris.form;
     let c = currentTetris.pose;
+
     if (direction == 'right' ) {
         c = ( c==0 )? transformMatrix[b].length - 1 : c - 1;
     }
@@ -690,6 +707,9 @@ function moveRotate(direction) {
     currentTetris.flip(a);
 
     console.log('form: ' + currentTetris.form + ' pose: ' + currentTetris.pose);
+
+    */
+
 
 }   // end of moveRotate()
 
@@ -728,6 +748,8 @@ function integrateBlocks() {
 
 function crashImminent(x, y) {
 
+
+    /*
     let crashed = false;
     for (let i = 0 ; i <= 3 ; i++ ) {
         ghost[i].fill(blockPile[i+200].style.left, blockPile[i+200].style.top, x, y);
@@ -737,6 +759,7 @@ function crashImminent(x, y) {
 
     //console.log('done!');
     return crashed;
+    */
 
 }
 
