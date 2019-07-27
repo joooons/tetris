@@ -87,7 +87,7 @@ var tetrisForms = [];
 
 
 
-var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
+var tetrisChance = [2, 1, 1, 1, 1, 2, 1];
     // ratio of how likely each tetrisForm[] is to appear.
 
 var randomMatrix = {
@@ -351,10 +351,10 @@ function keyDownAction(ev) {
 
     switch (ev.code) {
         case 'KeyA':
-            moveRotate('left');
+            moveRotate(rotateMatrix[currentTetris.form][currentTetris.pose]);
             break;
         case 'KeyS':
-            moveRotate('right');
+            //moveRotate('right');
             break;
         case 'KeyN':
             resetTetrisShape();
@@ -624,11 +624,6 @@ function moveHorizontal(arr) {
     if (crashFree()) ghostToBlock();
 
 
-    
-    
-
-
-
 }   // end of moveHorizontal()
 
 
@@ -641,42 +636,12 @@ function moveHorizontal(arr) {
 
 
 
-
+/*
 function moveVertical(arr) {
-
-
     blockToGhost(arr);
-
     if (crashFree()) ghostToBlock();
-
-    /*
-    let a = [];
-
-    if (!crashImminent(0,step)) {
-        for (let i = 0 ; i <= 3 ; i++ ) {
-        // puts into a[] the proposed y coorinates for all four tetris pieces
-            //a[i] = blockPile[i+200].style.top;
-            //a[i] = eval(a[i].substring(0,a[i].length-2)) + step;
-
-            a[i] = px.off(blockPile[i+200].style.top) + step;
-
-        }
-
-        let min = Math.min(...a);
-        let max = Math.max(...a) + yInc;
-
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            if ( (min>=0) && (max<=yDim) ) blockPile[i+200].style.top = a[i] + 'px';
-            else if ( max > yDim ) blockPile[i+200].style.top = a[i] + yDim - max + 'px';
-            else blockPile[i+200].style.top = a[i] - min + 'px';
-        }
-
-    }   // end of if
-
-    */
-
-
 }   // end of moveVertical()
+*/
 
 
 
@@ -688,34 +653,14 @@ function moveVertical(arr) {
 
 
 
-
-function moveRotate(direction) {
+function moveRotate(arr) {
 // rotates tetris cluster clockwise or counterclockwise
     
-
-    /*
-
-    let a = (direction == 'left')? 1 : -1;
-    let b = currentTetris.form;
-    let c = currentTetris.pose;
-
-    if (direction == 'right' ) {
-        c = ( c==0 )? rotateMatrix[b].length - 1 : c - 1;
+    blockToGhost(arr);
+    if (crashFree()) {
+        ghostToBlock();
+        currentTetris.flip(1);
     }
-
-    for ( let i = 0 ; i <= 3 ; i++ ){
-        let z = px.off(blockPile[i+200].style.left) + a * rotateMatrix[b][c][i].x;
-        blockPile[i+200].style.left = px.on(z);
-        z = px.off(blockPile[i+200].style.top) + a * rotateMatrix[b][c][i].y;
-        blockPile[i+200].style.top = px.on(z);
-    }
-
-    currentTetris.flip(a);
-
-    console.log('form: ' + currentTetris.form + ' pose: ' + currentTetris.pose);
-
-    */
-
 
 }   // end of moveRotate()
 
@@ -757,8 +702,6 @@ function crashFree() {
     // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
     // yields TRUE if no collisions.
 
-
-
     for ( let i = 0 ; i <= 3 ; i++ ) {
 
         // check walls first
@@ -772,19 +715,6 @@ function crashFree() {
     }
 
     return true;
-
-
-    /*
-    let crashed = false;
-    for (let i = 0 ; i <= 3 ; i++ ) {
-        ghost[i].fill(blockPile[i+200].style.left, blockPile[i+200].style.top, x, y);
-        if ( blockPile[ghost[i].floor()].style.opacity == setOpacity.high ) crashed = true;
-        if ( blockPile[ghost[i].ceil()].style.opacity == setOpacity.high ) crashed = true;
-    }
-
-    //console.log('done!');
-    return crashed;
-    */
 
 }
 
