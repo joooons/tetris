@@ -351,10 +351,10 @@ function keyDownAction(ev) {
 
     switch (ev.code) {
         case 'KeyA':
-            moveRotate(rotateMatrix[currentTetris.form][currentTetris.pose]);
+            moveRotate('left');
             break;
         case 'KeyS':
-            //moveRotate('right');
+            moveRotate('right');
             break;
         case 'KeyN':
             resetTetrisShape();
@@ -364,12 +364,8 @@ function keyDownAction(ev) {
             break;
         case 'KeyF':
             yMove.flip.fallV();
-            console.log('yMove.actual.fallV = ' + yMove.actual.fallV);
-
-
             break;
         case 'KeyG':
-            //createBlockAgent();
             break;
 
         // directional movement
@@ -380,14 +376,9 @@ function keyDownAction(ev) {
             moveHorizontal(translateMatrix.right);
             break;
         case 'ArrowUp':
-            
-
             break;
         case 'ArrowDown':
-            //stepY = yInc/4;         // stepY used in timeAction()
             yMove.press.down();
-            console.log('yMove.actual.downV = ' + yMove.actual.downV);
-
             break;
         default:
             break;
@@ -428,11 +419,9 @@ function keyUpAction(ev) {
 function createBlockAgent() {
 // creates the four blocks of the tetris piece.
 // But the shape is not initiated. The shape should be initiated by a different function.
+// createBlockAgent() should be run only once.
 
     for ( let i = 0 ; i <=3 ; i++ ) {
-    // creates four new elements inside toyRoom.
-    // running createBlockAgent() is a waste of time. This script ignores blockPile[] with...
-    // ... index higher than 203.
 
         var p = document.createElement('div');
         
@@ -442,17 +431,13 @@ function createBlockAgent() {
         p.style.textAlign = 'center';
         p.style.lineHeight = 2.4;
         p.innerText = 'o__o';
-
-        //p.style.boxShadow = '0px 0px 15px 5px white';     // shadows don't work well for multiple blocks.
         
         p.style.boxSizing = 'border-box';
-        //p.style.backgroundColor = '#8AF';
-        //p.style.backgroundColor = 'rgba(100, 130, 250, 0.1)';
         p.style.backgroundColor = tetrisBackgroundColor;
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = '1px 11px 11px 11px';
         p.style.visibility = 'visible';
-        //p.style.boxShadow = '-2px -2px 9px 0px #05A inset';
+        
         p.style.boxShadow = tetrisBoxShadow;
         
         p.style.width = xInc + 'px';
@@ -460,7 +445,7 @@ function createBlockAgent() {
         
         p.style.position = 'absolute';
         
-        p.style.left = (xInc * (i+3) ) + 'px';      // actually, this doesn't matter...
+        p.style.left = '0px';      // actually, this doesn't matter...
         p.style.top = -yInc + 'px';                 // ... cuz this puts it outside the boundary. invisible.
 
         toyRoom.appendChild(p); 
@@ -599,13 +584,10 @@ function dropMountain(filledRow) {
 function boxFall() {
 // makes the tetris piece (agent) drop slowly...
 
-
-
     if ( yMove.demand() ) {
         blockToGhost(translateMatrix.down);
         if (crashFree()) ghostToBlock();
     }
-
 
 }   // end of boxFall()
 
@@ -620,7 +602,6 @@ function moveHorizontal(arr) {
     // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
 
     blockToGhost(arr);
-
     if (crashFree()) ghostToBlock();
 
 
@@ -632,35 +613,38 @@ function moveHorizontal(arr) {
 
 
 
+function moveRotate(text) {
+    // rotates tetris piece clockwise or counterclockwise
+    // arr contains rotateMatrix[pose][form]
+    // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
 
-
-
-
-/*
-function moveVertical(arr) {
-    blockToGhost(arr);
-    if (crashFree()) ghostToBlock();
-}   // end of moveVertical()
-*/
-
-
-
-
-
-
-
-
-
-
-
-function moveRotate(arr) {
-// rotates tetris cluster clockwise or counterclockwise
+    if (text == 'left') {
+        blockToGhost(rotateMatrix[currentTetris.form][currentTetris.pose]);
+        if (crashFree()) {
+            ghostToBlock();
+            currentTetris.flip(1);
+        }
+    } 
     
-    blockToGhost(arr);
-    if (crashFree()) {
-        ghostToBlock();
-        currentTetris.flip(1);
+    // tbh i don't like that I have to make this complicated. I really want a simpler solution...
+    if (text == 'right') {
+        currentTetris.flip(-1);
+        let a = [ {x:0,y:0}, {x:0,y:0}, {x:0,y:0}, {x:0,y:0} ];
+        for ( let i = 0 ; i <= 3 ; i++ ) {
+            a[i].x = -rotateMatrix[currentTetris.form][currentTetris.pose][i].x;
+            a[i].y = -rotateMatrix[currentTetris.form][currentTetris.pose][i].y;
+        }
+        //console.log(a);
+        blockToGhost(a);
+        if (crashFree()) {
+            ghostToBlock();
+        } else {
+            currentTetris.flip(1);
+        }
     }
+
+    console.log('form:' + currentTetris.form + ' pose:' + currentTetris.pose);
+    //console.log(rotateMatrix[currentTetris.form][currentTetris.pose]);
 
 }   // end of moveRotate()
 
