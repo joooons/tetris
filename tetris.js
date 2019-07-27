@@ -607,52 +607,6 @@ function boxFall() {
     }
 
 
-    /*
-    a = [];
-
-    //console.log(yMove.demand());
-
-    if ( yMove.demand() ) {
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            a[i] = px.off(blockPile[i+200].style.top) + 1 + 'px';
-            
-            blockPile[i+200].style.top = a[i];
-        }
-        //console.log('top is ' + a[1]);
-    }
-    */
-
-
-
-    /*
-
-    if (!crashImminent(0,1)) {
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            //a[i] = blockPile[i+200].style.top;
-            //a[i] = eval(a[i].substring(0,a[i].length-2)); 
-            a[i] = px.off(blockPile[i+200].style.top);
-        }
-
-        let max = Math.max(...a);
-
-        if (max <= (yDim - yInc)) {
-            for ( let i = 200 ; i <= 203 ; i++ ) {
-                //let b = blockPile[i].style.top;
-                //b = b.substring(0, b.length-2);
-
-                let b = px.off(blockPile[i].style.top);
-
-                //b = eval(b) + 1;
-                //blockPile[i].style.top = b + 'px';
-                
-                blockPile[i].style.top = px.on(b + 1);
-                blockPile[i].innerText = '>__<';
-            }
-        }   
-    }   // end of if
-    */
-
-
 }   // end of boxFall()
 
 
@@ -689,7 +643,6 @@ function moveHorizontal(arr) {
 
 
 function moveVertical(arr) {
-
 
 
     blockToGhost(arr);
@@ -800,25 +753,26 @@ function integrateBlocks() {
 
 
 function crashFree() {
-    // compares the ghost object to crash points, such as walls, floors, and other blocks.
+    // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
+    // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
     // yields TRUE if no collisions.
-    // takes ghost as input... or maybe not...
 
-    // check walls first
+
+
     for ( let i = 0 ; i <= 3 ; i++ ) {
+
+        // check walls first
         if (ghost[i].x < wall.left) return false;
         if (ghost[i].x > wall.right) return false;
         if (ghost[i].y > wall.floor) return false;
+
+        // check for block collisions
+        if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
+        if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
     }
 
-
-
-    // check other blocks
-
-
-
-
     return true;
+
 
     /*
     let crashed = false;
