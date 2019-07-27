@@ -93,42 +93,43 @@ var currentTetris = {
     pose : 0,           // number of poses for each form varies. At most four.
     flip : function(num) {
         this.pose = this.pose + num;
-        if (this.pose == transformMatrix[this.form].length) this.pose = 0;
-        if (this.pose < 0 ) this.pose = transformMatrix[this.form].length - 1;
+        if (this.pose == rotateMatrix[this.form].length) this.pose = 0;
+        if (this.pose < 0 ) this.pose = rotateMatrix[this.form].length - 1;
     } };
 
-var transformMatrix = [];
+var rotateMatrix = [];
     // this is the transformation matrix. For the given form and pose, this is the tranformation...
     // ... that must take place to get to the next pose in line.
     // it assumes that the rotation is happening in the counterclockwise direction.
     // after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
-    transformMatrix[0] = [];
-        transformMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
-        transformMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
-    transformMatrix[1] = [];
-        transformMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
-        transformMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
-        transformMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
-        transformMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
-    transformMatrix[2] = [];
-        transformMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
-        transformMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
-        transformMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
-        transformMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
-    transformMatrix[3] = [];
-        transformMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-        transformMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-    transformMatrix[4] = [];
-        transformMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-        transformMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-    transformMatrix[5] = [];
-        transformMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
-        transformMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
-        transformMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
-        transformMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
-    transformMatrix[6] = [];
-        transformMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
+    rotateMatrix[0] = [];
+    rotateMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
+    rotateMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
+    rotateMatrix[1] = [];
+    rotateMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
+    rotateMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
+    rotateMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
+    rotateMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
+    rotateMatrix[2] = [];
+    rotateMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
+    rotateMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
+    rotateMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
+    rotateMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
+    rotateMatrix[3] = [];
+    rotateMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+    rotateMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+    rotateMatrix[4] = [];
+    rotateMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
+    rotateMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
+    rotateMatrix[5] = [];
+    rotateMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
+    rotateMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
+    rotateMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
+    rotateMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
+    rotateMatrix[6] = [];
+    rotateMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
 
+    //transformMatrix[][]
 
 
 
@@ -228,12 +229,12 @@ function setBoard() {
         }
     }
 
-    // multiplies scalar xInc and yInc to the transformMatrix[]
-    for ( let i = 0 ; i < transformMatrix.length ; i++ ) {
-        for ( let j = 0 ; j < transformMatrix[i].length ; j++ ) {
-            for ( let k = 0 ; k < transformMatrix[i][j].length ; k++ ) {
-                transformMatrix[i][j][k].x *= xInc;
-                transformMatrix[i][j][k].y *= yInc;
+    // multiplies scalar xInc and yInc to the rotateMatrix[]
+    for ( let i = 0 ; i < rotateMatrix.length ; i++ ) {
+        for ( let j = 0 ; j < rotateMatrix[i].length ; j++ ) {
+            for ( let k = 0 ; k < rotateMatrix[i][j].length ; k++ ) {
+                rotateMatrix[i][j][k].x *= xInc;
+                rotateMatrix[i][j][k].y *= yInc;
             }
         }
     }
@@ -471,6 +472,18 @@ function resetTetrisShape() {
 
 
 
+function blockToGhost() {
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        ghost[i].x = px.off(blockPile[i+200].style.left);
+        ghost[i].y = px.off(blockPile[1+200].style.top);
+    }
+}
+
+
+
+
+
 
 
 
@@ -694,13 +707,13 @@ function moveRotate(direction) {
     let c = currentTetris.pose;
 
     if (direction == 'right' ) {
-        c = ( c==0 )? transformMatrix[b].length - 1 : c - 1;
+        c = ( c==0 )? rotateMatrix[b].length - 1 : c - 1;
     }
 
     for ( let i = 0 ; i <= 3 ; i++ ){
-        let z = px.off(blockPile[i+200].style.left) + a * transformMatrix[b][c][i].x;
+        let z = px.off(blockPile[i+200].style.left) + a * rotateMatrix[b][c][i].x;
         blockPile[i+200].style.left = px.on(z);
-        z = px.off(blockPile[i+200].style.top) + a * transformMatrix[b][c][i].y;
+        z = px.off(blockPile[i+200].style.top) + a * rotateMatrix[b][c][i].y;
         blockPile[i+200].style.top = px.on(z);
     }
 
