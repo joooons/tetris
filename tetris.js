@@ -13,50 +13,74 @@
 
 
 // DOM elements
-var toyRoom = document.getElementById('toyRoom');   
-var blockPile = toyRoom.children;
-var moveButtons = document.getElementById('controller');
+    var toyRoom = document.getElementById('toyRoom');   
+    var blockPile = toyRoom.children;
+    var moveButtons = document.getElementById('controller');   
+        // I might want to call each child element by ID actually... later.
+
+
+// SCREEN and BROWSER parameters
+    var screen = {  x : window.screen.width,
+                    y : window.screen.height,
+                    r : window.devicePixelRatio,
+                    t : 0.7 }       // trim - percentage to vertically shrink toyRoom by
+    
+    console.log(`Screen res: ${screen.x} x ${screen.y}  ratio: ${screen.r}`);
+    console.log(navigator.userAgent);
 
 
 // dimension variables
-var xDim = toyRoom.offsetWidth;
-var yDim = toyRoom.offsetHeight;
-var xInc = xDim / 10;           // box size in x direction
-var yInc = yDim / 20;           // box size in y direction. basically same as xInc
+    var numOfBlock = {  x : 4,
+                        y : 15,
+                        m : 0,
+                        t : 0,
+                        midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
+                        total : function() {this.t = this.x * this.y} }
+        numOfBlock.midpoint();
+            console.log(`midpoint is ${numOfBlock.m}`);
+        numOfBlock.total();
+
+    
+    var yDim = (screen.y * screen.t) - (screen.y * screen.t ) % numOfBlock.y;
+    var xDim = yDim * (numOfBlock.x / numOfBlock.y);
+    toyRoom.style.height = yDim + 'px';
+    toyRoom.style.width = xDim + 'px';
+    
+    console.log(`yDim is ${yDim}`);
+
+    var xInc = xDim / numOfBlock.x;           // box size in x direction
+    var yInc = yDim / numOfBlock.y;           // box size in y direction. basically same as xInc
 
 
 // color settings
-var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
-var blockBoxShadow = '0px 0px 5px 0px inset blue';
-var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
-var tetrisBoxShadow = '-2px -2px 9px 0px #05A inset';
-var setOpacity = { 
-    low : 0.2,                  // low setting of opacity
-    high : 1,                   // high setting of opacity
-    flip : function(num) {return (num == this.low) ? this.high : this.low;} };
+    var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
+    var blockBoxShadow = '0px 0px 5px 0px inset blue';
+    var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
+    var tetrisBoxShadow = '-2px -2px 9px 0px #05A inset';
+    var setOpacity = {  low : 0.2,                  // low setting of opacity
+                        high : 1,                   // high setting of opacity
+                        flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
 // other settings
-var timeInc = 5;              // time interval used in 'var timeFlow'
-var timeTick = 0;               // setInterval counter in timeAction()
-//var stepY = 0;                  // negative to move up, positive to move down
-var yMove = {
-    setting : { fallV : 10, downV : 1 },         // set these manually to adjust speed
-    actual : { fallV : 0, downV : 0 },
-    flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
-    press : {
-        down : function() { yMove.actual.downV = yMove.setting.downV; },
-        up : function() { yMove.actual.downV = 0 } },
-    check : {
-        fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
-        downV : function() { return (yMove.actual.downV==0) ? false : true; } },
-    demand : function() {
-        // if true, there is demand to move 1 pixel down on this time iteration.
-        if (yMove.check.downV()) { 
-            return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
-        } else {
-            return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
-        } } 
-    };
+    var timeInc = 5;              // time interval used in 'var timeFlow'
+    var timeTick = 0;               // setInterval counter in timeAction()
+    var yMove = {
+        setting : { fallV : 10, downV : 1 },         // set these manually to adjust speed
+        actual : { fallV : 0, downV : 0 },
+        flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
+        press : {
+            down : function() { yMove.actual.downV = yMove.setting.downV; },
+            up : function() { yMove.actual.downV = 0 } },
+        check : {
+            fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
+            downV : function() { return (yMove.actual.downV==0) ? false : true; } },
+        demand : function() {
+            // if true, there is demand to move 1 pixel down on this time iteration.
+            if (yMove.check.downV()) { 
+                return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
+            } else {
+                return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
+            } } };
     
     
 
@@ -64,17 +88,18 @@ var yMove = {
 
 // complex object definitions
 var tetrisForms = [];
-    tetrisForms[0] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:4, y:3} ];    // long bar
-    tetrisForms[1] = [ {x:5, y:0}, {x:5, y:1}, {x:5, y:2}, {x:4, y:2} ];    // inverse 'L' shape
-    tetrisForms[2] = [ {x:4, y:0}, {x:4, y:1}, {x:4, y:2}, {x:5, y:2} ];    // 'L' shape
-    tetrisForms[3] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:1}, {x:5, y:2} ];    // inverse 'Z' shape
-    tetrisForms[4] = [ {x:5, y:0}, {x:5, y:1}, {x:4, y:1}, {x:4, y:2} ];    // 'Z' shape
-    tetrisForms[5] = [ {x:3, y:1}, {x:4, y:1}, {x:5, y:1}, {x:4, y:0} ];    // upside down 'T' shape
-    tetrisForms[6] = [ {x:4, y:0}, {x:4, y:1}, {x:5, y:0}, {x:5, y:1} ];    // square shape
+    tetrisForms[0] = [ {x:0, y:0}, {x:0, y:1}, {x:0, y:2}, {x:0, y:3} ];    // long bar
+    tetrisForms[1] = [ {x:1, y:0}, {x:1, y:1}, {x:1, y:2}, {x:0, y:2} ];    // inverse 'L' shape
+    tetrisForms[2] = [ {x:0, y:0}, {x:0, y:1}, {x:0, y:2}, {x:1, y:2} ];    // 'L' shape
+    tetrisForms[3] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:1}, {x:1, y:2} ];    // inverse 'Z' shape
+    tetrisForms[4] = [ {x:1, y:0}, {x:1, y:1}, {x:0, y:1}, {x:0, y:2} ];    // 'Z' shape
+    tetrisForms[5] = [ {x:-1, y:1}, {x:0, y:1}, {x:1, y:1}, {x:0, y:0} ];    // upside down 'T' shape
+    tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape
 
     // multiplies scalar xInc and yInc to the tetrisForms[]
     for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
         for ( let j = 0 ; j < tetrisForms[i].length ; j++ ) {
+            tetrisForms[i][j].x += numOfBlock.m;
             tetrisForms[i][j].x *= xInc;
             tetrisForms[i][j].y *= yInc;
         }
@@ -84,7 +109,7 @@ var tetrisForms = [];
 
 
 
-var tetrisChance = [2, 1, 1, 1, 1, 2, 1];
+var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
     // ratio of how likely each tetrisForm[] is to appear.
 
 var randomMatrix = {
@@ -197,8 +222,8 @@ function ghostType(x, y) {
         this.x = px.off(left) + xStep;
         this.y = px.off(top) + yStep; },
         
-    this.floor = function() { return 10 * (Math.floor(this.y/yInc)) + (this.x/xInc); },     // outputs index
-    this.ceil = function() { return 10 * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };     // outputs index
+    this.floor = function() { return numOfBlock.x * (Math.floor(this.y/yInc)) + (this.x/xInc); },     // outputs index
+    this.ceil  = function() { return numOfBlock.x * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };     // outputs index
 
 var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
 
@@ -222,7 +247,7 @@ function setBoard() {
 
     let rarity = 0.01;                   // used for randomly placing blocks on board. delete later.
 
-    for ( let i = 0 ; i < 200 ; i++ ) {
+    for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         // creating four elements to makeup the tetris piece
 
         var p = document.createElement('div');
@@ -232,7 +257,7 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = blockBackgroundColor;
         
-        p.style.opacity = (0==(Math.floor(rarity*i*Math.random())))? setOpacity.low: setOpacity.high;
+        p.style.opacity = ( 0 == ( Math.floor( rarity * i * Math.random() ) ) ) ? setOpacity.low : setOpacity.high;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
         p.style.borderRadius = '12px';       // unnecessary, but cooler?
@@ -324,7 +349,7 @@ function tetrisBlink() {
               ( (a>60) && (a<100) ) ];
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
-        (b[i])? blockPile[i+200].innerText = "-__-": blockPile[i+200].innerText = "o__o";
+        (b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
     }
     
 }
@@ -350,7 +375,8 @@ function keyDownAction(ev) {
         case 'KeyN':
             resetTetrisShape();
             break;
-        case 'KeyI':
+        case 'Space':
+            console.log('you pressed space!');
             integrateBlocks();
             break;
         case 'KeyF':
@@ -388,10 +414,8 @@ function keyUpAction(ev) {
     
     switch (ev.code) {
         case 'ArrowUp':
-            //stepY = 0;         // stepY used in timeAction()
             break;
         case 'ArrowDown':
-            //stepY = 0;         // stepY used in timeAction()
             yMove.press.up();
             break;
         default:
@@ -416,7 +440,8 @@ function createBlockAgent() {
 
         var p = document.createElement('div');
         
-        p.style.fontSize = '8pt';
+        //p.style.fontSize = '8px';
+        p.style.fontSize = (0.4 * xInc) + 'px';
         p.style.color = 'black';
         p.style.fontWeight = 'bold';
         p.style.textAlign = 'center';
@@ -461,11 +486,11 @@ function resetTetrisShape() {
     currentTetris.pose = 0;
 
     for ( let i = 0 ; i <=3 ; i++ ) {
-        blockPile[i+200].style.left = tetrisForms[currentTetris.form][i].x + 'px';
-        blockPile[i+200].style.top = tetrisForms[currentTetris.form][i].y + 'px';
+        blockPile[i+numOfBlock.t].style.left = tetrisForms[currentTetris.form][i].x + 'px';
+        blockPile[i+numOfBlock.t].style.top = tetrisForms[currentTetris.form][i].y + 'px';
     }
 
-    console.log('form: ' + currentTetris.form + ' pose: ' + currentTetris.pose);
+    console.log(`form:${currentTetris.form} pose:${currentTetris.pose} (NEW)`);
 
 }
 
@@ -482,8 +507,8 @@ function blockToGhost( arr ) {
     // ghost[].x and ghost[].y are numbers, NOT strings
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
-        ghost[i].x = px.off(blockPile[i+200].style.left) + arr[i].x ;
-        ghost[i].y = px.off(blockPile[i+200].style.top) + arr[i].y ;
+        ghost[i].x = px.off(blockPile[i+numOfBlock.t].style.left) + arr[i].x ;
+        ghost[i].y = px.off(blockPile[i+numOfBlock.t].style.top) + arr[i].y ;
     }
 }
 
@@ -493,8 +518,8 @@ function ghostToBlock() {
     // blockPile[].style.left and blockPile[].style.top are strings.
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
-        blockPile[i+200].style.left = ghost[i].x + 'px';
-        blockPile[i+200].style.top = ghost[i].y + 'px';
+        blockPile[i+numOfBlock.t].style.left = ghost[i].x + 'px';
+        blockPile[i+numOfBlock.t].style.top = ghost[i].y + 'px';
     }
 
 }
@@ -510,26 +535,25 @@ function ghostToBlock() {
 
 function checkRow() {
 
-    for (let i = 0 ; i <= 190 ; i += 10 ) {
+    for (let i = 0 ; i < numOfBlock.t ; i += numOfBlock.x ) {
     // 'i' refers to the first index of each row
         
         let count = 0;
 
-        for (let j = i; j <= i+9 ; j++) count += eval(blockPile[j].style.opacity);
+        for (let j = i; j < i+numOfBlock.x ; j++) count += eval(blockPile[j].style.opacity);
         
-        if (count==10) {
+        if (count == numOfBlock.x) {
 
             let r = 0;
             let t = setInterval(rowSpin,10);
             function rowSpin() {
                 r += 4;
-                for ( let j = i ; j <= i+9 ; j++ ) {
-                    //blockPile[j].style.transformOrigin = '50% 100%';
+                for ( let j = i ; j < i + numOfBlock.x ; j++ ) {
                     blockPile[j].style.transform = "rotateX(" + r + "deg)";
                 }
                 if ( r > 90 ) {
                     clearInterval(t);
-                    for ( let j = i ; j <= i+9 ; j++ ) {
+                    for ( let j = i ; j < i+numOfBlock.x ; j++ ) {
                         blockPile[j].style.opacity = setOpacity.low;
                         blockPile[j].style.transform = "rotateX(0deg)";
                     }
@@ -554,14 +578,14 @@ function checkRow() {
 function dropMountain(filledRow) {
 // from the filled row up, drop the pile of blocks
     
-    for ( let i = filledRow ; i >= 10 ; i -= 10 ) {
-        for ( let j = i ; j <= i+9 ; j++ ) {
-            let a = blockPile[j-10].style.opacity;
+    for ( let i = filledRow ; i >= numOfBlock.x ; i -= numOfBlock.x ) {
+        for ( let j = i ; j < i+numOfBlock.x ; j++ ) {
+            let a = blockPile[j-numOfBlock.x].style.opacity;
             blockPile[j].style.opacity = a;
         }
     }
 
-    for ( let k = 0 ; k <= 9 ; k++ ) blockPile[k].style.opacity = setOpacity.low;
+    for ( let k = 0 ; k < numOfBlock.x ; k++ ) blockPile[k].style.opacity = setOpacity.low;
 
 }   // end of dropMountain()
 
@@ -580,7 +604,7 @@ function boxFall() {
         if (crashFree()) {
             ghostToBlock();
             for ( let i = 0 ; i <= 3 ; i++ ) {
-                blockPile[i+200].innerText = '>__<';
+                blockPile[i+numOfBlock.t].innerText = '>__<';
             }
 
         }
