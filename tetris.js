@@ -30,8 +30,8 @@
 
 
 // dimension variables
-    var numOfBlock = {  x : 12,
-                        y : 8,
+    var numOfBlock = {  x : 10,
+                        y : 30,
                         m : 0,
                         t : 0,
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -106,11 +106,7 @@
             for ( let j = 0 ; j < tetrisForms[i].length ; j++ ) {
                 tetrisForms[i][j].x += numOfBlock.m;
                 tetrisForms[i][j].x *= xInc;
-                tetrisForms[i][j].y *= yInc;
-            }
-        }
-        //console.log('tetrisForms is...');
-        //console.log(tetrisForms);
+                tetrisForms[i][j].y *= yInc; } }
 
     var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
         // ratio of how likely each tetrisForm[] is to appear.
@@ -122,8 +118,7 @@
         randomize : function() {
             this.matrix = this.matrix.slice(0,tetrisChance.reduce(function(sum,num){return sum + num;} ));
             let k = 0;
-            for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i;
-        } };   // end of randomMatrix def
+            for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i; } };
 
     var currentTetris = { 
         form : 0,           // there are 7 forms total.
@@ -131,8 +126,7 @@
         flip : function(num) {
             this.pose = this.pose + num;
             if (this.pose == rotateMatrix[this.form].length) this.pose = 0;
-            if (this.pose < 0 ) this.pose = rotateMatrix[this.form].length - 1;
-        } };
+            if (this.pose < 0 ) this.pose = rotateMatrix[this.form].length - 1; } };
 
     var rotateMatrix = [];
         // this is the rotation matrix. For the given form and pose, this is the tranformation...
@@ -171,60 +165,41 @@
             for ( let j = 0 ; j < rotateMatrix[i].length ; j++ ) {
                 for ( let k = 0 ; k < rotateMatrix[i][j].length ; k++ ) {
                     rotateMatrix[i][j][k].x *= xInc;
-                    rotateMatrix[i][j][k].y *= yInc;
-                }
-            }
-        }
-        //console.log('rotateMatrix is...');
-        //console.log(rotateMatrix);
-
-
+                    rotateMatrix[i][j][k].y *= yInc; } } }
 
     var translateMatrix = {
+        // this object is used as the input array for blockToGhost()
+        // use .stay to simulate an unmoved tetris piece.
         left : [ { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 } ],
         right : [ { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 } ],
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
-        stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ]
-    }
+        stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ] }
+        
         // multiplies scalar xInc to translateMatrix left and right only
         for ( let i = 0 ; i <=3 ; i++ ) {
             translateMatrix.left[i].x *= xInc;
-            translateMatrix.right[i].x *= xInc;
-        }
-        //console.log('translateMatrix is...');
-        //console.log(translateMatrix);
+            translateMatrix.right[i].x *= xInc; }
 
 
 
-    var px = {
-    // px.off removes the 'px'.  px.on puts the 'px' back on, plus it adds one more thing.
-        off : function(text) { return eval( text.substring(0, text.length - 2) ) },
-        on : function(number) { return eval(number) + 'px'}             // maybe px.on() useless...
-    }
+    var px = {  off : function(text) { return eval( text.substring(0, text.length - 2) ) },
+                on : function(number) { return eval(number) + 'px'} }             // maybe px.on() useless...
+        // px.off removes the 'px'.  px.on puts the 'px' back on, plus it adds one more thing.
 
 
-    var wall = {
+    var wall = {    left : 0,
+                    right : xDim - xInc,
+                    floor : yDim - yInc }
         // used for collision check
-        left : 0,
-        right : xDim - xInc,
-        floor : yDim - yInc
-    }
-
-
-
-
-
 
 
 
     function ghostType(x, y) {
         this.x = x,
         this.y = y,
-        
         this.fill = function(left, top, xStep, yStep) {
             this.x = px.off(left) + xStep;
             this.y = px.off(top) + yStep; },
-            
         this.floor = function() { return numOfBlock.x * (Math.floor(this.y/yInc)) + (this.x/xInc); },     // outputs index
         this.ceil  = function() { return numOfBlock.x * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };     // outputs index
 
@@ -248,10 +223,10 @@
 function setBoard() {
 // fills toyRoom with empty boxes. These will turn into the PILE one by one.
 
-    let rarity = 0.01;                   // used for randomly placing blocks on board. delete later.
+    //let rarity = 0.01;                   // used for randomly placing blocks on board. delete later.
 
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
-        // creating four elements to makeup the tetris piece
+        // filling toyRoom with lots of block elements. starting at low opacity.
 
         var p = document.createElement('div');
 
@@ -260,15 +235,16 @@ function setBoard() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = blockBackgroundColor;
         
-        p.style.opacity = ( 0 == ( Math.floor( rarity * i * Math.random() ) ) ) ? setOpacity.low : setOpacity.high;
+        //p.style.opacity = ( 0 == ( Math.floor( rarity * i * Math.random() ) ) ) ? setOpacity.low : setOpacity.high;
+        p.style.opacity = setOpacity.low;
 
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';      // thin white border
-        p.style.borderRadius = '12px';       // unnecessary, but cooler?
+        p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
+        p.style.borderRadius = '12px'; 
         p.style.boxShadow = blockBoxShadow;
 
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
-        p.style.cssFloat = 'left';          // needed to fill horizontally too
+        p.style.cssFloat = 'left';
         p.style.position = 'relative';
 
         p.style.transformOrigin = '50% 100%';
@@ -282,10 +258,9 @@ function setBoard() {
 
             this.style.opacity = setOpacity.flip(this.style.opacity);
             checkRow();
+        }   // end of onclick
 
-        }   // end of onclick function def
-
-    }   // end of for loop, iterated over only the first 200 blocks
+    }   // end of for loop
 
 
 
@@ -295,29 +270,18 @@ function setBoard() {
 
 
     // mouse click to move tetris possible!!!
-    moveButtons.children[0].onclick = function() {
-        moveHorizontal(translateMatrix.left);
-    }
+    moveButtons.children[0].onclick = function() { moveHorizontal(translateMatrix.left); }
 
-    moveButtons.children[1].onclick = function() {
-        ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down() ;
-    }
+    moveButtons.children[1].onclick = function() { ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down(); }
 
-    moveButtons.children[2].onclick = function() {
-        moveHorizontal(translateMatrix.right);
-    }
+    moveButtons.children[2].onclick = function() { moveHorizontal(translateMatrix.right); }
 
-    moveButtons.children[3].onclick = function() {
-        moveRotate('left');
-    }
+    moveButtons.children[3].onclick = function() { moveRotate('left'); }
 
-    moveButtons.children[4].onclick = function() {
-        resetTetrisShape();
-    }
+    moveButtons.children[4].onclick = function() { resetTetrisShape(); }
 
-    moveButtons.children[5].onclick = function() {
-        integrateBlocks();
-    }
+    moveButtons.children[5].onclick = function() { integrateBlocks(); }
+        // might have to remove this later. Think about it...
 
 }   // end of setBoard()
 
@@ -334,7 +298,7 @@ function timeAction() {
     timeTick++;                     // general use clicker
     tetrisBlink();                  // animates the facial expression. pretty useless.
     boxFall();                      // make tetris fall continually
-    integrateBlocks();
+    integrateBlocks();              // integrate tetris into blockPile after some time.
 
 }   // end of timeAction()
 
@@ -347,7 +311,6 @@ function tetrisBlink() {
 // making the tetris piece facial expression blink
 
     if (yMove.check.fallV() == 0) {
-
         let a = timeTick % 300;
         let b = [ ( (a>0) && (a<40) ),
                 ( (a>20) && (a<60) ),
@@ -357,7 +320,6 @@ function tetrisBlink() {
             (b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
         }
     }
-    
 }
 
 
@@ -387,7 +349,8 @@ function keyDownAction(ev) {
         case 'KeyF':
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
             break;
-        case 'KeyG':                    // does nothing 
+        case 'KeyR':
+            rotateTest();
             break;
 
         // directional movement
@@ -670,8 +633,7 @@ function moveRotate(text) {
         }
     }
 
-    console.log('form:' + currentTetris.form + ' pose:' + currentTetris.pose);
-    //console.log(rotateMatrix[currentTetris.form][currentTetris.pose]);
+    //console.log('form:' + currentTetris.form + ' pose:' + currentTetris.pose);
 
 }   // end of moveRotate()
 
@@ -679,7 +641,27 @@ function moveRotate(text) {
 
 
 
+function rotateTest() {
 
+    blockToGhost(translateMatrix.stay);
+    displayGhost();
+
+    let a = Math.sin( 0.5 * Math.PI );
+    a = a.toFixed(2);
+    
+    console.log(`sin() is ${a}`);
+
+
+
+
+}
+
+
+
+
+function displayGhost() {
+    console.log(`(${ghost[0].x},${ghost[0].y}) (${ghost[1].x},${ghost[1].y}) (${ghost[2].x},${ghost[2].y}) (${ghost[3].x},${ghost[3].y})`);
+}
 
 
 
