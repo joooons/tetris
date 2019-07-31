@@ -31,7 +31,7 @@
 
 // dimension variables
     var numOfBlock = {  x : 10,
-                        y : 30,
+                        y : 10,
                         m : 0,
                         t : 0,
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -102,13 +102,20 @@
         tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape
 
         // multiplies scalar xInc and yInc to the tetrisForms[]
+        /*
         for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
             for ( let j = 0 ; j < tetrisForms[i].length ; j++ ) {
                 tetrisForms[i][j].x += numOfBlock.m;
                 tetrisForms[i][j].x *= xInc;
                 tetrisForms[i][j].y *= yInc; } }
+        */
+        for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
+            arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
+        }
 
-    var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
+
+
+    var tetrisChance = [1, 1, 0, 0, 0, 0, 0];
         // ratio of how likely each tetrisForm[] is to appear.
 
     var randomMatrix = {
@@ -163,9 +170,15 @@
         // multiplies scalar xInc and yInc to the rotateMatrix[]
         for ( let i = 0 ; i < rotateMatrix.length ; i++ ) {
             for ( let j = 0 ; j < rotateMatrix[i].length ; j++ ) {
+                arrayAddMultiply(rotateMatrix[i][j], 0, xInc, 0, yInc); } }
+
+                /*
                 for ( let k = 0 ; k < rotateMatrix[i][j].length ; k++ ) {
                     rotateMatrix[i][j][k].x *= xInc;
                     rotateMatrix[i][j][k].y *= yInc; } } }
+                */
+
+
 
     var translateMatrix = {
         // this object is used as the input array for blockToGhost()
@@ -317,7 +330,8 @@ function tetrisBlink() {
                 ( (a>40) && (a<80) ),
                 ( (a>60) && (a<100) ) ];
         for ( let i = 0 ; i <= 3 ; i++ ) {
-            (b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
+            //(b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
+            blockPile[i+numOfBlock.t].innerText = i;
         }
     }
 }
@@ -644,25 +658,55 @@ function moveRotate(text) {
 function rotateTest() {
 
     blockToGhost(translateMatrix.stay);
-    displayGhost();
-
-    let a = Math.sin( 0.5 * Math.PI );
-    a = a.toFixed(2);
     
-    console.log(`sin() is ${a}`);
+    console.log('   ghost is...');
+    displayGhost(ghost);
 
+    let p = 1;     // index of block that will serve as pivot point
+    let halfPi = 0.5 * Math.PI;
 
+    var newArr = [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ];
 
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        let r = Math.sqrt( Math.pow((ghost[i].x-ghost[p].x), 2) + Math.pow((ghost[i].y-ghost[p].y), 2) );
+            console.log(`arrNew[${i}]`);
+            //console.log(`   radius is ${r}`);
+        let a = Math.atan( (ghost[p].y-ghost[i].y) / (ghost[i].x-ghost[p].x) );
+            console.log(`   angle is ${a}`);
+        a = eval(a - halfPi);
+            console.log(`   angle is ${a}`);
+        newArr[i].y = Math.floor( ghost[p].y - r * Math.sin( eval(a) ) );
+        newArr[i].x = Math.floor( ghost[p].x + r * Math.cos( eval(a) ) );
+        newArr[p].y = ghost[p].y;
+        newArr[p].x = ghost[p].x;
 
+            //console.log(`   New: ${newArr[i].x}, ${newArr[i].y}`);
+
+    }
+
+    displayGhost(newArr);
 }
 
 
 
 
-function displayGhost() {
-    console.log(`(${ghost[0].x},${ghost[0].y}) (${ghost[1].x},${ghost[1].y}) (${ghost[2].x},${ghost[2].y}) (${ghost[3].x},${ghost[3].y})`);
+function displayGhost(a) {
+    // console displays the provided array.
+    // the array has to have this format: [ {x,y}, {x,y}, {x,y}, {x,y} ]
+    console.log(`(${a[0].x},${a[0].y}) (${a[1].x},${a[1].y}) (${a[2].x},${a[2].y}) (${a[3].x},${a[3].y})`);
 }
 
+
+
+function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
+
+    for ( let i = 0 ; i < arr.length ; i++ ) {
+            arr[i].x += xAdd;
+            arr[i].x *= xMul;
+            arr[i].y += yAdd;
+            arr[i].y *= yMul;
+    }
+}
 
 
 
