@@ -13,6 +13,7 @@
 
 
 // DOM elements
+    var test = document.getElementById('testground');
     var toyRoom = document.getElementById('toyRoom');   
     var blockPile = toyRoom.children;
     var moveButtons = document.getElementById('controller');   
@@ -31,7 +32,7 @@
 
 // dimension variables
     var numOfBlock = {  x : 10,
-                        y : 10,
+                        y : 8,
                         m : 0,
                         t : 0,
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -85,7 +86,7 @@
             } else {
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
             } } };
-        yMove.flip.fallV();
+        //yMove.flip.fallV();
     
     
 
@@ -115,7 +116,7 @@
 
 
 
-    var tetrisChance = [1, 1, 0, 0, 0, 0, 0];
+    var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
         // ratio of how likely each tetrisForm[] is to appear.
 
     var randomMatrix = {
@@ -200,10 +201,12 @@
         // px.off removes the 'px'.  px.on puts the 'px' back on, plus it adds one more thing.
 
 
-    var wall = {    left : 0,
-                    right : xDim - xInc,
-                    floor : yDim - yInc }
+    var wall = {    
         // used for collision check
+        left : 0,
+        right : xDim - xInc,
+        floor : yDim - yInc }
+        
 
 
 
@@ -220,7 +223,30 @@
 
 
 
+    var rotateP = {
+        r : 0,          // radius
+        initA : 0,      // initial angle [radians]
+        newA : 0,       // new angle [radians]
+        xNew : 0,
+        yNew : 0,
+        calc : function(x0, y0, x1, y1, rotA) {
+            // x0, y0 are coordinates of the block that the other block pivots around.
+            // x1, y1 are coordinates of the block that rotates around the other block.
+            // rotA is the angle of rotation. [radians]
+            // when rotA is positive, the rotation is clockwise.
+            this.r = Math.sqrt( Math.pow(y1-y0,2) + Math.pow(x1-x0,2) );
+            this.initA = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/this.r ) : Math.asin( (y1-y0)/this.r );
+            this.newA = this.initA + rotA;
+            let a = this.r * Math.cos(this.newA) + x0;
+            let b = this.r * Math.sin(this.newA) + y0;
+            this.xNew = Math.round(a);
+            this.yNew = Math.round(b);
+            
+            let text = (`inside rotateP -> xNew:${this.xNew} yNew:${this.yNew} \n`); 
+            test.innerText = test.innerText + text;
 
+            }
+    }
 
 
 
@@ -363,9 +389,11 @@ function keyDownAction(ev) {
         case 'KeyF':
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
             break;
-        case 'KeyR':
+        case 'KeyT':
             rotateTest();
             break;
+
+
 
         // directional movement
         case 'ArrowLeft':
@@ -622,34 +650,68 @@ function moveRotate(text) {
     // arr contains rotateMatrix[pose][form]
     // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
 
-    if (text == 'left') {
-        blockToGhost(rotateMatrix[currentTetris.form][currentTetris.pose]);
-        if (crashFree()) {
-            ghostToBlock();
-            currentTetris.flip(1);
-        }
-    } 
     
-    // tbh i don't like that I have to make this complicated. I really want a simpler solution...
-    if (text == 'right') {
-        currentTetris.flip(-1);
-        let a = [ {x:0,y:0}, {x:0,y:0}, {x:0,y:0}, {x:0,y:0} ];
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            a[i].x = -rotateMatrix[currentTetris.form][currentTetris.pose][i].x;
-            a[i].y = -rotateMatrix[currentTetris.form][currentTetris.pose][i].y;
+    let rotA = (text=='left') ? -Math.PI/2 : Math.PI/2;
+
+    blockToGhost(translateMatrix.stay);
+
+    var pivot = 1;
+
+    test.innerText = '';
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+
+        if (i!=pivot) {
+            test.innerText = test.innerText + i + '\n';
+            
+
+            rotateP.calc( ghost[pivot].x , ghost[pivot].y , ghost[i].x , ghost[i].y , rotA );
+
+            //test.innerText = test.innerText + rotateP.xNew + ' ' + rotateP.yNew + '\n';
+
+            ghost[i].x = rotateP.xNew;
+            ghost[i].y = rotateP.yNew;
+
+
+            test.innerText = test.innerText + ghost[i].x + ' ' + ghost[i].y + '\n';
+            //ghost[i].y = Math.round(rotateP.yNew);
+            //test.innerText = test.innerText + '\n' + ghost[i].x + ' ' + ghost[i].x + ' ' + xInc;
         }
-        //console.log(a);
-        blockToGhost(a);
-        if (crashFree()) {
-            ghostToBlock();
-        } else {
-            currentTetris.flip(1);
-        }
+
     }
 
-    //console.log('form:' + currentTetris.form + ' pose:' + currentTetris.pose);
+    if ( crashFree() ) ghostToBlock();
+
+    
+
+
 
 }   // end of moveRotate()
+
+
+
+
+
+function crashFree() {
+    // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
+    // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
+    // yields TRUE if no collisions.
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+
+        // check walls first
+        if (ghost[i].x < wall.left) return false;
+        if (ghost[i].x > wall.right) return false;
+        if (ghost[i].y > wall.floor) return false;
+
+        // check for block collisions
+        if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
+        if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
+    }
+
+    return true;
+
+}
 
 
 
@@ -658,54 +720,13 @@ function moveRotate(text) {
 function rotateTest() {
 
     blockToGhost(translateMatrix.stay);
-    
-    console.log('   ghost is...');
-    displayGhost(ghost);
+    rotateP.calc(ghost[1].x, ghost[1].y, ghost[0].x, ghost[0].y, Math.PI/10 );
+    ghost[0].x = Math.round(rotateP.xNew);
+    ghost[0].y = Math.round(rotateP.yNew);
+    ghostToBlock();
 
-    let p = 1;     // index of block that will serve as pivot point
-    let halfPi = 0.5 * Math.PI;
+    test.innerText = blockPile[numOfBlock.t].style.left + ' ' + blockPile[numOfBlock.t].style.top + ' ' + xInc;
 
-    var newArr = [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ];
-
-    for ( let i = 0 ; i <= 3 ; i++ ) {
-        let r = Math.sqrt( Math.pow((ghost[i].x-ghost[p].x), 2) + Math.pow((ghost[i].y-ghost[p].y), 2) );
-            console.log(`arrNew[${i}]`);
-            //console.log(`   radius is ${r}`);
-        let a = Math.atan( (ghost[p].y-ghost[i].y) / (ghost[i].x-ghost[p].x) );
-            console.log(`   angle is ${a}`);
-        a = eval(a - halfPi);
-            console.log(`   angle is ${a}`);
-        newArr[i].y = Math.floor( ghost[p].y - r * Math.sin( eval(a) ) );
-        newArr[i].x = Math.floor( ghost[p].x + r * Math.cos( eval(a) ) );
-        newArr[p].y = ghost[p].y;
-        newArr[p].x = ghost[p].x;
-
-            //console.log(`   New: ${newArr[i].x}, ${newArr[i].y}`);
-
-    }
-
-    displayGhost(newArr);
-}
-
-
-
-
-function displayGhost(a) {
-    // console displays the provided array.
-    // the array has to have this format: [ {x,y}, {x,y}, {x,y}, {x,y} ]
-    console.log(`(${a[0].x},${a[0].y}) (${a[1].x},${a[1].y}) (${a[2].x},${a[2].y}) (${a[3].x},${a[3].y})`);
-}
-
-
-
-function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
-
-    for ( let i = 0 ; i < arr.length ; i++ ) {
-            arr[i].x += xAdd;
-            arr[i].x *= xMul;
-            arr[i].y += yAdd;
-            arr[i].y *= yMul;
-    }
 }
 
 
@@ -755,26 +776,48 @@ function integrateBlocks() {
 
 
 
-function crashFree() {
-    // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
-    // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
-    // yields TRUE if no collisions.
 
-    for ( let i = 0 ; i <= 3 ; i++ ) {
 
-        // check walls first
-        if (ghost[i].x < wall.left) return false;
-        if (ghost[i].x > wall.right) return false;
-        if (ghost[i].y > wall.floor) return false;
+// ---------------------- SHORTCUT FUNCTIONS --------------------------- //
 
-        // check for block collisions
-        if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
-        if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
-    }
 
-    return true;
 
-}
+
+function RadToDeg(a) { return a * 180 / Math.PI; }
+
+
+
+
+function DegToRad(a) { return a * Math.PI / 180; }
+
+
+
+
+
+function displayGhost(a) {
+    // console displays the provided array.
+    // the array has to have this format: [ {x,y}, {x,y}, {x,y}, {x,y} ]
+    console.log(`(${a[0].x},${a[0].y}) (${a[1].x},${a[1].y}) (${a[2].x},${a[2].y}) (${a[3].x},${a[3].y})`); }
+
+
+
+function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
+    // assumes arr is an array of {x,y} objects.
+    // adds xAdd to every x value, then multiplies every x value by xMul.
+    // adds yAdd to every y value, then multiplies every y value by yMul.
+    for ( let i = 0 ; i < arr.length ; i++ ) {
+            arr[i].x += xAdd;
+            arr[i].x *= xMul;
+            arr[i].y += yAdd;
+            arr[i].y *= yMul; } }
+
+
+
+
+
+
+
+
 
 
 

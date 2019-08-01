@@ -43,6 +43,16 @@
             user-select: none;
         }
 
+        #testground {
+            background-color: #333;
+            color: white;
+            font-size: 8pt;
+            width: 300px;
+            min-height: 100px;
+            display: inline-block;
+            float: left;
+
+        }
 
         #toyRoom {
             background-color: #FFF;
@@ -70,7 +80,7 @@
 <body>
 
     <header>
-        <h1>N: reset to top / F: toggle fall / Space: integrate / Up: delay integrate<br>
+        <h1>N: reset to top / F: toggle fall / T: test / Space: integrate / Up: delay integrate<br>
         Arrows: to move / A: rotate counter / S: rotate clockwise / Click: flip block</h1>
     </header>
 
@@ -89,11 +99,15 @@
     </div>
 
     <br>
+    <div id='testground'>
+
+    </div>
     <article>
         <div id="toyRoom" >
             
         </div>
     </article>
+    
 
 
     <footer>
