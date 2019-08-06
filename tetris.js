@@ -31,8 +31,8 @@
 
 
 // dimension variables
-    var numOfBlock = {  x : 10,             // number of blocks in the horizontal direction
-                        y : 8,              // number of blocks in the vertical direction
+    var numOfBlock = {  x : 9,             // number of blocks in the horizontal direction
+                        y : 20,              // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -63,9 +63,9 @@
 
 
 // TIME settings
-    var timeInc = 5;                // time interval used in timeFlow
+    var timeInc = 10;                // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
-    var count = {   set : { stagnant : 300 },           // how long tetris piece should wait until it integrates into the pile
+    var count = {   set : { stagnant : 100 },           // how long tetris piece should wait until it integrates into the pile
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     reset : function() { this.stagnant = 0; },
                     fill : function() { this.stagnant = this.set.stagnant; } };
@@ -74,7 +74,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 10, downV : 1 },         // set these manually to adjust speed
+        setting : { fallV : 50, downV : 3 },         // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },
         flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
@@ -90,7 +90,7 @@
             } else {
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
             } } };
-        //yMove.flip.fallV();
+        yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
     
     
 
@@ -205,6 +205,7 @@
         stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ] }
         for ( let i = 0 ; i <=3 ; i++ ) {
             translateMatrix.left[i].x *= xInc;
+            translateMatrix.down[i].y *= 0.5*yInc;
             translateMatrix.right[i].x *= xInc; }
 
     var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
@@ -276,7 +277,7 @@ function setBoard() {
         p.style.opacity = setOpacity.low;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
-        p.style.borderRadius = '12px'; 
+        p.style.borderRadius = '45%'; 
         p.style.boxShadow = blockBoxShadow;
 
         p.style.width = xInc + 'px';
@@ -445,7 +446,7 @@ function createBlockAgent() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = tetrisBackgroundColor;
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = '1px 11px 11px 11px';
+        p.style.borderRadius = '45%';
         p.style.visibility = 'visible';
         
         p.style.boxShadow = tetrisBoxShadow;
@@ -675,6 +676,7 @@ function crashFree() {
 
         // check for block collisions
         // requires ghost[i].floor and .ceil to yield integers
+        //if ( ghost[i].floor < 0) return true;
         if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
         if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
     }
@@ -712,11 +714,17 @@ function rotateTest() {
 function integrateBlocks() {
     // integrates tetris into blockPile, then reset tetris piece back to top.
 
+    blockToGhost(translateMatrix.down);
+    let onSolidGround = !crashFree();
+    
+    
     blockToGhost(translateMatrix.stay);
     
     //let a = ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() );
 
-    if ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() ) {
+    //console.log('onSolidGround: ' + onSolidGround);
+
+    if ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() && onSolidGround ) {
         // check that block is aligned to grid AND block has instruction to fall if it can.
         // the counter will reset once you break the chain, by moving or by toggling the falling condition off.
 
