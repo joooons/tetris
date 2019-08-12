@@ -15,10 +15,14 @@
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
     var blockPile = toyRoom.children;
-    var moveButtons = document.getElementById('controller');   // I might want to call each child element by ID actually... later.
-    var test = document.getElementById('testground');
+    //var moveButtons = document.getElementById('controller');   // I might want to call each child element by ID actually... later.
+    //var test = document.getElementById('testground');
 
 
+// CANVAS elements
+    //var canvas = document.getElementById('canvas');
+    //var ctx = canvas.getContext('2d');
+    
 
 // SCREEN and BROWSER parameters
     var screen = {  x : window.screen.width,
@@ -56,7 +60,7 @@
     var blockBoxShadow = '0px 0px 5px 0px inset blue';
     var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
     var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
-    var setOpacity = {  low : 0.2,                  // low setting of opacity
+    var setOpacity = {  low : 0.1,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
@@ -65,9 +69,12 @@
 // TIME settings
     var timeInc = 10;                // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
-    var count = {   set : { stagnant : 100 },           // how long tetris piece should wait until it integrates into the pile
+    var count = {   set : { stagnant : 60,            // how long tetris piece should wait until it integrates into the pile
+                            limit    : 240 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
+                    limit : 0,
                     reset : function() { this.stagnant = 0; },
+                    resetlimit : function() { this.limit = 0; },
                     fill : function() { this.stagnant = this.set.stagnant; } };
 
 
@@ -268,18 +275,19 @@ function setBoard() {
 
         var p = document.createElement('div');
 
-        p.style.cursor = 'pointer';
+        p.style.cursor = 'pointer';             // not necessary
 
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = blockBackgroundColor;
         
         //p.style.opacity = ( 0 == ( Math.floor( rarity * i * Math.random() ) ) ) ? setOpacity.low : setOpacity.high;
+        
         p.style.opacity = setOpacity.low;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
         p.style.borderRadius = '45%'; 
         p.style.boxShadow = blockBoxShadow;
-
+        
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
         p.style.cssFloat = 'left';
@@ -301,12 +309,12 @@ function setBoard() {
 
 
     // mouse click to move tetris possible!!!
-    moveButtons.children[0].onclick = function() { moveHorizontal(translateMatrix.left); }
-    moveButtons.children[1].onclick = function() { ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down(); }
-    moveButtons.children[2].onclick = function() { moveHorizontal(translateMatrix.right); }
-    moveButtons.children[3].onclick = function() { moveRotate('left'); }
-    moveButtons.children[4].onclick = function() { resetTetrisShape(); }
-    moveButtons.children[5].onclick = function() { integrateBlocks(); }
+        //moveButtons.children[0].onclick = function() { moveHorizontal(translateMatrix.left); }
+        //moveButtons.children[1].onclick = function() { ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down(); }
+        //moveButtons.children[2].onclick = function() { moveHorizontal(translateMatrix.right); }
+        //moveButtons.children[3].onclick = function() { moveRotate('left'); }
+        //moveButtons.children[4].onclick = function() { resetTetrisShape(); }
+        //moveButtons.children[5].onclick = function() { integrateBlocks(); }
         // might have to remove this later. Think about it...
 
 }   // end of setBoard()
@@ -376,18 +384,19 @@ function keyDownAction(ev) {
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
             break;
         case 'KeyT':
-            rotateTest();             // use this to test functions
+            //rotateTest();             // use this to test functions
             break;
 
         // directional movement
         case 'ArrowLeft':
+            count.reset();              // resets the counter for integrateBlock()
             moveHorizontal(translateMatrix.left);
             break;
         case 'ArrowRight':
+            count.reset();              // resets the counter for intergrateBlock()
             moveHorizontal(translateMatrix.right);
             break;
         case 'ArrowUp':
-            count.reset();              // resets the counter for integrateBlock()
             break;
         case 'ArrowDown':
             yMove.press.down();         // accelerates falling speed
@@ -420,7 +429,42 @@ function keyUpAction(ev) {
 
 
 
+function createTitlePage() {
+    // creates title page
+    // make sure to create the title page AFTER you already set the board and tetris piece
 
+
+    var p = document.createElement('div');
+    p.style.position = 'relative';
+    p.style.backgroundColor = '#0005';
+    p.style.left = '10px';
+    p.style.top = '10px';
+    p.style.width = '200px';
+    p.style.height = '500px';
+
+    p.style.color = '#FFF';
+    p.style.fontSize = '9pt';
+    p.style.borderRadius = '20px';
+    //p.style.display = 'block';
+    p.innerText = 'hello';
+    
+    
+    /*
+    p.onclick = function() {
+        let a = 0;
+        var t = setInterval(function() {
+            p.innerText = a;
+            if (a=20) clearInterval(t);
+        },10);
+    }
+    */
+
+    toyRoom.appendChild(p); 
+
+    //toyRoom.lastChild.innerText = 'why';
+    //toyRoom.lastChild.style.borderRadius = '0%';
+
+}
 
 
 
@@ -688,23 +732,6 @@ function crashFree() {
 
 
 
-function rotateTest() {
-    // this is just a test function. it has no role in the actual game.
-    // all I'm doing is trying out how to rotate one block aronud another.
-    // i will have to delete this function later.
-
-    let angleOfRotation = Math.PI / 10;
-
-    blockToGhost(translateMatrix.stay);
-    rotateP.calc(ghost[1].x, ghost[1].y, ghost[0].x, ghost[0].y, angleOfRotation );
-    ghost[0].x = Math.round(rotateP.xNew);
-    ghost[0].y = Math.round(rotateP.yNew);
-    ghostToBlock();
-
-    test.innerText = blockPile[numOfBlock.t].style.left + ' ' + blockPile[numOfBlock.t].style.top + ' ' + xInc;
-
-}   // end of rotateTest()
-
 
 
 
@@ -728,11 +755,18 @@ function integrateBlocks() {
         // check that block is aligned to grid AND block has instruction to fall if it can.
         // the counter will reset once you break the chain, by moving or by toggling the falling condition off.
 
-        if ( count.stagnant > 10 ) {
+        if ( count.stagnant > 4 ) {
             // the number 10 here is arbitrary. I put the 10 here because otherwise the count.stagnant at zero...
             // ... interrupts the tetris face.
-            for ( let i=0 ; i<=3 ; i++ ) { 
-                blockPile[i+numOfBlock.t].innerText = Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
+
+            if ( count.limit < (count.set.limit - count.set.stagnant + 5 ) ) {
+                for ( let i=0 ; i<=3 ; i++ ) { 
+                    blockPile[i+numOfBlock.t].innerText = Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
+                }
+            } else {
+                for ( let i=0 ; i<=3 ; i++ ) { 
+                    blockPile[i+numOfBlock.t].innerText = Math.ceil( ( count.limit - count.set.limit + count.set.stagnant ) / (count.set.stagnant / 10) ); 
+                }
             }
         }
 
@@ -746,9 +780,15 @@ function integrateBlocks() {
             resetTetrisShape();
             checkRow();
             count.reset();
-        } else { count.stagnant++; }
+        } else { 
+            count.stagnant++; 
+            if (count.limit++ == count.set.limit) count.fill();
+        }
 
-    } else { count.reset(); }
+    } else { 
+        count.reset(); 
+        count.resetlimit();
+    }
 }   // end of integrateBlocks()
 
 
@@ -813,6 +853,8 @@ setBoard();
 checkRow();             // after random blocks are generated, check for row completion
 createBlockAgent();     // create the four elements for the tetris block
 resetTetrisShape();     // put the tetris piece on the board
+
+createTitlePage();
 
 
 // runs continuously
