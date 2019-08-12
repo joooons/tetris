@@ -412,7 +412,7 @@ function keyDownAction(ev) {
             resetTetrisShape();
             break;
         case 'Space':
-            count.fill();               // accelerates integrateBlock()
+            //count.fill();               // accelerates integrateBlock()
             break;
         case 'KeyF':
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
@@ -811,6 +811,12 @@ function integrateBlocks() {
                 }
             }
         }
+
+        document.addEventListener('keydown', 
+            function(ev) {
+                if ( ev.code == 'ArrowDown' ) { count.fill(); };
+            }
+        );
 
         if ( count.stagnant == count.set.stagnant ) {
             // once the counter reaches the end...
