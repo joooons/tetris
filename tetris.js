@@ -54,10 +54,21 @@
 
 // appearance settings
     var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
-    var blockBoxShadow = '0px 0px 5px 0px inset blue';
+    var tetrisOpacity = 0.3;
+    var blockBoxShadow = '0px 0px 5px 0px inset white';
     var blockBorderRadius = '0%';
-    var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
-    var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
+    //var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
+    var tetrisColor = [];
+        tetrisColor[0] = 'rgba(250, 100, 100, 0.3)';
+        tetrisColor[1] = 'rgba(250, 250, 100, 0.3)';
+        tetrisColor[2] = tetrisColor[1];
+        tetrisColor[3] = 'rgba(100, 250, 100, 0.3)';
+        tetrisColor[4] = tetrisColor[3];
+        tetrisColor[5] = 'rgba(100, 250, 250, 0.3)';
+        tetrisColor[6] = 'rgba(250, 100, 250, 0.3)';
+
+    //var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
+    var tetrisBoxShadow = '0px 0px 5px 0px inset #FFF';
     var setOpacity = {  low : 0.1,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
@@ -113,7 +124,7 @@
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [5, 3, 3, 1, 1, 3, 1];
+    var tetrisChance = [2, 1, 1, 1, 1, 2, 2];
         // ratio of how likely each tetrisForm[] is to appear.
         // tetrisChance[0] represents how likely it is for the long bar to appear.
         // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
@@ -512,7 +523,7 @@ function createTetrisPiece() {
         p.innerText = 'o__o';
         
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = tetrisBackgroundColor;
+        //p.style.backgroundColor = tetrisBackgroundColor;
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
         p.style.borderRadius = blockBorderRadius;
         p.style.visibility = 'visible';
@@ -553,7 +564,7 @@ function resetTetrisShape() {
     for ( let i = 0 ; i <=3 ; i++ ) {
         blockPile[i+numOfBlock.t].style.left = tetrisForms[currentTetris.form][i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = tetrisForms[currentTetris.form][i].y + 'px';
-        
+        blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[currentTetris.form];
     }
 
 }   // end of resetTetrisShape()
@@ -807,7 +818,10 @@ function integrateBlocks() {
             // reset the tetris shape...
             // check for any rull rows...
             // and reset the counter back to zero.
-            for (let i=0 ; i<=3 ; i++ ) { blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; }
+            for (let i=0 ; i<=3 ; i++ ) { 
+                blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; 
+                blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[currentTetris.form];
+            }
             resetTetrisShape();
             checkRow();
             count.reset();
@@ -889,7 +903,7 @@ checkRow();             // after random blocks are generated, check for row comp
 createTetrisPiece();     // create the four elements for the tetris block
 resetTetrisShape();     // put the tetris piece on the board
 
-createTitlePage();
+//createTitlePage();
 
 
 // runs continuously
