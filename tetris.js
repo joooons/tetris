@@ -26,7 +26,7 @@
     var screen = {  x : window.screen.width,
                     y : window.screen.height,
                     r : window.devicePixelRatio,
-                    t : 0.66 }                      // "trim", percentage to vertically shrink toyRoom by
+                    t : 0.72 }                      // "trim", percentage to vertically shrink toyRoom by
     //console.log(`Screen res: ${screen.x} x ${screen.y}  ratio: ${screen.r}`);
     //console.log(navigator.userAgent);
 
@@ -34,7 +34,7 @@
 
 // dimension variables
     var numOfBlock = {  x : 7,              // number of blocks in the horizontal direction
-                        y : 12,             // number of blocks in the vertical direction
+                        y : 18,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -42,7 +42,8 @@
         numOfBlock.midpoint();      
         numOfBlock.total();
 
-    var yInc = Math.ceil( ( screen.y * screen.t ) / numOfBlock.y );
+    var yInc = 2 * Math.ceil( 0.5 * ( screen.y * screen.t ) / numOfBlock.y );
+        // dividing by 2 and multilying by 2 ensures the half-steps are still integer steps.
     var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
     var yDim = yInc * numOfBlock.y;
     var xDim = xInc * numOfBlock.x;
@@ -57,16 +58,16 @@
     var blockBorderRadius = '0%';
     var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
     var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
-    var setOpacity = {  low : 0.05,                  // low setting of opacity
+    var setOpacity = {  low : 0.1,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
 
 
 // TIME settings
-    var timeInc = 10;                // time interval used in timeFlow
+    var timeInc = 10;               // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
-    var count = {   set : { stagnant : 60,            // how long tetris piece should wait until it integrates into the pile
+    var count = {   set : { stagnant : 60,              // how long tetris piece should wait until it integrates into the pile
                             limit    : 240 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     limit : 0,
@@ -80,7 +81,8 @@
     var yMove = {
         setting : { fallV : 50, downV : 3 },         // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },
-        flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
+        flip : { 
+            fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
             down : function() { yMove.actual.downV = yMove.setting.downV; },
             up : function() { yMove.actual.downV = 0 } },
@@ -111,7 +113,7 @@
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [6, 3, 3, 1, 1, 3, 1];
+    var tetrisChance = [5, 3, 3, 1, 1, 3, 1];
         // ratio of how likely each tetrisForm[] is to appear.
         // tetrisChance[0] represents how likely it is for the long bar to appear.
         // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
@@ -131,16 +133,20 @@
     var currentTetris = { 
         form : 0,                               // there are 7 forms total. 0 to 6.
         pose : 0,                               // number of poses for each form varies. At most four.
+            // NOTICE!!!! --- at the moment, currentTetris.pose is not used at all...
         flip : function(num) {                  // assumes num is either 1 or -1
             this.pose = this.pose + num;
             if (this.pose == rotateMatrix[this.form].length) this.pose = 0;
             if (this.pose < 0 ) this.pose = rotateMatrix[this.form].length - 1; } };
+            // NOTICE!!! --- since I'm not useing rotateMatrix, the flip method is also unused.
+            
 
     var rotateMatrix = [];
         // this is the rotation matrix. For the given form and pose, this is the tranformation...
         // ... that must take place to get to the next pose in line.
         // it assumes that the rotation is happening in the counterclockwise direction.
         // after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
+        // NOTICE!!! --- at the moment, rotateMatrix is not used at all!!!
         rotateMatrix[0] = [];
             rotateMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
             rotateMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
@@ -180,11 +186,11 @@
         xNew : 0,
         yNew : 0,
         calc : function(x0, y0, x1, y1, rotA) {
-            // x0, y0 are coordinates of the block that the other block pivots around.
-            // x1, y1 are coordinates of the block that rotates around the other block.
+            // x0, y0 are coordinates that the other block pivots around.
+            // x1, y1 are coordinates of the block that rotates around the pivot coordinate.
             // rotA is the angle of rotation. [radians]
             // when rotA is positive, the rotation is CLOCKWISE.
-            this.r = Math.sqrt( Math.pow(y1-y0,2) + Math.pow(x1-x0,2) );
+            this.r = Math.sqrt( Math.pow( y1-y0 , 2 ) + Math.pow( x1-x0 , 2 ) );
             if (this.r==0) {
                 // if radius is zero, the inverse sine formula yields and error.
                 this.xNew = x0;
@@ -196,27 +202,24 @@
                 this.yNew = Math.round(this.r * Math.sin(this.newA) + y0); } } } 
     
     var longBarPivot = {
-        // this is the pivot point for the long bar only. The long bar has a pivot point that is not exclusively any one of the tetris piece.
+        // this is the pivot point for the long bar only. 
+        // The long bar has a pivot point that is not exclusively any one of the tetris piece.
+        // For all other tetris shapes, I can just set one of the blocks as the pivot point.
+        // But for the long bar, the pivot point has to be outside the tetris piece itself...
+        // ... in order to produce the nicely balanced rotation that doesn't swing too much in one way.
         x : 0,
         y : 0,
-        xMid : 0,              // x position of the pivot point (output)
-        yMid : 0,              // y position of the pivot point (output)
-        a : 0,              // initial angle from (x0,y0) to (x1,y1)
-        b : 0,              // new angle = initial angle plus 90 degrees
-        r : 3 * xInc,       // assuming that xInc and yInc are the same
-        d : 0.5 * xInc,     // assuming that xInc and yInc are the same
         calc : function(x0, y0, x1, y1) {
             // input: coordinates of the first tetris block and the fourth tetris block
             // output: coordinates of the pivot point
-            this.r = Math.sqrt( Math.pow(y1-y0,2) + Math.pow(x1-x0,2) );
-            this.a = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/this.r ) : Math.asin( (y1-y0)/this.r );
-            this.xMid = x0 + 0.5 * (x1 - x0);
-            this.yMid = y0 + 0.5 * (y1 - y0);
-            this.b = this.a + 0.5 * Math.PI;
-            //this.x = Math.round(this.d * Math.cos(this.b) + this.xMid);
-            //this.y = Math.round(this.d * Math.sin(this.b) + this.yMid);
-            this.x = this.d * Math.cos(this.b) + this.xMid;
-            this.y = this.d * Math.sin(this.b) + this.yMid;
+            let d = 0.5 * xInc;                         // perpendicular distance of the pivot point from the line from point 1 to point 2
+            let r = Math.sqrt( Math.pow(y1-y0,2) + Math.pow(x1-x0,2) );         // distance between (x0,y0) and (x1,y1)
+            let a = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/r ) : Math.asin( (y1-y0)/r );    // angle between (x0,y0) and (x1,y1)
+            let xMid = x0 + 0.5 * (x1 - x0);            // midpoint x
+            let yMid = y0 + 0.5 * (y1 - y0);            // midpoint y
+            let b = a + 0.5 * Math.PI;                  // new angle = old angle + 90 deg
+            this.x = d * Math.cos(b) + xMid;
+            this.y = d * Math.sin(b) + yMid;
             return true; } }
 
 
@@ -231,9 +234,9 @@
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
         stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ] }
         for ( let i = 0 ; i <=3 ; i++ ) {
-            translateMatrix.left[i].x *= xInc;
-            translateMatrix.down[i].y *= 0.5*yInc;
-            translateMatrix.right[i].x *= xInc; }
+            translateMatrix.left[i].x *= xInc;              // length of side step
+            translateMatrix.right[i].x *= xInc;             // length of side step
+            translateMatrix.down[i].y *= 0.5*yInc; }        // length of downward step
 
     var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
         // the ghost is used as temporary storage of the tetris piece's current location.
@@ -545,13 +548,13 @@ function resetTetrisShape() {
     //currentTetris.form = randomMatrix.matrix[currentTetris.form];
     currentTetris.form = randomMatrix.matrix[Math.floor(randomMatrix.matrix.length * Math.random() )];
     currentTetris.pose = 0;
+        // currentTetris.pose isn't really being used right now. So sad...
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         blockPile[i+numOfBlock.t].style.left = tetrisForms[currentTetris.form][i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = tetrisForms[currentTetris.form][i].y + 'px';
+        
     }
-
-    //console.log(`form:${currentTetris.form} pose:${currentTetris.pose} (NEW)`);
 
 }   // end of resetTetrisShape()
 
@@ -694,46 +697,44 @@ function moveHorizontal(arr) {
 
 
 function moveRotate(text) {
-    // rotates tetris piece clockwise or counterclockwise
-    // if text is 'left', rotate counterclockwise
-    // if text is 'right', rotate clockwise
-    // arr contains rotateMatrix[pose][form]
-    // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
+    // rotates tetris piece clockwise or counterclockwise.
+    // if text is 'left', rotate counterclockwise.
+    // if text is 'right', rotate clockwise.
 
     let rotA = (text=='left') ? -Math.PI/2 : Math.PI/2;
     let arr = { x:0 , y:0 };
     let pivot = 1;
 
-    if (currentTetris.form==6) { return };          // don't rotate the square shaped tetris
-
-    
+    if (currentTetris.form==6) { return };
+        // don't rotate the square shaped tetris
 
     blockToGhost(translateMatrix.stay);
 
     if (currentTetris.form==0) {
+        // change the pivot coordinate if the tetris piece is the LONG BAR
         longBarPivot.calc( ghost[0].x, ghost[0].y, ghost[3].x, ghost[3].y );
         arr.x = longBarPivot.x;
         arr.y = longBarPivot.y;
     } else {
+        // for all other tetris piece shapes, just use one of the middle blocks as pivot
         arr.x = ghost[pivot].x;
         arr.y = ghost[pivot].y;
     }
 
-
-
     for ( let i = 0 ; i <= 3 ; i++ ) {
-            rotateP.calc( arr.x , arr.y , ghost[i].x , ghost[i].y , rotA );
-            ghost[i].x = rotateP.xNew;
-            ghost[i].y = rotateP.yNew;           
+        // put the rotated positions into the ghost object.
+        // before we change the position of the actual tetris piece, we're going to test it first.
+        rotateP.calc( arr.x , arr.y , ghost[i].x , ghost[i].y , rotA );
+        ghost[i].x = rotateP.xNew;
+        ghost[i].y = rotateP.yNew;           
     }
+
     if ( crashFree() ) { 
+        // this is where we crash-test the rotated position using the ghost object
+        // if it passes the test, copy the positions into the actual tetris piece
         ghostToBlock(); 
         return;
     }
-
-    // now that I know how to rotate the tetris piece using the formula method, I kind of like the other way better.
-    // there is an advantage to using preset poses for rotating. 
-    // I haven't decided which method I will use in the end. I'll think about it later...
 
 }   // end of moveRotate()
 
@@ -756,7 +757,6 @@ function crashFree() {
 
         // check for block collisions
         // requires ghost[i].floor and .ceil to yield integers
-        //if ( ghost[i].floor < 0) return true;
         if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
         if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
     }
