@@ -15,8 +15,6 @@
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
     var blockPile = toyRoom.children;
-    //var moveButtons = document.getElementById('controller');   // I might want to call each child element by ID actually... later.
-    //var test = document.getElementById('testground');
 
 
 // CANVAS elements
@@ -35,8 +33,8 @@
 
 
 // dimension variables
-    var numOfBlock = {  x : 9,             // number of blocks in the horizontal direction
-                        y : 20,              // number of blocks in the vertical direction
+    var numOfBlock = {  x : 9,              // number of blocks in the horizontal direction
+                        y : 20,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
@@ -55,12 +53,13 @@
 
 
 
-// color settings
+// appearance settings
     var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
     var blockBoxShadow = '0px 0px 5px 0px inset blue';
+    var blockBorderRadius = '0%';
     var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
     var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
-    var setOpacity = {  low : 0.1,                  // low setting of opacity
+    var setOpacity = {  low : 0.05,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
@@ -81,7 +80,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 50, downV : 3 },         // set these manually to adjust speed
+        setting : { fallV : 30, downV : 3 },         // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },
         flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
@@ -114,7 +113,7 @@
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [1, 1, 1, 1, 1, 1, 1];
+    var tetrisChance = [1, 0, 0, 0, 0, 0, 0];
         // ratio of how likely each tetrisForm[] is to appear.
         // tetrisChance[0] represents how likely it is for the long bar to appear.
         // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
@@ -195,12 +194,35 @@
             } else {
                 this.initA = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/this.r ) : Math.asin( (y1-y0)/this.r );
                 this.newA = this.initA + rotA;
-                //let a = this.r * Math.cos(this.newA) + x0;
-                //let b = this.r * Math.sin(this.newA) + y0;
-                //this.xNew = Math.round(a);
-                //this.yNew = Math.round(b);
                 this.xNew = Math.round(this.r * Math.cos(this.newA) + x0);
                 this.yNew = Math.round(this.r * Math.sin(this.newA) + y0); } } } 
+    
+    var longBarPivot = {
+        // this is the pivot point for the long bar only. The long bar has a pivot point that is not exclusively any one of the tetris piece.
+        x : 0,
+        y : 0,
+        xMid : 0,              // x position of the pivot point (output)
+        yMid : 0,              // y position of the pivot point (output)
+        a : 0,              // initial angle from (x0,y0) to (x1,y1)
+        b : 0,              // new angle = initial angle plus 90 degrees
+        r : 3 * xInc,       // assuming that xInc and yInc are the same
+        d : 0.5 * xInc,     // assuming that xInc and yInc are the same
+        calc : function(x0, y0, x1, y1) {
+            // input: coordinates of the first tetris block and the fourth tetris block
+            // output: coordinates of the pivot point
+            this.r = Math.sqrt( Math.pow(y1-y0,2) + Math.pow(x1-x0,2) );
+            this.a = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/this.r ) : Math.asin( (y1-y0)/this.r );
+            this.xMid = x0 + 0.5 * (x1 - x0);
+            this.yMid = y0 + 0.5 * (y1 - y0);
+            this.b = this.a + 0.5 * Math.PI;
+            //this.x = Math.round(this.d * Math.cos(this.b) + this.xMid);
+            //this.y = Math.round(this.d * Math.sin(this.b) + this.yMid);
+            this.x = this.d * Math.cos(this.b) + this.xMid;
+            this.y = this.d * Math.sin(this.b) + this.yMid;
+            return true; } }
+
+
+
 
     var translateMatrix = {
         // this object is used as the input array for blockToGhost()
@@ -285,7 +307,7 @@ function setBoard() {
         p.style.opacity = setOpacity.low;
 
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
-        p.style.borderRadius = '45%'; 
+        p.style.borderRadius = blockBorderRadius; 
         p.style.boxShadow = blockBoxShadow;
         
         p.style.width = xInc + 'px';
@@ -384,7 +406,7 @@ function keyDownAction(ev) {
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
             break;
         case 'KeyT':
-            //rotateTest();             // use this to test functions
+            test();
             break;
 
         // directional movement
@@ -397,6 +419,7 @@ function keyDownAction(ev) {
             moveHorizontal(translateMatrix.right);
             break;
         case 'ArrowUp':
+            moveRotate('left');
             break;
         case 'ArrowDown':
             yMove.press.down();         // accelerates falling speed
@@ -470,10 +493,10 @@ function createTitlePage() {
 
 
 
-function createBlockAgent() {
+function createTetrisPiece() {
     // creates the four blocks of the tetris piece.
     // But the shape is not initiated. The shape should be initiated by a different function.
-    // createBlockAgent() should be run only once. at the beginning.
+    // createTetrisPiece() should be run only once. at the beginning.
 
     for ( let i = 0 ; i <=3 ; i++ ) {
 
@@ -490,7 +513,7 @@ function createBlockAgent() {
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = tetrisBackgroundColor;
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = '45%';
+        p.style.borderRadius = blockBorderRadius;
         p.style.visibility = 'visible';
         
         p.style.boxShadow = tetrisBoxShadow;
@@ -507,7 +530,7 @@ function createBlockAgent() {
     
     }   // end of for loop
 
-}   // end of createBlockAgent()
+}   // end of createTetrisPiece()
 
 
 
@@ -679,14 +702,29 @@ function moveRotate(text) {
     // arr contains rotateMatrix[pose][form]
     // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
 
+    let rotA = (text=='left') ? -Math.PI/2 : Math.PI/2;
+    let arr = { x:0 , y:0 };
+    let pivot = 1;
+
     if (currentTetris.form==6) { return };          // don't rotate the square shaped tetris
 
-    let rotA = (text=='left') ? -Math.PI/2 : Math.PI/2;
-    var pivot = 1;
+    
+
     blockToGhost(translateMatrix.stay);
 
+    if (currentTetris.form==0) {
+        longBarPivot.calc( ghost[0].x, ghost[0].y, ghost[3].x, ghost[3].y );
+        arr.x = longBarPivot.x;
+        arr.y = longBarPivot.y;
+    } else {
+        arr.x = ghost[pivot].x;
+        arr.y = ghost[pivot].y;
+    }
+
+
+
     for ( let i = 0 ; i <= 3 ; i++ ) {
-            rotateP.calc( ghost[pivot].x , ghost[pivot].y , ghost[i].x , ghost[i].y , rotA );
+            rotateP.calc( arr.x , arr.y , ghost[i].x , ghost[i].y , rotA );
             ghost[i].x = rotateP.xNew;
             ghost[i].y = rotateP.yNew;           
     }
@@ -744,12 +782,7 @@ function integrateBlocks() {
     blockToGhost(translateMatrix.down);
     let onSolidGround = !crashFree();
     
-    
     blockToGhost(translateMatrix.stay);
-    
-    //let a = ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() );
-
-    //console.log('onSolidGround: ' + onSolidGround);
 
     if ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() && onSolidGround ) {
         // check that block is aligned to grid AND block has instruction to fall if it can.
@@ -826,7 +859,11 @@ function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
             arr[i].y += yAdd;
             arr[i].y *= yMul; } }
 
+function test() {
+    // this is where you conduct all the test you want to test.....
 
+
+}
 
 
 
@@ -851,7 +888,7 @@ function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
 // before the game starts...
 setBoard();
 checkRow();             // after random blocks are generated, check for row completion
-createBlockAgent();     // create the four elements for the tetris block
+createTetrisPiece();     // create the four elements for the tetris block
 resetTetrisShape();     // put the tetris piece on the board
 
 createTitlePage();
