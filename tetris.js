@@ -33,24 +33,22 @@
 
 
 // dimension variables
-    var numOfBlock = {  x : 9,              // number of blocks in the horizontal direction
-                        y : 20,             // number of blocks in the vertical direction
+    var numOfBlock = {  x : 7,              // number of blocks in the horizontal direction
+                        y : 12,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
                         total : function() {this.t = this.x * this.y} }
         numOfBlock.midpoint();      
-        numOfBlock.total();         
+        numOfBlock.total();
 
-    
-    var yDim = (screen.y * screen.t) - (screen.y * screen.t ) % numOfBlock.y;
-    var xDim = yDim * (numOfBlock.x / numOfBlock.y);
+    var yInc = Math.ceil( ( screen.y * screen.t ) / numOfBlock.y );
+    var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
+    var yDim = yInc * numOfBlock.y;
+    var xDim = xInc * numOfBlock.x;
         // making toyRoom fit the screen vertically
         toyRoom.style.height = yDim + 'px';
         toyRoom.style.width = xDim + 'px';
-    var xInc = xDim / numOfBlock.x;           // box size in x direction
-    var yInc = yDim / numOfBlock.y;           // box size in y direction. basically same as xInc
-
 
 
 // appearance settings
@@ -80,7 +78,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 30, downV : 3 },         // set these manually to adjust speed
+        setting : { fallV : 50, downV : 3 },         // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },
         flip : { fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
@@ -113,7 +111,7 @@
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [1, 0, 0, 0, 0, 0, 0];
+    var tetrisChance = [6, 3, 3, 1, 1, 3, 1];
         // ratio of how likely each tetrisForm[] is to appear.
         // tetrisChance[0] represents how likely it is for the long bar to appear.
         // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
