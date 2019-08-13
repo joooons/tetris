@@ -124,7 +124,7 @@
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [2, 1, 1, 1, 1, 2, 2];
+    var tetrisChance = [2, 1, 1, 1, 1, 2, 1];
         // ratio of how likely each tetrisForm[] is to appear.
         // tetrisChance[0] represents how likely it is for the long bar to appear.
         // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
@@ -755,8 +755,8 @@ function moveRotate(text) {
         // if the rotation failed because the tetris piece was too close to the wall...
         // ... this else statement will scoot it over once and try again.
         if (ghost[1].x == 0) { for ( let i = 0 ; i <= 3 ; i++ ) { ghost[i].x += xInc; }; } 
-        
         if (ghost[1].x == (xDim-xInc) ) { for ( let i = 0 ; i <= 3 ; i++ ) { ghost[i].x -= xInc; }; }
+        if (ghost[2].y < yInc ) { for ( let i = 0 ; i <= 3 ; i++ ) { ghost[i].y += yInc; }; }
         
         if ( crashFree() ) {
             ghostToBlock();
