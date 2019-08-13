@@ -76,8 +76,8 @@
 // TIME settings
     var timeInc = 10;               // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
-    var count = {   set : { stagnant : 60,              // how long tetris piece should wait until it integrates into the pile
-                            limit    : 240 },           // absolute limit for how long to wait until integration
+    var count = {   set : { stagnant : 300,              // how long tetris piece should wait until it integrates into the pile
+                            limit    : 700 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
                     keyReleased : false,                // did keyup event with ArrowDown happen?
@@ -89,7 +89,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 50, downV : 3 },        // set these manually to adjust speed
+        setting : { fallV : 100, downV : 3 },        // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
@@ -268,6 +268,7 @@
         // used for collision check
         left : 0,
         right : xDim - xInc,
+        ceiling : 0,
         floor : yDim - yInc }
 
     var px = {  
@@ -775,6 +776,7 @@ function crashFree() {
         // check walls first
         if (ghost[i].x < wall.left) return false;
         if (ghost[i].x > wall.right) return false;
+        if (ghost[i].y < wall.ceiling) return false;
         if (ghost[i].y > wall.floor) return false;
 
         // check for block collisions
@@ -811,34 +813,27 @@ function integrateBlocks() {
 
         
         if ( count.stagnant > 4 ) {
-            // the number 10 here is arbitrary. I put the 10 here because otherwise the count.stagnant at zero...
+            // makes the tetris blocks display a number that counts to 10.
+            // the number 4 here is arbitrary. I put the 4 here because otherwise the count.stagnant at zero...
             // ... interrupts the tetris face.
             if ( count.limit < (count.set.limit - count.set.stagnant + 5 ) ) {
+                // the number 5 here is also arbitrary...
                 for ( let i=0 ; i<=3 ; i++ ) { 
-                    blockPile[i+numOfBlock.t].innerText = Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
+                    blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
                 }
             } else {
                 for ( let i=0 ; i<=3 ; i++ ) { 
-                    blockPile[i+numOfBlock.t].innerText = Math.ceil( ( count.limit - count.set.limit + count.set.stagnant ) / (count.set.stagnant / 10) ); 
+                    blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( ( count.limit - count.set.limit + count.set.stagnant ) / (count.set.stagnant / 10) ); 
                 }
             }
         }
         
         
-
-
-        document.addEventListener('keyup',
-            function(ev) { 
-                if (ev.code == 'ArrowDown' ) { count.keyReleased = true; };
-            }
-        );
-
-        document.addEventListener('keydown', 
-            function(ev) {
-                if ( (ev.code == 'ArrowDown') && count.keyReleased ) { 
-                    count.fill(); 
-                    count.keyReleased = false;
-                };
+        // Instantly integrates if user releases key and presses down again.
+        document.addEventListener('keyup', (ev) => { count.keyReleased = true; } );
+        document.addEventListener('keydown', (ev) => { 
+            if ( (ev.code=='ArrowDown') && count.keyReleased ) { count.fill(); };
+            count.keyReleased = false;
             }
         );
 
@@ -850,13 +845,16 @@ function integrateBlocks() {
             // and reset the counter back to zero.
             
             for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = ">__<"; }
-            
-            for (let i=0 ; i<=3 ; i++ ) { 
+                // gives tetris a face when reset to top
+
+            for ( let i=0 ; i<=3 ; i++ ) { 
+                // integrated block has high opacity and color
                 blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; 
                 blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[currentTetris.form];
             }
             
-            
+            timeTick -= timeTick % yMove.setting.fallV;
+                // this prevents the new tetris piece from jumping to the second lane prematurely.
 
             resetTetrisShape();
             checkRow();
