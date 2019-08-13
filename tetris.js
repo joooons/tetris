@@ -33,7 +33,7 @@
 
 
 // dimension variables
-    var numOfBlock = {  x : 7,              // number of blocks in the horizontal direction
+    var numOfBlock = {  x : 8,              // number of blocks in the horizontal direction
                         y : 18,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
@@ -113,12 +113,12 @@
 
 // OBJECTS to configure and move the TETRIS PIECE 
     var tetrisForms = [];
-        tetrisForms[0] = [ {x:0, y:0}, {x:0, y:1}, {x:0, y:2}, {x:0, y:3} ];    // long bar
-        tetrisForms[1] = [ {x:1, y:0}, {x:1, y:1}, {x:1, y:2}, {x:0, y:2} ];    // inverse 'L' shape
-        tetrisForms[2] = [ {x:0, y:0}, {x:0, y:1}, {x:0, y:2}, {x:1, y:2} ];    // 'L' shape
-        tetrisForms[3] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:1}, {x:1, y:2} ];    // inverse 'Z' shape
-        tetrisForms[4] = [ {x:1, y:0}, {x:1, y:1}, {x:0, y:1}, {x:0, y:2} ];    // 'Z' shape
-        tetrisForms[5] = [ {x:-1, y:1}, {x:0, y:1}, {x:1, y:1}, {x:0, y:0} ];    // upside down 'T' shape
+        tetrisForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
+        tetrisForms[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
+        tetrisForms[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
+        tetrisForms[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
+        tetrisForms[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
+        tetrisForms[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
         tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape
         for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
@@ -745,6 +745,18 @@ function moveRotate(text) {
         // if it passes the test, copy the positions into the actual tetris piece
         ghostToBlock(); 
         return;
+    } else {
+        // this is the SECOND CHANCE function.
+        // if the rotation failed because the tetris piece was too close to the wall...
+        // ... this else statement will scoot it over once and try again.
+        if (ghost[1].x == 0) { for ( let i = 0 ; i <= 3 ; i++ ) { ghost[i].x += xInc; }; } 
+        
+        if (ghost[1].x == (xDim-xInc) ) { for ( let i = 0 ; i <= 3 ; i++ ) { ghost[i].x -= xInc; }; }
+        
+        if ( crashFree() ) {
+            ghostToBlock();
+            return;
+        }
     }
 
 }   // end of moveRotate()
