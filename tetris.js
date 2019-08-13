@@ -76,6 +76,7 @@
 // TIME settings
     var timeInc = 10;               // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
+    var paused = false;             // true if game is paused.
     var count = {   set : { stagnant : 300,              // how long tetris piece should wait until it integrates into the pile
                             limit    : 700 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
@@ -89,7 +90,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 100, downV : 3 },        // set these manually to adjust speed
+        setting : { fallV : 60, downV : 3 },        // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
@@ -362,10 +363,12 @@ function setBoard() {
 function timeAction() {
     // this function runs in --> var timeFlow = setInterval(timeAction,timeInc);    
 
-    timeTick++;                     // general use clicker
-    tetrisBlink();                  // animates the facial expression. pretty useless.
-    boxFall();                      // make tetris fall continually
-    integrateBlocks();              // integrate tetris into blockPile after some time.
+    if (!paused) {
+        timeTick++                      // general use clicker
+        tetrisBlink();                  // animates the facial expression. pretty useless.
+        boxFall();                      // make tetris fall continually
+        integrateBlocks();              // integrate tetris into blockPile after some time.
+    }
 
 }   // end of timeAction()
 
@@ -403,16 +406,15 @@ function keyDownAction(ev) {
 
     switch (ev.code) {
         case 'KeyA':
-            moveRotate('left');
+            if (!paused) moveRotate('left');
             break;
         case 'KeyS':
-            moveRotate('right');
+            if (!paused) moveRotate('right');
             break;
         case 'KeyN':
-            resetTetrisShape();
+            if (!paused) resetTetrisShape();
             break;
         case 'Space':
-            //count.fill();               // accelerates integrateBlock()
             break;
         case 'KeyF':
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
@@ -420,18 +422,21 @@ function keyDownAction(ev) {
         case 'KeyT':
             test();
             break;
+        case 'KeyP':
+            pauseGame();
+            break;
 
         // directional movement
         case 'ArrowLeft':
             count.reset();              // resets the counter for integrateBlock()
-            moveHorizontal(translateMatrix.left);
+            if (!paused) moveHorizontal(translateMatrix.left);
             break;
         case 'ArrowRight':
             count.reset();              // resets the counter for intergrateBlock()
-            moveHorizontal(translateMatrix.right);
+            if (!paused) moveHorizontal(translateMatrix.right);
             break;
         case 'ArrowUp':
-            moveRotate('left');
+            if (!paused) moveRotate('left');
             break;
         case 'ArrowDown':
             yMove.press.down();         // accelerates falling speed
@@ -761,6 +766,16 @@ function moveRotate(text) {
 
 }   // end of moveRotate()
 
+
+
+
+function pauseGame() {
+    paused = !paused;
+    
+    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = "o__o"; }
+
+    if (paused) alert('paused!'); 
+}
 
 
 
