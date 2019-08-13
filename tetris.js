@@ -26,7 +26,7 @@
     var screen = {  x : window.screen.width,
                     y : window.screen.height,
                     r : window.devicePixelRatio,
-                    t : 0.72 }                      // "trim", percentage to vertically shrink toyRoom by
+                    t : 0.70 }                      // "trim", percentage to vertically shrink toyRoom by
     //console.log(`Screen res: ${screen.x} x ${screen.y}  ratio: ${screen.r}`);
     //console.log(navigator.userAgent);
 
@@ -47,14 +47,13 @@
     var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
     var yDim = yInc * numOfBlock.y;
     var xDim = xInc * numOfBlock.x;
-        // making toyRoom fit the screen vertically
         toyRoom.style.height = yDim + 'px';
         toyRoom.style.width = xDim + 'px';
-
+        // making toyRoom fit the screen vertically
 
 // appearance settings
     var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
-    var tetrisOpacity = 0.3;
+    var tetrisOpacity = 0.3;            // not used
     var blockBoxShadow = '0px 0px 5px 0px inset white';
     var blockBorderRadius = '0%';
     //var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
@@ -67,7 +66,6 @@
         tetrisColor[5] = 'rgba(100, 250, 250, 0.3)';
         tetrisColor[6] = 'rgba(250, 100, 250, 0.3)';
 
-    //var tetrisBoxShadow = '-2px -2px 9px 0px inset #05A';
     var tetrisBoxShadow = '0px 0px 5px 0px inset #FFF';
     var setOpacity = {  low : 0.1,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
@@ -81,17 +79,18 @@
     var count = {   set : { stagnant : 60,              // how long tetris piece should wait until it integrates into the pile
                             limit    : 240 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
-                    limit : 0,
-                    reset : function() { this.stagnant = 0; },
-                    resetlimit : function() { this.limit = 0; },
-                    fill : function() { this.stagnant = this.set.stagnant; } };
+                    limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
+                    keyReleased : false,                // did keyup event with ArrowDown happen?
+                    reset : function() { this.stagnant = 0; },                          // resets stagnant
+                    resetlimit : function() { this.limit = 0; },                        // resets limit
+                    fill : function() { this.stagnant = this.set.stagnant; } };         // times up!
 
 
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 50, downV : 3 },         // set these manually to adjust speed
-        actual : { fallV : 0, downV : 0 },
+        setting : { fallV : 50, downV : 3 },        // set these manually to adjust speed
+        actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
@@ -101,7 +100,7 @@
             fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
             downV : function() { return (yMove.actual.downV==0) ? false : true; } },
         demand : function() {
-            // if true, there is demand to move 1 pixel down at this time iteration.
+            // if true, there is demand to move 1 step down at this time iteration.
             if (yMove.check.downV()) { 
                 return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
             } else {
@@ -378,7 +377,7 @@ function tetrisBlink() {
     // making the tetris piece facial expression blink
     // pretty useless. but I couldn't help myself...
 
-    if (yMove.check.fallV() == 0) {
+    if (yMove.check.fallV() == false) {
         let a = timeTick % 300;
         let b = [ ( (a>0) && (a<40) ),
                 ( (a>20) && (a<60) ),
@@ -809,10 +808,11 @@ function integrateBlocks() {
         // check that block is aligned to grid AND block has instruction to fall if it can.
         // the counter will reset once you break the chain, by moving or by toggling the falling condition off.
 
+
+        
         if ( count.stagnant > 4 ) {
             // the number 10 here is arbitrary. I put the 10 here because otherwise the count.stagnant at zero...
             // ... interrupts the tetris face.
-
             if ( count.limit < (count.set.limit - count.set.stagnant + 5 ) ) {
                 for ( let i=0 ; i<=3 ; i++ ) { 
                     blockPile[i+numOfBlock.t].innerText = Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
@@ -823,10 +823,22 @@ function integrateBlocks() {
                 }
             }
         }
+        
+        
+
+
+        document.addEventListener('keyup',
+            function(ev) { 
+                if (ev.code == 'ArrowDown' ) { count.keyReleased = true; };
+            }
+        );
 
         document.addEventListener('keydown', 
             function(ev) {
-                if ( ev.code == 'ArrowDown' ) { count.fill(); };
+                if ( (ev.code == 'ArrowDown') && count.keyReleased ) { 
+                    count.fill(); 
+                    count.keyReleased = false;
+                };
             }
         );
 
@@ -836,10 +848,16 @@ function integrateBlocks() {
             // reset the tetris shape...
             // check for any rull rows...
             // and reset the counter back to zero.
+            
+            for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = ">__<"; }
+            
             for (let i=0 ; i<=3 ; i++ ) { 
                 blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; 
                 blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[currentTetris.form];
             }
+            
+            
+
             resetTetrisShape();
             checkRow();
             count.reset();
@@ -851,8 +869,13 @@ function integrateBlocks() {
     } else { 
         count.reset(); 
         count.resetlimit();
+        count.keyReleased = false;
     }
 }   // end of integrateBlocks()
+
+
+
+
 
 
 
