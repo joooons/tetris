@@ -54,6 +54,10 @@ body {
     text-align: center;
 }
 
+#points {
+    font-size:20pt;
+}
+
 
 .info {
     padding: 20px;

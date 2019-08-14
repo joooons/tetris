@@ -108,11 +108,11 @@
             } else {
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
             } } };
-        yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
+        //yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
 
 
 
-// GAME DYNAMIC settings
+// GAME SCORE settings
     var score = {
         unit : 100,
         total: 0,
@@ -127,10 +127,8 @@
             this.top = Math.max(this.top, this.total); },
         reset : function() {
             this.total = 0;
-            scoreBoard.innerText = this.total;
-        }
-    
-    };
+            scoreBoard.innerText = this.total; } };
+
 
     
 
@@ -154,26 +152,34 @@
         // probability of appearance is the number over the sum of all numbers.
 
     var randomMatrix = {
-        // object that contains the array of probability of each shape.
-        // method for reconfiguring the probability when the tetrisChance array is modified.
-        // for example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
-        // if tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
+        // Object that contains the array of probability of each shape.
+        // Contains method 'populate' for reconfiguring the probability when the tetrisChance array is modified.
+        // For example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
+        // If tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
         matrix : [],
-        randomize : function() {
+        max : 3,
+        buffer : [],
+        current : 0,
+        populate : function() {
+            // This method simply populates the randomMatrix according to tetrisChance.
+            // In case I want to chance tetrisChance mid-game, this line adjusts randomMatrix accordingly.
             this.matrix = this.matrix.slice(0,tetrisChance.reduce(function(sum,num){return sum + num;} ));
             let k = 0;
-            for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i; } };
+            for ( let i=0 ; i<=tetrisChance.length ; i++ ) for ( let j=0 ; j<tetrisChance[i] ; j++ ) this.matrix[k++] = i; },
+        randomize : function(n) {
+            // This method moves all elements of randomMatrix.buffer[] down.
+            // Then this method assigns a random number to the top of randomMatrix.buffer[].
+            do { for ( let i = 1 ; i < this.max ; i++ ) { this.buffer[i-1] = this.buffer[i]; }
+                 this.buffer[this.max-1] = randomMatrix.matrix[Math.floor(randomMatrix.matrix.length * Math.random() )]; 
+                 this.current = this.buffer[0];
+                 console.log(this.buffer);
+                 n--; } while (n>0); },
+        initiateBuffer : function() {
+            for ( let i = 0 ; i < this.max ; i++ ) { this.buffer[i] = 0; } } }
+        randomMatrix.initiateBuffer();
+    
 
-    var currentTetris = { 
-        form : 0,                               // there are 7 forms total. 0 to 6.
-        pose : 0,                               // number of poses for each form varies. At most four.
-            // NOTICE!!!! --- at the moment, currentTetris.pose is not used at all...
-        flip : function(num) {                  // assumes num is either 1 or -1
-            this.pose = this.pose + num;
-            if (this.pose == rotateMatrix[this.form].length) this.pose = 0;
-            if (this.pose < 0 ) this.pose = rotateMatrix[this.form].length - 1; } };
-            // NOTICE!!! --- since I'm not useing rotateMatrix, the flip method is also unused.
-            
+
 
     var rotateMatrix = [];
         // this is the rotation matrix. For the given form and pose, this is the tranformation...
@@ -323,22 +329,17 @@
 
 
 function setBoard() {
-    // fills toyRoom with empty boxes.
-    // low opacity blocks 
-
-    //let rarity = 0.01;                   // used for randomly placing blocks on board. delete later.
+    // Fills toyRoom with blocks. All blocks are set to low opacity.
 
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         // filling toyRoom with lots of block elements. starting at low opacity.
 
         var p = document.createElement('div');
 
-        p.style.cursor = 'pointer';             // not necessary
+        p.style.cursor = 'pointer';
 
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = blockBackgroundColor;
-        
-        //p.style.opacity = ( 0 == ( Math.floor( rarity * i * Math.random() ) ) ) ? setOpacity.low : setOpacity.high;
         
         p.style.opacity = setOpacity.low;
 
@@ -365,15 +366,8 @@ function setBoard() {
 
     }   // end of for loop
 
-
-    // mouse click to move tetris possible!!!
-        //moveButtons.children[0].onclick = function() { moveHorizontal(translateMatrix.left); }
-        //moveButtons.children[1].onclick = function() { ( yMove.check.downV() == true ) ? yMove.press.up() : yMove.press.down(); }
-        //moveButtons.children[2].onclick = function() { moveHorizontal(translateMatrix.right); }
-        //moveButtons.children[3].onclick = function() { moveRotate('left'); }
-        //moveButtons.children[4].onclick = function() { resetTetrisShape(); }
-        //moveButtons.children[5].onclick = function() { integrateBlocks(); }
-        // might have to remove this later. Think about it...
+    randomMatrix.populate();
+    randomMatrix.randomize(randomMatrix.max);
 
 }   // end of setBoard()
 
@@ -576,6 +570,7 @@ function createTetrisPiece() {
     
     }   // end of for loop
 
+
 }   // end of createTetrisPiece()
 
 
@@ -588,15 +583,12 @@ function resetTetrisShape() {
     // sets the shape of the tetris piece
 
     randomMatrix.randomize();
-    currentTetris.form = randomMatrix.matrix[Math.floor(randomMatrix.matrix.length * Math.random() )];
-    currentTetris.pose = 0;
-        // currentTetris.pose isn't really being used right now. So sad...
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         // give the tetris piece its stating LOCATION and COLOR
-        blockPile[i+numOfBlock.t].style.left = tetrisForms[currentTetris.form][i].x + 'px';
-        blockPile[i+numOfBlock.t].style.top = tetrisForms[currentTetris.form][i].y + 'px';
-        blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[currentTetris.form];
+        blockPile[i+numOfBlock.t].style.left = tetrisForms[randomMatrix.current][i].x + 'px';
+        blockPile[i+numOfBlock.t].style.top = tetrisForms[randomMatrix.current][i].y + 'px';
+        blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[randomMatrix.current];
     }
     //confirm('does this stop it?');
 
@@ -775,12 +767,12 @@ function moveRotate(text) {
     let arr = { x:0 , y:0 };
     let pivot = 1;
 
-    if (currentTetris.form==6) { return };
+    if (randomMatrix.current==6) { return };
         // don't rotate the square shaped tetris
 
     blockToGhost(translateMatrix.stay);
 
-    if (currentTetris.form==0) {
+    if (randomMatrix.current==0) {
         // change the pivot coordinate if the tetris piece is the LONG BAR
         longBarPivot.calc( ghost[0].x, ghost[0].y, ghost[3].x, ghost[3].y );
         arr.x = longBarPivot.x;
@@ -933,7 +925,7 @@ function integrateBlocks() {
             for ( let i=0 ; i<=3 ; i++ ) { 
                 // integrated block has high opacity and color
                 blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; 
-                blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[currentTetris.form];
+                blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[randomMatrix.current];
             }
             
             timeTick -= timeTick % yMove.setting.fallV;
@@ -1022,9 +1014,9 @@ function test() {
 
 // before the game starts...
 setBoard();
-checkRow();             // after random blocks are generated, check for row completion
-createTetrisPiece();     // create the four elements for the tetris block
-resetTetrisShape();     // put the tetris piece on the board
+checkRow();                 // after random blocks are generated, check for row completion
+createTetrisPiece();        // create the four elements for the tetris block
+resetTetrisShape();         // put the tetris piece on the board
 
 //createTitlePage();
 
