@@ -381,12 +381,16 @@ function tetrisBlink() {
     // making the tetris piece facial expression blink
     // pretty useless. but I couldn't help myself...
 
+    let interval = 300;
+    let d = 40;
+    let arr = [0, 0.5*d, d, 1.5*d];
+
     if (yMove.check.fallV() == false) {
-        let a = timeTick % 300;
-        let b = [ ( (a>0) && (a<40) ),
-                ( (a>20) && (a<60) ),
-                ( (a>40) && (a<80) ),
-                ( (a>60) && (a<100) ) ];
+        let a = timeTick % interval;
+        let b = [ ( (a>arr[0]) && (a<(arr[0]+d)) ),
+                ( (a>arr[1]) && (a<(arr[1]+d)) ),
+                ( (a>arr[2]) && (a<(arr[2]+d)) ),
+                ( (a>arr[3]) && (a<(arr[3]+d)) ) ];
         for ( let i = 0 ; i <= 3 ; i++ ) {
             (b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
             //blockPile[i+numOfBlock.t].innerText = i;
@@ -440,6 +444,7 @@ function keyDownAction(ev) {
             break;
         case 'ArrowDown':
             yMove.press.down();         // accelerates falling speed
+            yMove.actual.fallV = yMove.setting.fallV;
             break;
         default:
             break;
@@ -559,18 +564,28 @@ function resetTetrisShape() {
     // sets the shape of the tetris piece
 
     randomMatrix.randomize();
-
-    //currentTetris.form = Math.floor( randomMatrix.matrix.length * Math.random() );
-    //currentTetris.form = randomMatrix.matrix[currentTetris.form];
     currentTetris.form = randomMatrix.matrix[Math.floor(randomMatrix.matrix.length * Math.random() )];
     currentTetris.pose = 0;
         // currentTetris.pose isn't really being used right now. So sad...
 
     for ( let i = 0 ; i <=3 ; i++ ) {
+        // give the tetris piece its stating LOCATION and COLOR
         blockPile[i+numOfBlock.t].style.left = tetrisForms[currentTetris.form][i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = tetrisForms[currentTetris.form][i].y + 'px';
         blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[currentTetris.form];
     }
+    //confirm('does this stop it?');
+
+    blockToGhost(translateMatrix.stay);
+    if ( !crashFree() ) {
+        //ghostToBlock();
+        confirm('game has ended sadly!');
+        endGame();
+
+    }
+
+    timeTick -= timeTick % yMove.setting.fallV;
+        // this prevents the new tetris piece from jumping to the second lane prematurely.
 
 }   // end of resetTetrisShape()
 
@@ -779,6 +794,20 @@ function pauseGame() {
 
 
 
+function endGame() {
+    // sets all of blockPile to low opacity. All except the tetris piece.
+    // And pauses the game
+
+    for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
+        blockPile[i].style.opacity = setOpacity.low;
+    }
+
+    pauseGame();
+
+
+}
+
+
 
 function crashFree() {
     // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
@@ -899,7 +928,7 @@ function integrateBlocks() {
 
 
 // ---------------------- SHORTCUT FUNCTIONS --------------------------- //
-
+// just some math functions and other tools
 
 
 
@@ -913,6 +942,7 @@ function displayGhost(a) {
     // console displays the provided array.
     // the array has to have this format: [ {x,y}, {x,y}, {x,y}, {x,y} ]
     console.log(`(${a[0].x},${a[0].y}) (${a[1].x},${a[1].y}) (${a[2].x},${a[2].y}) (${a[3].x},${a[3].y})`); }
+    // this is just for troubleshooting. I can delete this later.
 
 
 function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {

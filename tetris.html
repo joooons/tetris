@@ -5,85 +5,10 @@
         Tetris?
     </title>
 
+    <link rel='stylesheet' href='tetris.css'>
+
     <!--internally embedded style. I might change this later-->
     <style>
-        body {
-            font-family: calibri, sans-serif;
-            font-size: 10pt;
-            color: #BBB;
-            background-size: cover;
-            user-select: none;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 10pt;
-        }
-
-        
-        article {
-            text-align: center;
-        }
-
-        #controller {
-            text-align: center;
-            
-        }
-
-        .button {
-            background-color: #DDD;
-            color: black;
-            font-size: 15pt;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1;
-            width: 22px;
-            height: 22px;
-            display: inline-block;
-            user-select: none;
-        }
-
-        #testground {
-            background-color: #333;
-            color: white;
-            font-size: 8pt;
-            width: 300px;
-            min-height: 100px;
-            display: inline-block;
-            float: left;
-
-        }
-
-        #toyRoom {
-            background-color: #FFF;
-            width: 280px;
-            height: 560px;
-            display: inline-block;
-            position: relative;
-            overflow: hidden;
-            user-select: none;
-            background-image: url('sky.jpg');
-            background-position: center;
-            background-size: cover;
-        }
-
-        #toyRoom:hover {
-            box-shadow: 0px 0px 15px 0px gray;
-        }
-
-        #splainin {
-            width: 400px;
-            height: 560px;
-            padding: 20px;
-            margin: 0px 50px 0px 0px;
-            color: black;
-            background-color: #EEE;
-            text-align: left;
-            float: right;
-            line-height: 80%;
-
-        }
-
 
     </style>
 </head>
@@ -101,25 +26,39 @@
     </nav>
 
    
-    <article>
-        <div id="toyRoom" >
+    <div class='flexbox'>
+        
+        <div class='item'>
+
+            <div id="toyRoom" ></div>
+
+        </div>
+
+        <div class='item'> 
             
-        </div>
+            <div class='score'>
+                SCORE
+            </div>
 
-        <div id="splainin" >
-            <p>N: reset tetris piece </p>
-            <p>F: toggle fall </p>
-            <p>Up: rotate counterclockwise </p>
-            <p>Down: drop quickly / tap to integrate when not in motion 
-            <p>Left & Right: move left and right / movement delays integration 
-            <p>A: rotate counterclockwise </p>
-            <p>S: rotate clockwise </p>
-            <p>P: pause </p>
-            <p>Mouseclick : toggles block between existing and not </p>
-        </div>
+            <div class="info" >
+                <p>N: reset tetris piece </p>
+                <p>F: toggle fall </p>
+                <p>Up: rotate counterclockwise </p>
+                <p>Down: drop quickly / tap to integrate when not in motion 
+                <p>Left & Right: move left and right / movement delays integration 
+                <p>A: rotate counterclockwise </p>
+                <p>S: rotate clockwise </p>
+                <p>P: pause </p>
+                <p>Mouseclick : toggles block between existing and not </p>
+            </div>
 
+            <div class="info" >
+                <p>Isn't it cool that this does this?</p>
+            </div>
 
-    </article>
+        </div>        
+
+    </div>
     
     
 
