@@ -3,7 +3,6 @@
 body {
     font-family: calibri, sans-serif;
     font-size: 10pt;
-    color: #BBB;
     background-size: cover;
     user-select: none;
 }
@@ -49,7 +48,7 @@ body {
 
 
 .score {
-    font-size: 20pt;
+    font-size: 10pt;
     padding: 10px;
     background-color: #FDD;
     text-align: center;

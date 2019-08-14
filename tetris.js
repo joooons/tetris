@@ -15,6 +15,7 @@
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
     var blockPile = toyRoom.children;
+    var scoreBoard = document.getElementById('points');
 
 
 // CANVAS elements
@@ -108,7 +109,29 @@
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
             } } };
         yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
+
+
+
+// GAME DYNAMIC settings
+    var score = {
+        unit : 100,
+        total: 0,
+        top : 0,
+        count : 0,
+        bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],
+        tally : function() {
+            this.total += this.unit * this.count * this.bonus[this.count];
+            this.count = 0;
+            scoreBoard.innerText = this.total; },
+        update : function() {
+            this.top = Math.max(this.top, this.total); },
+        reset : function() {
+            this.total = 0;
+            scoreBoard.innerText = this.total;
+        }
     
+    };
+
     
 
 // OBJECTS to configure and move the TETRIS PIECE 
@@ -424,7 +447,8 @@ function keyDownAction(ev) {
             yMove.flip.fallV();         // toggles whether tetris slowly falls or not
             break;
         case 'KeyT':
-            test();
+            //test();
+            score.reset();
             break;
         case 'KeyP':
             pauseGame();
@@ -630,21 +654,30 @@ function ghostToBlock() {
 
 
 function checkRow() {
-    // checks the entire board to look for rows that are filled up completely.
-    // then the filled up rows are eliminated, and all above blocks are migrated one level lower.
+    // Checks the entire board to look for rows that are filled up completely.
+    // Then the filled up rows are eliminated, and all above blocks are migrated one level lower.
+    // Also tallies the score.
 
     for (let i = 0 ; i < numOfBlock.t ; i += numOfBlock.x ) {
-        // 'i' refers to the first index of each row
+        // Iterates through each ROW.
+        // in this case, the 'i' is the first index of each row.
         
         let count = 0;
 
-        for (let j = i; j < i+numOfBlock.x ; j++) count += eval(blockPile[j].style.opacity);
-        
+        for (let j=i; j<i+numOfBlock.x ; j++) { count += (blockPile[j].style.opacity==setOpacity.high) ? 1 : 0; }
+            // Counts number of blocks in the row.
+
         if (count == numOfBlock.x) {
+            // Triggers when the row is filled up.
+
+            score.count++;
+
+
 
             let r = 0;
             let t = setInterval(rowSpin,10);
             function rowSpin() {
+                // Visually flips the row down.
                 r += 4;
                 for ( let j = i ; j < i + numOfBlock.x ; j++ ) {
                     blockPile[j].style.transform = "rotateX(" + r + "deg)";
@@ -652,6 +685,8 @@ function checkRow() {
                 if ( r > 90 ) {
                     clearInterval(t);
                     for ( let j = i ; j < i+numOfBlock.x ; j++ ) {
+                        // after the rotating is done, make the row transparent...
+                        // ... then reset the rotation.
                         blockPile[j].style.opacity = setOpacity.low;
                         blockPile[j].style.transform = "rotateX(0deg)";
                     }
@@ -661,6 +696,10 @@ function checkRow() {
             }   // end of rowSpin()
         }   // end of if
     }   // end of for
+
+    score.tally();
+
+
 }   // end of checkRow()
 
 
