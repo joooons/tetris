@@ -83,7 +83,7 @@
     var timeInc = 5;               // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
     var paused = false;             // true if game is paused.
-    var count = {   set : { stagnant : 300,              // how long tetris piece should wait until it integrates into the pile
+    var count = {   set : { stagnant : 300,             // how long tetris piece should wait until it integrates into the pile
                             limit    : 700 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
@@ -96,22 +96,38 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 300, downV : 5 },        // set these manually to adjust speed
+        setting : { absFallV : 200, fallV : 200, downV : 2, dropIncrement : 5 },       // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
         press : {
             down : function() { yMove.actual.downV = yMove.setting.downV; },
             up : function() { yMove.actual.downV = 0 } },
+        speedUp : function() {
+            //if ((yMove.setting.fallV - yMove.setting.dropIncrement) > 0) { 
+                //yMove.setting.fallV -= yMove.setting.dropIncrement; }
+            yMove.setting.fallV -= ((yMove.setting.fallV-yMove.setting.dropIncrement) > 0) ? yMove.setting.dropIncrement : 0;
+            yMove.actual.fallV = (yMove.actual.fallV==0) ? 0 : yMove.setting.fallV;
+            _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0); },
+        reset : function() {
+            yMove.setting.fallV = yMove.setting.absFallV;
+            yMove.actual.fallV = yMove.setting.fallV;
+            _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0); },
         check : {
             fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
-            downV : function() { return (yMove.actual.downV==0) ? false : true; } },
+            downV : function() { return !(yMove.actual.downV==0); } },
         demand : function() {
-            // if true, there is demand to move 1 step down at this time iteration.
+            // If true, there is demand to move 1 step down at this time iteration.
+            // Also, displays the speed on the screen.
             if (yMove.check.downV()) { 
+                _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.downV).toFixed(0);
                 return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
-            } else {
+            } else if (yMove.check.fallV()) {
+                _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0);
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
+            } else {
+                _speed.innerText = 0;
+                return false;
             } } };
         yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
 
@@ -286,11 +302,13 @@
         left : [ { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 } ],
         right : [ { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 } ],
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
-        stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ] }
+        stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ],
+        downstep : 0.5 * yInc,
+        sidestep : xInc }
         for ( let i = 0 ; i <=3 ; i++ ) {
-            translateMatrix.left[i].x *= xInc;              // length of side step
-            translateMatrix.right[i].x *= xInc;             // length of side step
-            translateMatrix.down[i].y *= 0.5*yInc; }        // length of downward step
+            translateMatrix.left[i].x *= translateMatrix.sidestep;              // length of side step
+            translateMatrix.right[i].x *= translateMatrix.sidestep;             // length of side step
+            translateMatrix.down[i].y *= translateMatrix.downstep; }        // length of downward step
 
     var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
         // the ghost is used as temporary storage of the tetris piece's current location.
@@ -465,8 +483,7 @@ function keyDownAction(ev) {
             restartGame();
             break;
         case 'KeyV':
-            if (yMove.setting.fallV > 20) yMove.setting.fallV -= 20;
-            yMove.actual.fallV = yMove.setting.fallV;
+            yMove.speedUp();
             break;
 
 
@@ -865,6 +882,7 @@ function restartGame() {
     tetrisBlink();
     paused = false;
     score.reset();
+    yMove.reset();
     
 
 }
