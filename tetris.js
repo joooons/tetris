@@ -75,7 +75,7 @@
 
 
 // TIME settings
-    var timeInc = 10;               // time interval used in timeFlow
+    var timeInc = 5;               // time interval used in timeFlow
     var timeTick = 0;               // time counter in setInterval in timeAction()
     var paused = false;             // true if game is paused.
     var count = {   set : { stagnant : 300,              // how long tetris piece should wait until it integrates into the pile
@@ -91,7 +91,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { fallV : 60, downV : 3 },        // set these manually to adjust speed
+        setting : { fallV : 300, downV : 5 },        // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
@@ -108,7 +108,7 @@
             } else {
                 return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
             } } };
-        //yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
+        yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
 
 
 
@@ -447,6 +447,14 @@ function keyDownAction(ev) {
         case 'KeyP':
             pauseGame();
             break;
+        case 'KeyR':
+            restartGame();
+            break;
+        case 'KeyV':
+            if (yMove.setting.fallV > 20) yMove.setting.fallV -= 20;
+            yMove.actual.fallV = yMove.setting.fallV;
+            break;
+
 
         // directional movement
         case 'ArrowLeft':
@@ -595,7 +603,7 @@ function resetTetrisShape() {
     blockToGhost(translateMatrix.stay);
     if ( !crashFree() ) {
         //ghostToBlock();
-        confirm('game has ended sadly!');
+        //confirm('game has ended sadly!');
         endGame();
 
     }
@@ -818,9 +826,9 @@ function moveRotate(text) {
 function pauseGame() {
     paused = !paused;
     
-    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = "o__o"; }
+    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = "x__x"; }
 
-    if (paused) alert('paused!'); 
+    if (paused) console.log('paused!'); 
 }
 
 
@@ -828,13 +836,20 @@ function pauseGame() {
 function endGame() {
     // sets all of blockPile to low opacity. All except the tetris piece.
     // And pauses the game
+    pauseGame();
+
+}
+
+
+function restartGame() {
 
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         blockPile[i].style.opacity = setOpacity.low;
     }
 
-    pauseGame();
-
+    resetTetrisShape();
+    tetrisBlink();
+    paused = false;
 
 }
 
