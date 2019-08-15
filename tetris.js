@@ -15,7 +15,10 @@
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
     var blockPile = toyRoom.children;
-    var scoreBoard = document.getElementById('points');
+    var scoreBoard = document.getElementById('scoreBoard');
+    var _points = document.getElementById('points');
+    var _lines = document.getElementById('lines');
+    var _speed = document.getElementById('speed');
 
 
 // CANVAS elements
@@ -50,7 +53,9 @@
     var xDim = xInc * numOfBlock.x;
         toyRoom.style.height = yDim + 'px';
         toyRoom.style.width = xDim + 'px';
-        // making toyRoom fit the screen vertically
+            // making toyRoom fit the screen vertically
+        //scoreBoard.style.width = '300px';
+
 
 // appearance settings
     var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
@@ -117,17 +122,26 @@
         unit : 100,
         total: 0,
         top : 0,
-        count : 0,
+        count : 0,              // number of rows completed this round.
+        countTotal : 0,         // total number of rows completed in game.
         bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],
         tally : function() {
             this.total += this.unit * this.count * this.bonus[this.count];
+            this.countTotal += this.count;
             this.count = 0;
-            scoreBoard.innerText = this.total; },
+            _points.innerText = this.total; 
+            _lines.innerText = this.countTotal;
+        },
         update : function() {
-            this.top = Math.max(this.top, this.total); },
+            this.top = Math.max(this.top, this.total); 
+            },
         reset : function() {
+            this.count = 0;
             this.total = 0;
-            scoreBoard.innerText = this.total; } };
+            this.countTotal = 0;
+            _points.innerText = this.total;
+            _lines.innerText = this.countTotal;
+        } };
 
 
     
@@ -850,6 +864,8 @@ function restartGame() {
     resetTetrisShape();
     tetrisBlink();
     paused = false;
+    score.reset();
+    
 
 }
 

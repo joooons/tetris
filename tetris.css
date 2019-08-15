@@ -3,17 +3,16 @@
 body {
     font-family: calibri, sans-serif;
     font-size: 10pt;
+    color: black;
     background-size: cover;
     user-select: none;
 }
 
 
 .flexbox {
-    background-color: #EEE;
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: stretch;
 }
 
 .item {
@@ -22,7 +21,6 @@ body {
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    align-items;
 }
 
 .item > div {
@@ -30,42 +28,60 @@ body {
 }
 
 #toyRoom {
-    background-color: #FFF;
     width: 280px;
     height: 560px;
-    display: inline-block;
     position: relative;
     overflow: hidden;
-    user-select: none;
     background-image: url('sky.jpg');
     background-position: center;
     background-size: cover;
 }
 
-#toyRoom:hover {
-    box-shadow: 0px 0px 15px 0px gray;
-}
 
 
-.score {
-    font-size: 10pt;
+
+
+
+#scoreBoard {
+    font-size: 14pt;
+    font-weight: bold;
     padding: 10px;
-    background-color: #FDD;
-    text-align: center;
+    background-color: #BDF;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+
 }
 
-#points {
-    font-size:20pt;
+.numbers {
+    background-color: rgba( 255, 255, 255, 0);
+    box-shadow: 0px 0px 25px 0px white;
+    border-radius: 12px;
+    
+    width: 200px;
+    height: 30px;
+    min-height: 30px;
+    text-align: center;    
 }
+
+
+
+
 
 
 .info {
     padding: 20px;
-    margin: 0px 50px 0px 0px;
-    color: black;
-    background-color: #DFD;
+    background-color: #BDF;
     text-align: left;
     float: right;
-    line-height: 0.8;
+    line-height: 0.2;
 }
+
+
+
+
+
+
+
+
 

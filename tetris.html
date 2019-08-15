@@ -2,43 +2,46 @@
 
 <head>
     <title>
-        Tetris?
+        Wait... is this Tetris?
     </title>
 
     <link rel='stylesheet' href='tetris.css'>
+    <link rel='shortcut icon' href='icon.png'>
 
-    <!--internally embedded style. I might change this later-->
     <style>
-
     </style>
+
 </head>
 
 
 
 <body>
 
-    <header>
-        
-    </header>
-
-
-    <nav>
-    </nav>
-
-   
     <div class='flexbox'>
         
         <div class='item'>
-
             <div id="toyRoom" ></div>
-
         </div>
+
+
 
         <div class='item'> 
             
-            <div class='score'>
-                SCORE
-                <p id="points">0</p>
+            <div id='scoreBoard'>
+                <table>
+                    <tr>
+                        <td width='60'>SCORE</td>
+                        <td id="points" class="numbers">0</td>
+                    </tr>
+                    <tr>
+                        <td>LINES</td>
+                        <td id="lines" class="numbers">0</td>
+                    </tr>
+                    <tr>
+                        <td>SPEED</td>
+                        <td id="speed" class="numbers">0</td>
+                    </tr>
+                </table>                
             </div>
 
             <div class="info">
