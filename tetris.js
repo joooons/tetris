@@ -14,8 +14,11 @@
 
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
+        toyRoom.style.backgroundImage = "url('sky.jpg')";
+        toyRoom.style.backgroundColor = '#DEF';
     var blockPile = toyRoom.children;
     var scoreBoard = document.getElementById('scoreBoard');
+    var preView = document.getElementById('preView');
     var _points = document.getElementById('points');
     var _lines = document.getElementById('lines');
     var _speed = document.getElementById('speed');
@@ -46,7 +49,7 @@
         numOfBlock.midpoint();      
         numOfBlock.total();
 
-    var yInc = 2 * Math.ceil( 0.5 * ( screen.y * screen.t ) / numOfBlock.y );
+    var yInc = 4 * Math.ceil( 0.25 * ( screen.y * screen.t ) / numOfBlock.y );
         // dividing by 2 and multilying by 2 ensures the half-steps are still integer steps.
     var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
     var yDim = yInc * numOfBlock.y;
@@ -57,7 +60,7 @@
         //scoreBoard.style.width = '300px';
 
 
-// appearance settings
+// APPEARANCE settings
     var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
     var tetrisOpacity = 0.3;            // not used
     var blockBoxShadow = '0px 0px 5px 0px inset white';
@@ -73,14 +76,14 @@
         tetrisColor[6] = 'rgba(250, 100, 250, 0.3)';
 
     var tetrisBoxShadow = '0px 0px 5px 0px inset #FFF';
-    var setOpacity = {  low : 0.1,                  // low setting of opacity
+    var setOpacity = {  low : 0,                  // low setting of opacity
                         high : 1,                   // high setting of opacity
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
 
 
 // TIME settings
-    var timeInc = 5;               // time interval used in timeFlow
+    var timeInc = 5;               // time interval used in timeFlow.[ms]
     var timeTick = 0;               // time counter in setInterval in timeAction()
     var paused = false;             // true if game is paused.
     var count = {   set : { stagnant : 300,             // how long tetris piece should wait until it integrates into the pile
@@ -96,7 +99,7 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { absFallV : 200, fallV : 200, downV : 2, dropIncrement : 5 },       // set these manually to adjust speed
+        setting : { absFallV : 300, fallV : 300, downV : 2, dropIncrement : 5 },       // set these manually to adjust speed
         actual : { fallV : 0, downV : 0 },          // leave these alone!
         flip : { 
             fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
@@ -162,7 +165,11 @@
 
     
 
-// OBJECTS to configure and move the TETRIS PIECE 
+// OBJECTS to configure and move the TETRIS PIECE
+
+    //function tetrisFormType = [];
+
+
     var tetrisForms = [];
         tetrisForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
         tetrisForms[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
@@ -170,7 +177,7 @@
         tetrisForms[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
         tetrisForms[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
         tetrisForms[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
-        tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape
+        tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape    
         for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
@@ -186,10 +193,10 @@
         // Contains method 'populate' for reconfiguring the probability when the tetrisChance array is modified.
         // For example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
         // If tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
-        matrix : [],
-        max : 3,
-        buffer : [],
-        current : 0,
+        matrix : [],                // Array containing the tetrisforms in quantities that correspond to the probabilites.
+        max : 3,                    // length of the buffer array.
+        buffer : [],                // Array containing the tetrisForms that are randomly chosen.
+        current : 0,                // The tetrisForm that is currently in the board.
         populate : function() {
             // This method simply populates the randomMatrix according to tetrisChance.
             // In case I want to chance tetrisChance mid-game, this line adjusts randomMatrix accordingly.
@@ -199,6 +206,7 @@
         randomize : function(n) {
             // This method moves all elements of randomMatrix.buffer[] down.
             // Then this method assigns a random number to the top of randomMatrix.buffer[].
+            // randomMatrix.randomize will repeat itself by 'n' times.
             do { for ( let i = 1 ; i < this.max ; i++ ) { this.buffer[i-1] = this.buffer[i]; }
                  this.buffer[this.max-1] = randomMatrix.matrix[Math.floor(randomMatrix.matrix.length * Math.random() )]; 
                  this.current = this.buffer[0];
@@ -303,7 +311,7 @@
         right : [ { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 } ],
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
         stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ],
-        downstep : 0.5 * yInc,
+        downstep : 0.25 * yInc,
         sidestep : xInc }
         for ( let i = 0 ; i <=3 ; i++ ) {
             translateMatrix.left[i].x *= translateMatrix.sidestep;              // length of side step
@@ -404,6 +412,31 @@ function setBoard() {
 }   // end of setBoard()
 
 
+function setPreview() {
+    // This function fills the 'preView' element with the preview items.
+
+    for (let i = 1 ; i <= randomMatrix.max ; i++ ) {
+
+        var p = document.createElement('div');
+        p.style.backgroundColor = '#FFF';
+        p.style.width = '50px';
+        p.style.height = '50px';
+        p.style.margin = '5px';
+        preView.appendChild(p);
+
+        for ( let j = 0 ; j <= 3 ; j++ ) { 
+
+
+
+        } // end of for
+
+    }   //end of for
+
+
+
+
+}
+
 
 
 
@@ -474,7 +507,7 @@ function keyDownAction(ev) {
             break;
         case 'KeyT':
             //test();
-            score.reset();
+            setPreview();
             break;
         case 'KeyP':
             pauseGame();

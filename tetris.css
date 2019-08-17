@@ -32,7 +32,7 @@ body {
     height: 560px;
     position: relative;
     overflow: hidden;
-    background-image: url('sky.jpg');
+    /* background-image: url('sky.jpg'); */
     background-position: center;
     background-size: cover;
 }
@@ -65,12 +65,17 @@ body {
 }
 
 
+#preView {
+    max-width: 400px;
+    display: flex;
+    flex-flow: row wrap;
+}
 
 
 
 
 .info {
-    padding: 20px;
+    padding: 10px;
     background-color: #BDF;
     text-align: left;
     float: right;
