@@ -24,16 +24,11 @@
     var _speed = document.getElementById('speed');
 
 
-// CANVAS elements
-    //var canvas = document.getElementById('canvas');
-    //var ctx = canvas.getContext('2d');
-    
-
 // SCREEN and BROWSER parameters
     var screen = {  x : window.screen.width,
                     y : window.screen.height,
                     r : window.devicePixelRatio,
-                    t : 0.70 }                      // "trim", percentage to vertically shrink toyRoom by
+                    t : 0.65 }                      // "trim", percentage to vertically shrink toyRoom by
     //console.log(`Screen res: ${screen.x} x ${screen.y}  ratio: ${screen.r}`);
     //console.log(navigator.userAgent);
 
@@ -41,10 +36,10 @@
 
 // dimension variables
     var numOfBlock = {  x : 8,              // number of blocks in the horizontal direction
-                        y : 18,             // number of blocks in the vertical direction
+                        y : 20,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
                         t : 0,              // total number of blocks on the board, minus the tetris piece
-                        midpoint : function() {this.m = Math.floor( this.x / 2 ) - 1},
+                        midpoint : function() {this.m = Math.floor( this.x / 2 ) - 2},
                         total : function() {this.t = this.x * this.y} }
         numOfBlock.midpoint();      
         numOfBlock.total();
@@ -172,21 +167,40 @@
 
     var tetrisForms = [];
         tetrisForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
-        tetrisForms[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
-        tetrisForms[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
-        tetrisForms[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
-        tetrisForms[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
-        tetrisForms[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
-        tetrisForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape    
+        tetrisForms[1] = [ {x:1, y:0}, {x:2, y:0}, {x:3, y:0}, {x:3, y:1} ];    // inverse 'L' shape
+        tetrisForms[2] = [ {x:1, y:1}, {x:2, y:1}, {x:3, y:1}, {x:3, y:0} ];    // 'L' shape
+        tetrisForms[3] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:0} ];    // inverse 'Z' shape
+        tetrisForms[4] = [ {x:1, y:0}, {x:2, y:0}, {x:2, y:1}, {x:3, y:1} ];    // 'Z' shape
+        tetrisForms[5] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:1} ];    // upside down 'T' shape
+        tetrisForms[6] = [ {x:1, y:0}, {x:1, y:1}, {x:2, y:0}, {x:2, y:1} ];    // square shape    
         for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
             arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
         }
 
-    var tetrisChance = [2, 1, 1, 1, 1, 2, 1];
-        // ratio of how likely each tetrisForm[] is to appear.
-        // tetrisChance[0] represents how likely it is for the long bar to appear.
-        // tetrisChance[1] represents how likely it is for the inverse 'L' shape to appear.
-        // probability of appearance is the number over the sum of all numbers.
+    var previewForms = [];
+        previewForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
+        previewForms[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
+        previewForms[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
+        previewForms[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
+        previewForms[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
+        previewForms[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
+        previewForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape  
+        for ( let i = 0 ; i < previewForms.length ; i++ ) {
+            arrayAddMultiply(previewForms[i], 0, xInc, 0, yInc);
+        }
+
+
+    var tetrisChance = [
+        // The probability of a shape appearing is the number divided by the sum of all numbers.
+        // For example, if tetrisChance was [1,1,0,0,0,0,0], the Long Bar would appear 50% of the time...
+        // ... and the Square would never appear.
+        1 ,      // likelihood of the Long Bar tetris piece appearing
+        1 ,      // likelihood of the inverse 'L' shape
+        1 ,      // likelihood of the 'L' shape
+        1 ,      // likelihood of the inverse'Z' shape
+        1 ,      // likelihood of the 'Z' shape
+        1 ,      // likelihood of the 'T' shape
+        1];     // likelihood of the Square shape
 
     var randomMatrix = {
         // Object that contains the array of probability of each shape.
@@ -194,7 +208,7 @@
         // For example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
         // If tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
         matrix : [],                // Array containing the tetrisforms in quantities that correspond to the probabilites.
-        max : 3,                    // length of the buffer array.
+        max : 4,                    // length of the buffer array.
         buffer : [],                // Array containing the tetrisForms that are randomly chosen.
         current : 0,                // The tetrisForm that is currently in the board.
         populate : function() {
@@ -214,6 +228,7 @@
                  n--; } while (n>0); },
         initiateBuffer : function() {
             for ( let i = 0 ; i < this.max ; i++ ) { this.buffer[i] = 0; } } }
+        randomMatrix.populate();
         randomMatrix.initiateBuffer();
     
 
@@ -376,15 +391,15 @@ function setBoard() {
 
         var p = document.createElement('div');
 
-        p.style.cursor = 'pointer';
+        p.style.cursor = 'pointer';             // not necessary. I might delete this later.
 
         p.style.boxSizing = 'border-box';
-        p.style.backgroundColor = blockBackgroundColor;
-        
-        p.style.opacity = setOpacity.low;
-
         p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
         p.style.borderRadius = blockBorderRadius; 
+
+        p.style.opacity = setOpacity.low;
+
+        p.style.backgroundColor = blockBackgroundColor;
         p.style.boxShadow = blockBoxShadow;
         
         p.style.width = xInc + 'px';
@@ -399,34 +414,61 @@ function setBoard() {
         toyRoom.lastChild.onclick = function() {
             // I need this for now to directly control what the board looks like
             // I will remove this function in a later version
-
             this.style.opacity = setOpacity.flip(this.style.opacity);
             checkRow();
         }   // end of onclick
 
     }   // end of for loop
 
-    randomMatrix.populate();
+    //randomMatrix.populate();
     randomMatrix.randomize(randomMatrix.max);
 
 }   // end of setBoard()
 
 
+
+
+
+
+
 function setPreview() {
     // This function fills the 'preView' element with the preview items.
 
-    for (let i = 1 ; i <= randomMatrix.max ; i++ ) {
+    for ( let i = 1 ; i <= randomMatrix.max ; i++ ) {
+        if (preView.hasChildNodes()==true) { preView.removeChild(preView.lastChild); }
+    }
+
+    for (let i = 1 ; i < randomMatrix.max ; i++ ) {
 
         var p = document.createElement('div');
-        p.style.backgroundColor = '#FFF';
-        p.style.width = '50px';
-        p.style.height = '50px';
+        //p.style.backgroundColor = '#FFF';
+        p.style.width = 4*xInc + 'px';
+        p.style.height = 2*yInc + 'px';
         p.style.margin = '5px';
+        p.style.position = 'relative';
         preView.appendChild(p);
 
         for ( let j = 0 ; j <= 3 ; j++ ) { 
 
+            var p = document.createElement('div');
+            
+            //p.style.backgroundColor = '#AAA';
+            p.style.backgroundColor = tetrisColor[ randomMatrix.buffer[i] ];
 
+            //p.style.margin = '1px';
+            p.style.border = '0.5px solid black';
+
+            p.style.boxSizing = 'border-box';
+
+            p.style.width = xInc + 'px';
+            p.style.height = yInc + 'px';
+            
+            p.style.position = 'absolute';
+
+            p.style.left = previewForms[randomMatrix.buffer[i]][j].x + 'px';
+            p.style.top = previewForms[randomMatrix.buffer[i]][j].y + 'px';
+            
+            preView.lastChild.appendChild(p);
 
         } // end of for
 
@@ -449,10 +491,11 @@ function timeAction() {
         timeTick++                      // general use clicker
         tetrisBlink();                  // animates the facial expression. pretty useless.
         boxFall();                      // make tetris fall continually
-        integrateBlocks();              // integrate tetris into blockPile after some time.
-    }
+        integrateBlocks(); }            // integrate tetris into blockPile after some time.
 
 }   // end of timeAction()
+
+
 
 
 
@@ -463,9 +506,9 @@ function tetrisBlink() {
     // making the tetris piece facial expression blink
     // pretty useless. but I couldn't help myself...
 
-    let interval = 300;
-    let d = 40;
-    let arr = [0, 0.5*d, d, 1.5*d];
+    let interval = 800;                 // time increment between blinks.
+    let d = 40;                         // time between eyes open and eyes closed.
+    let arr = [ 0 , 0.5*d , d , 1.5*d ];     // blink start time of each blocks scattered.
 
     if (yMove.check.fallV() == false) {
         let a = timeTick % interval;
@@ -473,12 +516,12 @@ function tetrisBlink() {
                 ( (a>arr[1]) && (a<(arr[1]+d)) ),
                 ( (a>arr[2]) && (a<(arr[2]+d)) ),
                 ( (a>arr[3]) && (a<(arr[3]+d)) ) ];
-        for ( let i = 0 ; i <= 3 ; i++ ) {
-            (b[i])? blockPile[i+numOfBlock.t].innerText = "-__-": blockPile[i+numOfBlock.t].innerText = "o__o";
-            //blockPile[i+numOfBlock.t].innerText = i;
-        }
+        for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = (b[i])? "-__-" : "o__o"; }
     }
+
 }   // end of tetrixBlink()
+
+
 
 
 
@@ -674,6 +717,8 @@ function resetTetrisShape() {
 
     timeTick -= timeTick % yMove.setting.fallV;
         // this prevents the new tetris piece from jumping to the second lane prematurely.
+
+    setPreview();
 
 }   // end of resetTetrisShape()
 
@@ -1014,6 +1059,7 @@ function integrateBlocks() {
                 // this prevents the new tetris piece from jumping to the second lane prematurely.
 
             resetTetrisShape();
+            //setPreview();
             checkRow();
             count.reset();
         } else { 
@@ -1099,6 +1145,7 @@ setBoard();
 checkRow();                 // after random blocks are generated, check for row completion
 createTetrisPiece();        // create the four elements for the tetris block
 resetTetrisShape();         // put the tetris piece on the board
+//setPreview();               // put preview pieces on the board
 
 //createTitlePage();
 
