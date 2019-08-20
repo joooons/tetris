@@ -34,7 +34,7 @@
 
 
 
-// dimension variables
+// DIMENSIONS variables
     var numOfBlock = {  x : 8,              // number of blocks in the horizontal direction
                         y : 20,             // number of blocks in the vertical direction
                         m : 0,              // starting horizontal location of the tetris piece        
@@ -43,6 +43,9 @@
                         total : function() {this.t = this.x * this.y} }
         numOfBlock.midpoint();      
         numOfBlock.total();
+            // I'm not sure why I made these into methods instead of just setting the .m and .t values right away.
+            // Perhaps I imagined that I would change the toyRoom dimensions mid-game.
+
 
     var yInc = 4 * Math.ceil( 0.25 * ( screen.y * screen.t ) / numOfBlock.y );
         // dividing by 2 and multilying by 2 ensures the half-steps are still integer steps.
@@ -56,23 +59,24 @@
 
 
 // APPEARANCE settings
-    var blockBackgroundColor = 'rgba(50, 150, 250, 0.3)';
-    var tetrisOpacity = 0.3;            // not used
-    var blockBoxShadow = '0px 0px 5px 0px inset white';
-    var blockBorderRadius = '0%';
-    //var tetrisBackgroundColor = 'rgba(100, 130, 250, 0.1)';
-    var tetrisColor = [];
-        tetrisColor[0] = 'rgba(250, 100, 100, 0.3)';
-        tetrisColor[1] = 'rgba(250, 250, 100, 0.3)';
-        tetrisColor[2] = tetrisColor[1];
-        tetrisColor[3] = 'rgba(100, 250, 100, 0.3)';
-        tetrisColor[4] = tetrisColor[3];
-        tetrisColor[5] = 'rgba(100, 250, 250, 0.3)';
-        tetrisColor[6] = 'rgba(250, 100, 250, 0.3)';
+    var blockStyle = {
+        bkgdColor : 'rgba(50, 150, 250, 0.3)' ,
+        border : '2px solid rgba(0, 0, 0, 1)' ,
+        boxShadow : '0px 0px 5px 2px inset white' ,
+        borderRadius : '20%' ,
+        opacity : 0.5 }
 
-    var tetrisBoxShadow = '0px 0px 5px 0px inset #FFF';
-    var setOpacity = {  low : 0,                  // low setting of opacity
-                        high : 1,                   // high setting of opacity
+    var tetrisColor = [];
+        tetrisColor[0] = `rgba(250, 100, 100, ${blockStyle.opacity})`;
+        tetrisColor[1] = `rgba(250, 250, 100, ${blockStyle.opacity})`;
+        tetrisColor[2] = tetrisColor[1];
+        tetrisColor[3] = `rgba(100, 250, 100, ${blockStyle.opacity})`;
+        tetrisColor[4] = tetrisColor[3];
+        tetrisColor[5] = `rgba(100, 250, 250, ${blockStyle.opacity})`;
+        tetrisColor[6] = `rgba(250, 100, 250, ${blockStyle.opacity})`;
+
+    var setOpacity = {  low : 0,        // Low setting of opacity. 
+                        high : 1,       // High setting of opacity.
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
 
 
@@ -165,29 +169,43 @@
     //function tetrisFormType = [];
 
 
-    var tetrisForms = [];
-        tetrisForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
-        tetrisForms[1] = [ {x:1, y:0}, {x:2, y:0}, {x:3, y:0}, {x:3, y:1} ];    // inverse 'L' shape
-        tetrisForms[2] = [ {x:1, y:1}, {x:2, y:1}, {x:3, y:1}, {x:3, y:0} ];    // 'L' shape
-        tetrisForms[3] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:0} ];    // inverse 'Z' shape
-        tetrisForms[4] = [ {x:1, y:0}, {x:2, y:0}, {x:2, y:1}, {x:3, y:1} ];    // 'Z' shape
-        tetrisForms[5] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:1} ];    // upside down 'T' shape
-        tetrisForms[6] = [ {x:1, y:0}, {x:1, y:1}, {x:2, y:0}, {x:2, y:1} ];    // square shape    
-        for ( let i = 0 ; i < tetrisForms.length ; i++ ) {
-            arrayAddMultiply(tetrisForms[i], numOfBlock.m, xInc, 0, yInc);
-        }
+    var t_Forms = {
+        // t_Forms stands for Tetris Forms.
+        // Contains an array with the template for each of the shapes.
+        // Contains also a method for applying the correct lengths and coordinates to the array.
+        arr : [] ,
+        applyScalars : function() { 
+            for ( let i = 0 ; i < t_Forms.arr.length ; i++ ) { 
+                arrayAddMultiply(t_Forms.arr[i], numOfBlock.m, xInc, 0, yInc);
+            } } };
+        t_Forms.arr[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
+        t_Forms.arr[1] = [ {x:1, y:0}, {x:2, y:0}, {x:3, y:0}, {x:3, y:1} ];    // inverse 'L' shape
+        t_Forms.arr[2] = [ {x:1, y:1}, {x:2, y:1}, {x:3, y:1}, {x:3, y:0} ];    // 'L' shape
+        t_Forms.arr[3] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:0} ];    // inverse 'Z' shape
+        t_Forms.arr[4] = [ {x:1, y:0}, {x:2, y:0}, {x:2, y:1}, {x:3, y:1} ];    // 'Z' shape
+        t_Forms.arr[5] = [ {x:1, y:1}, {x:2, y:1}, {x:2, y:0}, {x:3, y:1} ];    // upside down 'T' shape
+        t_Forms.arr[6] = [ {x:1, y:0}, {x:1, y:1}, {x:2, y:0}, {x:2, y:1} ];    // square shape    
+        t_Forms.applyScalars();
 
-    var previewForms = [];
-        previewForms[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
-        previewForms[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
-        previewForms[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
-        previewForms[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
-        previewForms[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
-        previewForms[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
-        previewForms[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape  
-        for ( let i = 0 ; i < previewForms.length ; i++ ) {
-            arrayAddMultiply(previewForms[i], 0, xInc, 0, yInc);
-        }
+
+    var p_Forms = {
+        // p_Forms stands for Preview Forms.
+        // Template for each of the shapes, as they appear in the Preview block.
+        // Basically the same as t_Forms, but shifted to top left corner.
+        // Also contains a method for applying the proper lengths and position.
+        arr : [] ,
+        applyScalar : function() {
+            for ( let i = 0 ; i < p_Forms.arr.length ; i++ ) { 
+                arrayAddMultiply(p_Forms.arr[i], 0, xInc, 0, yInc);
+            } } };
+        p_Forms.arr[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
+        p_Forms.arr[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
+        p_Forms.arr[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
+        p_Forms.arr[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
+        p_Forms.arr[4] = [ {x:0, y:0}, {x:1, y:0}, {x:1, y:1}, {x:2, y:1} ];    // 'Z' shape
+        p_Forms.arr[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
+        p_Forms.arr[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape  
+        p_Forms.applyScalar();
 
 
     var tetrisChance = [
@@ -207,9 +225,9 @@
         // Contains method 'populate' for reconfiguring the probability when the tetrisChance array is modified.
         // For example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
         // If tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
-        matrix : [],                // Array containing the tetrisforms in quantities that correspond to the probabilites.
+        matrix : [],                // Array containing the t_Forms.arr[] in quantities that correspond to the probabilites.
         max : 4,                    // length of the buffer array.
-        buffer : [],                // Array containing the tetrisForms that are randomly chosen.
+        buffer : [],                // Array containing the t_Forms.arr[] that are randomly chosen.
         current : 0,                // The tetrisForm that is currently in the board.
         populate : function() {
             // This method simply populates the randomMatrix according to tetrisChance.
@@ -234,45 +252,11 @@
 
 
 
-    var rotateMatrix = [];
-        // this is the rotation matrix. For the given form and pose, this is the tranformation...
-        // ... that must take place to get to the next pose in line.
-        // it assumes that the rotation is happening in the counterclockwise direction.
-        // after having made this, I'm a little bit embarrassed that I didn't just come up with a formula...
-        // NOTICE!!! --- at the moment, rotateMatrix is not used at all!!!
-        rotateMatrix[0] = [];
-            rotateMatrix[0][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:-2 } ];
-            rotateMatrix[0][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:2 } ];
-        rotateMatrix[1] = [];
-            rotateMatrix[1][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:2, y:0 } ];
-            rotateMatrix[1][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:0, y:-2 } ];
-            rotateMatrix[1][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:-2, y:0 } ];
-            rotateMatrix[1][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:0, y:2 } ];
-        rotateMatrix[2] = [];
-            rotateMatrix[2][0] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:0, y:-2 } ];
-            rotateMatrix[2][1] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-2, y:0 } ];
-            rotateMatrix[2][2] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:0, y:2 } ];
-            rotateMatrix[2][3] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:2, y:0 } ];
-        rotateMatrix[3] = [];
-            rotateMatrix[3][0] = [ { x:0, y:2 }, { x:1, y:1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-            rotateMatrix[3][1] = [ { x:0, y:-2 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-        rotateMatrix[4] = [];
-            rotateMatrix[4][0] = [ { x:-2, y:0 }, { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:-1 } ];
-            rotateMatrix[4][1] = [ { x:2, y:0 }, { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:1 } ];
-        rotateMatrix[5] = [];
-            rotateMatrix[5][0] = [ { x:1, y:1 }, { x:0, y:0 }, { x:-1, y:-1 }, { x:-1, y:1 } ];
-            rotateMatrix[5][1] = [ { x:1, y:-1 }, { x:0, y:0 }, { x:-1, y:1 }, { x:1, y:1 } ];
-            rotateMatrix[5][2] = [ { x:-1, y:-1 }, { x:0, y:0 }, { x:1, y:1 }, { x:1, y:-1 } ];
-            rotateMatrix[5][3] = [ { x:-1, y:1 }, { x:0, y:0 }, { x:1, y:-1 }, { x:-1, y:-1 } ];
-        rotateMatrix[6] = [];
-            rotateMatrix[6][0] = [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ];
-        for ( let i = 0 ; i < rotateMatrix.length ; i++ ) {
-            for ( let j = 0 ; j < rotateMatrix[i].length ; j++ ) {
-                arrayAddMultiply(rotateMatrix[i][j], 0, xInc, 0, yInc); } }
+    
 
     var rotateP = {
-        // this is an alternate way to rotate the tetris piece, using a formula instead of a pre-made array.
-        // instead of using the rotateMatrix, use this to rotate each three of the tetris blocks relative to a pivot block.
+        // This object uses a formula to generate a new coordinate after rotation around a reference point.
+        // Use this for each of the four tetris block to perform the rotate operation.
         r : 0,          // radius
         initA : 0,      // initial angle [radians]
         newA : 0,       // new angle [radians]
@@ -292,7 +276,7 @@
                 this.initA = ((x1-x0)<0) ? Math.PI - Math.asin( (y1-y0)/this.r ) : Math.asin( (y1-y0)/this.r );
                 this.newA = this.initA + rotA;
                 this.xNew = Math.round(this.r * Math.cos(this.newA) + x0);
-                this.yNew = Math.round(this.r * Math.sin(this.newA) + y0); } } } 
+                this.yNew = Math.round(this.r * Math.sin(this.newA) + y0); } } };
     
     var longBarPivot = {
         // this is the pivot point for the long bar only. 
@@ -327,11 +311,15 @@
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
         stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ],
         downstep : 0.25 * yInc,
-        sidestep : xInc }
-        for ( let i = 0 ; i <=3 ; i++ ) {
-            translateMatrix.left[i].x *= translateMatrix.sidestep;              // length of side step
-            translateMatrix.right[i].x *= translateMatrix.sidestep;             // length of side step
-            translateMatrix.down[i].y *= translateMatrix.downstep; }        // length of downward step
+        sidestep : xInc,
+        applyScalar : function() {
+            for ( let i = 0 ; i <=3 ; i++ ) {
+                translateMatrix.left[i].x *= translateMatrix.sidestep;              // length of side step
+                translateMatrix.right[i].x *= translateMatrix.sidestep;             // length of side step
+                translateMatrix.down[i].y *= translateMatrix.downstep; }        // length of downward step
+            } };
+        translateMatrix.applyScalar();
+        
 
     var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
         // the ghost is used as temporary storage of the tetris piece's current location.
@@ -394,13 +382,13 @@ function setBoard() {
         p.style.cursor = 'pointer';             // not necessary. I might delete this later.
 
         p.style.boxSizing = 'border-box';
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)'; 
-        p.style.borderRadius = blockBorderRadius; 
+        p.style.border = blockStyle.border; 
+        p.style.borderRadius = blockStyle.borderRadius; 
 
         p.style.opacity = setOpacity.low;
 
-        p.style.backgroundColor = blockBackgroundColor;
-        p.style.boxShadow = blockBoxShadow;
+        //p.style.backgroundColor = blockStyle.bkgdColor;
+        p.style.boxShadow = blockStyle.boxShadow;
         
         p.style.width = xInc + 'px';
         p.style.height = yInc + 'px';
@@ -441,7 +429,7 @@ function setPreview() {
     for (let i = 1 ; i < randomMatrix.max ; i++ ) {
 
         var p = document.createElement('div');
-        //p.style.backgroundColor = '#FFF';
+        p.style.backgroundColor = '#ACF';
         p.style.width = 4*xInc + 'px';
         p.style.height = 2*yInc + 'px';
         p.style.margin = '5px';
@@ -452,21 +440,12 @@ function setPreview() {
 
             var p = document.createElement('div');
             
-            //p.style.backgroundColor = '#AAA';
+            decorateTetrisPiece(p);
+
             p.style.backgroundColor = tetrisColor[ randomMatrix.buffer[i] ];
-
-            //p.style.margin = '1px';
-            p.style.border = '0.5px solid black';
-
-            p.style.boxSizing = 'border-box';
-
-            p.style.width = xInc + 'px';
-            p.style.height = yInc + 'px';
             
-            p.style.position = 'absolute';
-
-            p.style.left = previewForms[randomMatrix.buffer[i]][j].x + 'px';
-            p.style.top = previewForms[randomMatrix.buffer[i]][j].y + 'px';
+            p.style.left = p_Forms.arr[randomMatrix.buffer[i]][j].x + 'px';
+            p.style.top = p_Forms.arr[randomMatrix.buffer[i]][j].y + 'px';
             
             preView.lastChild.appendChild(p);
 
@@ -523,6 +502,35 @@ function tetrisBlink() {
 
 
 
+function decorateTetrisPiece(elem) {
+    // Decorates the tetris piece with everything except color and position.
+    // Applies to the tetris piece on the board and on the preview block.
+
+    elem.style.fontSize = (0.4 * xInc) + 'px';
+    elem.style.color = 'black';
+    elem.style.fontWeight = 'bold';
+    elem.style.textAlign = 'center';
+    elem.style.lineHeight = 2.4;
+    //elem.innerText = 'o__o';
+        
+    elem.style.boxSizing = 'border-box';
+    elem.style.border = blockStyle.border;
+    elem.style.borderRadius = blockStyle.borderRadius;
+    
+    //elem.style.visibility = 'visible';
+        
+    elem.style.boxShadow = blockStyle.boxShadow;
+        
+    elem.style.width = xInc + 'px';
+    elem.style.height = yInc + 'px';
+        
+    elem.style.position = 'absolute';
+        
+    //elem.style.left = '0px';               // actually, this doesn't matter...
+    //elem.style.top = -yInc + 'px';         // ... cuz this puts it outside the boundary. invisible.
+
+
+}
 
 
 
@@ -657,29 +665,14 @@ function createTetrisPiece() {
 
         var p = document.createElement('div');
         
-        //p.style.fontSize = '8px';
-        p.style.fontSize = (0.4 * xInc) + 'px';
-        p.style.color = 'black';
-        p.style.fontWeight = 'bold';
-        p.style.textAlign = 'center';
-        p.style.lineHeight = 2.4;
-        p.innerText = 'o__o';
+        decorateTetrisPiece(p);
+
+        p.innerText = '>__<';
         
-        p.style.boxSizing = 'border-box';
-        //p.style.backgroundColor = tetrisBackgroundColor;
-        p.style.border = '0.5px solid rgba(255, 255, 255, 1)';
-        p.style.borderRadius = blockBorderRadius;
-        p.style.visibility = 'visible';
-        
-        p.style.boxShadow = tetrisBoxShadow;
-        
-        p.style.width = xInc + 'px';
-        p.style.height = yInc + 'px';
-        
-        p.style.position = 'absolute';
-        
-        p.style.left = '0px';               // actually, this doesn't matter...
-        p.style.top = -yInc + 'px';         // ... cuz this puts it outside the boundary. invisible.
+        //p.style.left = '0px';               // actually, this doesn't matter...
+        //p.style.top = -yInc + 'px';         // ... cuz this puts it outside the boundary. invisible.
+
+
 
         toyRoom.appendChild(p); 
     
@@ -701,8 +694,8 @@ function resetTetrisShape() {
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         // give the tetris piece its stating LOCATION and COLOR
-        blockPile[i+numOfBlock.t].style.left = tetrisForms[randomMatrix.current][i].x + 'px';
-        blockPile[i+numOfBlock.t].style.top = tetrisForms[randomMatrix.current][i].y + 'px';
+        blockPile[i+numOfBlock.t].style.left = t_Forms.arr[randomMatrix.current][i].x + 'px';
+        blockPile[i+numOfBlock.t].style.top = t_Forms.arr[randomMatrix.current][i].y + 'px';
         blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[randomMatrix.current];
     }
     //confirm('does this stop it?');
@@ -728,11 +721,10 @@ function resetTetrisShape() {
 
 
 function blockToGhost( arr ) {
-    // stores tetris piece data to ghost.
+    // Stores tetris piece data to ghost[].
     // PLUS, applies translation or rotation, depending on the 'arr' array.
     // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
-    // typically used with translateMatrix.left, .right, .down, and .stay.
-    // rotates the tetris piece if rotateMatrix is inserted in arr.
+    // Typically used with translateMatrix.left, .right, .down, and .stay.
     // ghost[].x and ghost[].y are numbers, NOT strings
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
