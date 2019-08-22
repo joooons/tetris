@@ -2,6 +2,7 @@
 
 // Notes:
 // I intend to work with vanilla JS for now. Need to learn basics first.
+// Yep. This entire thing is entirely vanilla. Entirely.
 //
 // blockPile[] contains both the blocks in the background and the tetris piece.
 // blockPile[0] to blockPile[numOfBlock.t-1] are the background blocks.
@@ -15,13 +16,15 @@
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
         toyRoom.style.backgroundImage = "url('sky.jpg')";
-        toyRoom.style.backgroundColor = '#DEF';
+        toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
     var blockPile = toyRoom.children;
     var scoreBoard = document.getElementById('scoreBoard');
     var preView = document.getElementById('preView');
+        preView.style.backgroundImage = "url('sky.jpg')";
     var _points = document.getElementById('points');
     var _lines = document.getElementById('lines');
     var _speed = document.getElementById('speed');
+
 
 
 // SCREEN and BROWSER parameters
@@ -46,7 +49,6 @@
             // I'm not sure why I made these into methods instead of just setting the .m and .t values right away.
             // Perhaps I imagined that I would change the toyRoom dimensions mid-game.
 
-
     var yInc = 4 * Math.ceil( 0.25 * ( screen.y * screen.t ) / numOfBlock.y );
         // dividing by 2 and multilying by 2 ensures the half-steps are still integer steps.
     var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
@@ -55,23 +57,25 @@
         toyRoom.style.height = yDim + 'px';
         toyRoom.style.width = xDim + 'px';
             // making toyRoom fit the screen vertically
-        //scoreBoard.style.width = '300px';
+        preView.style.height = 3*yInc + 'px';
+            //scoreBoard.style.width = '300px';
+
 
 
 // APPEARANCE settings
     var blockStyle = {
-        bkgdColor : 'rgba(50, 150, 250, 0.3)' ,
-        border : '2px solid rgba(0, 0, 0, 1)' ,
-        boxShadow : '0px 0px 5px 2px inset white' ,
+        bkgdColor : 'rgba(50, 150, 250, 0.3)' ,         // Nothing uses this right now.
+        border : '0.5px solid rgba(0, 0, 0, 1)' ,
+        boxShadow : '0px 0px 20px 0px inset white' ,
         borderRadius : '20%' ,
         opacity : 0.5 }
 
     var tetrisColor = [];
         tetrisColor[0] = `rgba(250, 100, 100, ${blockStyle.opacity})`;
         tetrisColor[1] = `rgba(250, 250, 100, ${blockStyle.opacity})`;
-        tetrisColor[2] = tetrisColor[1];
+        tetrisColor[2] = `rgba(100, 100, 250, ${blockStyle.opacity})`;
         tetrisColor[3] = `rgba(100, 250, 100, ${blockStyle.opacity})`;
-        tetrisColor[4] = tetrisColor[3];
+        tetrisColor[4] = `rgba(100, 100, 100, ${blockStyle.opacity})`;
         tetrisColor[5] = `rgba(100, 250, 250, ${blockStyle.opacity})`;
         tetrisColor[6] = `rgba(250, 100, 250, ${blockStyle.opacity})`;
 
@@ -165,11 +169,7 @@
     
 
 // OBJECTS to configure and move the TETRIS PIECE
-
-    //function tetrisFormType = [];
-
-
-    var t_Forms = {
+    const t_Forms = {
         // t_Forms stands for Tetris Forms.
         // Contains an array with the template for each of the shapes.
         // Contains also a method for applying the correct lengths and coordinates to the array.
@@ -187,8 +187,7 @@
         t_Forms.arr[6] = [ {x:1, y:0}, {x:1, y:1}, {x:2, y:0}, {x:2, y:1} ];    // square shape    
         t_Forms.applyScalars();
 
-
-    var p_Forms = {
+    const p_Forms = {
         // p_Forms stands for Preview Forms.
         // Template for each of the shapes, as they appear in the Preview block.
         // Basically the same as t_Forms, but shifted to top left corner.
@@ -198,7 +197,7 @@
             for ( let i = 0 ; i < p_Forms.arr.length ; i++ ) { 
                 arrayAddMultiply(p_Forms.arr[i], 0, xInc, 0, yInc);
             } } };
-        p_Forms.arr[0] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:3, y:0} ];    // long bar
+        p_Forms.arr[0] = [ {x:0, y:0.5}, {x:1, y:0.5}, {x:2, y:0.5}, {x:3, y:0.5} ];    // long bar
         p_Forms.arr[1] = [ {x:0, y:0}, {x:1, y:0}, {x:2, y:0}, {x:2, y:1} ];    // inverse 'L' shape
         p_Forms.arr[2] = [ {x:0, y:1}, {x:1, y:1}, {x:2, y:1}, {x:2, y:0} ];    // 'L' shape
         p_Forms.arr[3] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:0} ];    // inverse 'Z' shape
@@ -206,7 +205,6 @@
         p_Forms.arr[5] = [ {x:0, y:1}, {x:1, y:1}, {x:1, y:0}, {x:2, y:1} ];    // upside down 'T' shape
         p_Forms.arr[6] = [ {x:0, y:0}, {x:0, y:1}, {x:1, y:0}, {x:1, y:1} ];    // square shape  
         p_Forms.applyScalar();
-
 
     var tetrisChance = [
         // The probability of a shape appearing is the number divided by the sum of all numbers.
@@ -226,7 +224,7 @@
         // For example, if tetrisChance[0] is 7, then the first 7 items in randomMatrix is 0.
         // If tetrisChance[1] is 4, then the next 4 items in randomMatrix is 1.
         matrix : [],                // Array containing the t_Forms.arr[] in quantities that correspond to the probabilites.
-        max : 4,                    // length of the buffer array.
+        max : 8,                    // length of the buffer array.
         buffer : [],                // Array containing the t_Forms.arr[] that are randomly chosen.
         current : 0,                // The tetrisForm that is currently in the board.
         populate : function() {
@@ -249,27 +247,22 @@
         randomMatrix.populate();
         randomMatrix.initiateBuffer();
     
-
-
-
-    
-
     var rotateP = {
         // This object uses a formula to generate a new coordinate after rotation around a reference point.
         // Use this for each of the four tetris block to perform the rotate operation.
         r : 0,          // radius
         initA : 0,      // initial angle [radians]
         newA : 0,       // new angle [radians]
-        xNew : 0,
-        yNew : 0,
+        xNew : 0,       // output
+        yNew : 0,       // output
         calc : function(x0, y0, x1, y1, rotA) {
             // x0, y0 are coordinates that the other block pivots around.
             // x1, y1 are coordinates of the block that rotates around the pivot coordinate.
             // rotA is the angle of rotation. [radians]
-            // when rotA is positive, the rotation is CLOCKWISE.
+            // When rotA is positive, the rotation is CLOCKWISE.
             this.r = Math.sqrt( Math.pow( y1-y0 , 2 ) + Math.pow( x1-x0 , 2 ) );
             if (this.r==0) {
-                // if radius is zero, the inverse sine formula yields and error.
+                // If radius is zero, the inverse sine formula yields and error.
                 this.xNew = x0;
                 this.yNew = y0;    
             } else {
@@ -279,7 +272,7 @@
                 this.yNew = Math.round(this.r * Math.sin(this.newA) + y0); } } };
     
     var longBarPivot = {
-        // this is the pivot point for the long bar only. 
+        // This is the pivot point for the long bar shape only. 
         // The long bar has a pivot point that is not exclusively any one of the tetris piece.
         // For all other tetris shapes, I can just set one of the blocks as the pivot point.
         // But for the long bar, the pivot point has to be outside the tetris piece itself...
@@ -299,13 +292,10 @@
             this.y = d * Math.sin(b) + yMid;
             return true; } }
 
-
-
-
     var translateMatrix = {
-        // this object is used as the input array for blockToGhost()
-        // use this to move the tetris piece left, right, or down, without rotating.
-        // use .stay to simulate an unmoved tetris piece.
+        // This object is used as the input array for blockToGhost().
+        // Use this to move the tetris piece left, right, or down, without rotation.
+        // Use .stay to simulate the tetris piece staying in place without moving.
         left : [ { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 }, { x:-1, y:0 } ],
         right : [ { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 } ],
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
@@ -319,38 +309,32 @@
                 translateMatrix.down[i].y *= translateMatrix.downstep; }        // length of downward step
             } };
         translateMatrix.applyScalar();
-        
 
     var ghost = [new ghostType(0,0), new ghostType(), new ghostType(), new ghostType() ];
-        // the ghost is used as temporary storage of the tetris piece's current location.
-        // whatever change we want to make on the tetris piece is applied first to the ghost.
-        // then the ghost is used to test for collisions, against walls or other blocks.
-        // if no collision is detected, the ghost is applied back to the tetris piece on blockPile[].
+        // The ghost is used as temporary storage of the tetris piece's current location.
+        // Whatever change you want to make on the tetris piece, apply it to the ghost first!
+        // Use the ghost to test for collisions, against walls or other blocks.
+        // If no collision is detected, then apply the ghost back to the tetris piece on blockPile[]!
     function ghostType(x, y) {
         this.x = x,         // number, not string
         this.y = y,         // number, not string
-        this.fill = function(left, top, xStep, yStep) {     // assumes 'left' and 'top' are strings.
-             this.x = px.off(left) + xStep;          
-             this.y = px.off(top) + yStep; },
+        this.fill = function(left, top, xStep, yStep) {     // assumes 'left' and 'top' are strings with 'px' at the end.
+             this.x = pxOff(left) + xStep;          
+             this.y = pxOff(top) + yStep; },
         this.floor = function() { return numOfBlock.x * (Math.floor(this.y/yInc)) + (this.x/xInc); },      // outputs index
         this.ceil  = function() { return numOfBlock.x * (Math.ceil(this.y/yInc)) + (this.x/xInc); } };     // outputs index
             // ghost[].floor and ghost[].ceil yields an integer that corresponds to the index of a block in blockPile.
-            // this index number is used to test whether that block has opacity = setOpacity.high. This counts as collision.
+            // This index number is used to test whether that block has opacity = setOpacity.high. This counts as collision.
 
     var wall = {    
-        // used for collision check
+        // Used for collision check.
+        // left, right, ceiling, and floor represents the four edges of the toyRoom box.
         left : 0,
         right : xDim - xInc,
         ceiling : 0,
-        floor : yDim - yInc }
+        floor : yDim - yInc };
 
-    var px = {  
-        // removes 'px' from things like blockPile[].style.left
-        off : function(text) { return eval( text.substring(0, text.length - 2) ) },
-        on : function(number) { return eval(number) + 'px'} }
-            // maybe px.on() useless...
-
-
+    function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
         
 
 
@@ -381,17 +365,10 @@ function setBoard() {
 
         p.style.cursor = 'pointer';             // not necessary. I might delete this later.
 
-        p.style.boxSizing = 'border-box';
-        p.style.border = blockStyle.border; 
-        p.style.borderRadius = blockStyle.borderRadius; 
+        decorateTetrisPiece(p);
 
         p.style.opacity = setOpacity.low;
 
-        //p.style.backgroundColor = blockStyle.bkgdColor;
-        p.style.boxShadow = blockStyle.boxShadow;
-        
-        p.style.width = xInc + 'px';
-        p.style.height = yInc + 'px';
         p.style.cssFloat = 'left';
         p.style.position = 'relative';
 
@@ -410,6 +387,8 @@ function setBoard() {
 
     //randomMatrix.populate();
     randomMatrix.randomize(randomMatrix.max);
+        // This fills the randomMatrix.buffer. Otherwise, this array would be all zeroes.
+
 
 }   // end of setBoard()
 
@@ -423,35 +402,58 @@ function setPreview() {
     // This function fills the 'preView' element with the preview items.
 
     for ( let i = 1 ; i <= randomMatrix.max ; i++ ) {
+        // Removing existing wrappers to make room for new wrappers.
         if (preView.hasChildNodes()==true) { preView.removeChild(preView.lastChild); }
     }
 
-    for (let i = 1 ; i < randomMatrix.max ; i++ ) {
+    let wrapperLength = 0;        
+    let xPosition = 0.5 * yInc;  
 
-        var p = document.createElement('div');
+    for ( let i = 1 ; i < randomMatrix.max ; i++ ) {
+        // Creating the 'wrappers' for the tetris preview pieces.
+        
+        var p = document.createElement('div');    
+        
         p.style.backgroundColor = '#ACF';
-        p.style.width = 4*xInc + 'px';
-        p.style.height = 2*yInc + 'px';
-        p.style.margin = '5px';
+        
         p.style.position = 'relative';
+        //p.style.cssFloat = 'left';
+
+        //p.style.left = '5px';
+        //p.style.top = '10px';
+
+        
+
         preView.appendChild(p);
 
         for ( let j = 0 ; j <= 3 ; j++ ) { 
-
-            var p = document.createElement('div');
+            // Creating the actual preview tetris pieces.
             
-            decorateTetrisPiece(p);
+            var p = document.createElement('div');    
 
+            decorateTetrisPiece(p);
+            
             p.style.backgroundColor = tetrisColor[ randomMatrix.buffer[i] ];
             
+            p.style.position = 'absolute';
             p.style.left = p_Forms.arr[randomMatrix.buffer[i]][j].x + 'px';
             p.style.top = p_Forms.arr[randomMatrix.buffer[i]][j].y + 'px';
             
             preView.lastChild.appendChild(p);
 
+            wrapperLength = Math.max(wrapperLength , p_Forms.arr[randomMatrix.buffer[i]][j].x);
+
         } // end of for
 
-    }   //end of for
+        preView.lastChild.style.left = xPosition + 'px';
+        preView.lastChild.style.top = 0.5 * xInc + 'px';
+        //preView.lastChild.style.width = wrapperLength + xInc + 'px';
+        //preView.lastChild.style.height = 2*yInc + 'px';
+
+        xPosition += 2 * xInc + wrapperLength;
+        wrapperLength = 0;
+
+    }   // end of for
 
 
 
@@ -516,15 +518,14 @@ function decorateTetrisPiece(elem) {
     elem.style.boxSizing = 'border-box';
     elem.style.border = blockStyle.border;
     elem.style.borderRadius = blockStyle.borderRadius;
-    
-    //elem.style.visibility = 'visible';
-        
     elem.style.boxShadow = blockStyle.boxShadow;
-        
+
+    //elem.style.visibility = 'visible';
+            
     elem.style.width = xInc + 'px';
     elem.style.height = yInc + 'px';
         
-    elem.style.position = 'absolute';
+    //elem.style.position = 'absolute';
         
     //elem.style.left = '0px';               // actually, this doesn't matter...
     //elem.style.top = -yInc + 'px';         // ... cuz this puts it outside the boundary. invisible.
@@ -618,6 +619,7 @@ function keyUpAction(ev) {
 function createTitlePage() {
     // creates title page
     // make sure to create the title page AFTER you already set the board and tetris piece
+    // NOT USED right now... Fix this!!!
 
 
     var p = document.createElement('div');
@@ -667,6 +669,8 @@ function createTetrisPiece() {
         
         decorateTetrisPiece(p);
 
+        p.style.position = 'absolute';
+
         p.innerText = '>__<';
         
         //p.style.left = '0px';               // actually, this doesn't matter...
@@ -691,6 +695,7 @@ function resetTetrisShape() {
     // sets the shape of the tetris piece
 
     randomMatrix.randomize();
+        // This drops the first array item and addes a new random number to the last item of the array.
 
     for ( let i = 0 ; i <=3 ; i++ ) {
         // give the tetris piece its stating LOCATION and COLOR
@@ -698,20 +703,20 @@ function resetTetrisShape() {
         blockPile[i+numOfBlock.t].style.top = t_Forms.arr[randomMatrix.current][i].y + 'px';
         blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[randomMatrix.current];
     }
-    //confirm('does this stop it?');
 
     blockToGhost(translateMatrix.stay);
     if ( !crashFree() ) {
-        //ghostToBlock();
-        //confirm('game has ended sadly!');
+        // If the newly created tetris piece has nowhere to go, it's clearly GAMEOVER!
+        // Remember, the crashFree() function tests whether the ghost[] crashes or not.
+        // So, yes, you do need to run blockToGhost() first.
         endGame();
-
     }
 
     timeTick -= timeTick % yMove.setting.fallV;
         // this prevents the new tetris piece from jumping to the second lane prematurely.
 
     setPreview();
+        // This moves the preview tetris pieces to the left.
 
 }   // end of resetTetrisShape()
 
@@ -728,8 +733,8 @@ function blockToGhost( arr ) {
     // ghost[].x and ghost[].y are numbers, NOT strings
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
-        ghost[i].x = px.off(blockPile[i+numOfBlock.t].style.left) + arr[i].x ;
-        ghost[i].y = px.off(blockPile[i+numOfBlock.t].style.top) + arr[i].y ;
+        ghost[i].x = pxOff(blockPile[i+numOfBlock.t].style.left) + arr[i].x ;
+        ghost[i].y = pxOff(blockPile[i+numOfBlock.t].style.top) + arr[i].y ;
     }
 }   // end of blockToGhost()
 
@@ -1051,7 +1056,6 @@ function integrateBlocks() {
                 // this prevents the new tetris piece from jumping to the second lane prematurely.
 
             resetTetrisShape();
-            //setPreview();
             checkRow();
             count.reset();
         } else { 
