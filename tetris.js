@@ -30,7 +30,7 @@
 // SCREEN and BROWSER parameters
     var screen = {  x : window.screen.width,
                     y : window.screen.height,
-                    r : window.devicePixelRatio,
+                    r : window.devicePixelRatio,    // Not used.
                     t : 0.65 }                      // "trim", percentage to vertically shrink toyRoom by
     //console.log(`Screen res: ${screen.x} x ${screen.y}  ratio: ${screen.r}`);
     //console.log(navigator.userAgent);
@@ -38,26 +38,29 @@
 
 
 // DIMENSIONS variables
-    var numOfBlock = {  x : 8,              // number of blocks in the horizontal direction
-                        y : 20,             // number of blocks in the vertical direction
-                        m : 0,              // starting horizontal location of the tetris piece        
-                        t : 0,              // total number of blocks on the board, minus the tetris piece
+    var numOfBlock = {  x : 8,              // Number of blocks in the horizontal direction.
+                        y : 20,             // Number of blocks in the vertical direction.
+                        m : 0,              // Starting horizontal location of the tetris piece.
+                        t : 0,              // Total number of blocks on the board, minus the tetris piece.
                         midpoint : function() {this.m = Math.floor( this.x / 2 ) - 2},
                         total : function() {this.t = this.x * this.y} }
         numOfBlock.midpoint();      
         numOfBlock.total();
             // I'm not sure why I made these into methods instead of just setting the .m and .t values right away.
             // Perhaps I imagined that I would change the toyRoom dimensions mid-game.
+            // It's not too late! Maybe I should get rid of these methods...
 
     var yInc = 4 * Math.ceil( 0.25 * ( screen.y * screen.t ) / numOfBlock.y );
-        // dividing by 2 and multilying by 2 ensures the half-steps are still integer steps.
+        // dividing by 4 and multilying by 4 ensures the half-steps are still integer steps.
     var xInc = yInc;            // I admit, this doesn't allow for flexibility... oh wells...
     var yDim = yInc * numOfBlock.y;
     var xDim = xInc * numOfBlock.x;
+    var yStep = 0.25 * yInc;
+    var xStep = xInc;
         toyRoom.style.height = yDim + 'px';
         toyRoom.style.width = xDim + 'px';
             // making toyRoom fit the screen vertically
-        preView.style.height = 3*yInc + 'px';
+        preView.style.height = 3 * yInc + 'px';
             //scoreBoard.style.width = '300px';
 
 
@@ -68,16 +71,16 @@
         border : '1px solid rgba(0, 0, 0, 1)' ,
         boxShadow : '0px 0px 5px 0px inset white' ,
         borderRadius : '15%' ,
-        opacity : 0.5 }
+        opacity : 0.5 }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
 
     var tetrisColor = [];
-        tetrisColor[0] = `rgba(250, 100, 100, ${blockStyle.opacity})`;
-        tetrisColor[1] = `rgba(250, 250, 100, ${blockStyle.opacity})`;
-        tetrisColor[2] = `rgba(100, 100, 250, ${blockStyle.opacity})`;
-        tetrisColor[3] = `rgba(100, 250, 100, ${blockStyle.opacity})`;
-        tetrisColor[4] = `rgba(100, 100, 100, ${blockStyle.opacity})`;
-        tetrisColor[5] = `rgba(100, 250, 250, ${blockStyle.opacity})`;
-        tetrisColor[6] = `rgba(250, 100, 250, ${blockStyle.opacity})`;
+        tetrisColor[0] = `rgba(250, 250, 250, ${blockStyle.opacity})`;
+        tetrisColor[1] = `rgba(250, 000, 000, ${blockStyle.opacity})`;
+        tetrisColor[2] = `rgba(000, 000, 250, ${blockStyle.opacity})`;
+        tetrisColor[3] = `rgba(250, 250, 000, ${blockStyle.opacity})`;
+        tetrisColor[4] = `rgba(000, 250, 000, ${blockStyle.opacity})`;
+        tetrisColor[5] = `rgba(150, 050, 250, ${blockStyle.opacity})`;
+        tetrisColor[6] = `rgba(000, 000, 000, ${blockStyle.opacity})`;
 
     var setOpacity = {  low : 0,        // Low setting of opacity. 
                         high : 1,       // High setting of opacity.
@@ -86,11 +89,11 @@
 
 
 // TIME settings
-    var timeInc = 5;               // time interval used in timeFlow.[ms]
+    var timeInc = 5;                // time interval used in timeFlow.[ms]
     var timeTick = 0;               // time counter in setInterval in timeAction()
     var paused = false;             // true if game is paused.
-    var count = {   set : { stagnant : 300,             // how long tetris piece should wait until it integrates into the pile
-                            limit    : 700 },           // absolute limit for how long to wait until integration
+    var count = {   set : { stagnant : 200,             // how long tetris piece should wait until it integrates into the pile
+                            limit    : 800 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
                     keyReleased : false,                // did keyup event with ArrowDown happen?
@@ -102,40 +105,49 @@
 
 // MOVEMENT settings
     var yMove = {
-        setting : { absFallV : 300, fallV : 300, downV : 2, dropIncrement : 5 },       // set these manually to adjust speed
-        actual : { fallV : 0, downV : 0 },          // leave these alone!
-        flip : { 
-            fallV : function() { yMove.actual.fallV = (yMove.actual.fallV==0) ? yMove.setting.fallV : 0; } },
-        press : {
-            down : function() { yMove.actual.downV = yMove.setting.downV; },
-            up : function() { yMove.actual.downV = 0 } },
+        v_Low : 5,              // Lowest speed setting. Does not change.
+        v_High : 1000,          // Highest speed setting. Does not change.
+        v_Inc : 5,              // Increments of speed change. Does not change.
+        v_mid : 0,                  // Falling speed that changes over the course of the game.
+        v_fall : 0,                 // If the tetris piece is falling, this is equal to v_mid. Otherwise, zero.
+        v_drop : 0,                 // If the tetris piece is dropping, this is equal to v_High. Otherwise, v_fall.
+        show : function() { _speed.innerText = this.v_drop; },
+        update : function() {
+                this.v_fall = (this.v_fall==0) ? 0 : this.v_mid;
+                this.v_drop = (this.v_drop==this.v_High) ? this.v_High : this.v_fall; },
+        flip : function() {
+                this.v_fall = (this.v_fall==0) ? this.v_mid : 0;
+                this.update();
+                this.show(); },
+        press : function() {
+                this.v_drop = this.v_High;
+                this.v_fall = this.v_mid;
+                this.show(); },
+        release : function() {
+                this.v_drop = this.v_fall;
+                this.show(); },
         speedUp : function() {
-            //if ((yMove.setting.fallV - yMove.setting.dropIncrement) > 0) { 
-                //yMove.setting.fallV -= yMove.setting.dropIncrement; }
-            yMove.setting.fallV -= ((yMove.setting.fallV-yMove.setting.dropIncrement) > 0) ? yMove.setting.dropIncrement : 0;
-            yMove.actual.fallV = (yMove.actual.fallV==0) ? 0 : yMove.setting.fallV;
-            _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0); },
+                this.v_mid += ( (this.v_mid + this.v_Inc) > this.v_High) ? 0 : this.v_Inc;
+                this.update();
+                this.show(); },
         reset : function() {
-            yMove.setting.fallV = yMove.setting.absFallV;
-            yMove.actual.fallV = yMove.setting.fallV;
-            _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0); },
-        check : {
-            fallV : function() { return (yMove.actual.fallV==0) ? false : true; },
-            downV : function() { return !(yMove.actual.downV==0); } },
+                this.v_mid = this.v_Low;
+                this.v_fall = this.v_mid;
+                this.v_drop = this.v_fall;
+                this.show(); },
+        calc : function() { return parseInt(1000 * yStep / timeInc / this.v_drop ); },
         demand : function() {
-            // If true, there is demand to move 1 step down at this time iteration.
-            // Also, displays the speed on the screen.
-            if (yMove.check.downV()) { 
-                _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.downV).toFixed(0);
-                return ( (timeTick%yMove.actual.downV) == 0 ) ? true : false;
-            } else if (yMove.check.fallV()) {
-                _speed.innerText = (1000 * translateMatrix.downstep / timeInc / yMove.actual.fallV).toFixed(0);
-                return ( (timeTick%yMove.actual.fallV) == 0 ) ? true : false;
-            } else {
-                _speed.innerText = 0;
-                return false;
-            } } };
-        yMove.flip.fallV();             // toggles whether the game starts with tetris falling or not
+            // The falling motion of the tetris piece happens in the tempo of the timeAction() function, which repeats itself...
+            // ... at an interval of timeInc microseconds.
+            // So, a slow moving tetris piece will do nothing, for example, for 99 iterations of timeAction(), and then on the...
+            // ... 100th iteration it will move down one step. Then repeat for the next 100 iterations. Etc.
+            // A fast moving tetris piece will do nothing, for example, for 19 iterations of timeAction(), and then on the...
+            // ... 20th iteration it will move down one step. Then repeat.
+            // yMove.demand is always called from inside timeAction(). It yields true if it is time to move down one step.
+            if (this.v_drop!=0) { return ( (timeTick % this.calc() ) == 0 ) ? true : false; }
+            return false; } };
+        yMove.reset();
+        
 
 
 
@@ -439,7 +451,7 @@ function tetrisBlink() {
     let d = 40;                         // time between eyes open and eyes closed.
     let arr = [ 0 , 0.5*d , d , 1.5*d ];     // blink start time of each blocks scattered.
 
-    if (yMove.check.fallV() == false) {
+    if (yMove.v_fall == 0) {
         let a = timeTick % interval;
         let b = [ ( (a>arr[0]) && (a<(arr[0]+d)) ),
                 ( (a>arr[1]) && (a<(arr[1]+d)) ),
@@ -504,7 +516,7 @@ function keyDownAction(ev) {
         case 'Space':
             break;
         case 'KeyF':
-            yMove.flip.fallV();         // toggles whether tetris slowly falls or not
+            yMove.flip();         // toggles whether tetris slowly falls or not
             break;
         case 'KeyT':
             //test();
@@ -534,8 +546,8 @@ function keyDownAction(ev) {
             if (!paused) moveRotate('left');
             break;
         case 'ArrowDown':
-            yMove.press.down();         // accelerates falling speed
-            yMove.actual.fallV = yMove.setting.fallV;
+            yMove.press();         // accelerates falling speed
+            //yMove.act.fallInt = yMove.calc(yMove.set.speed);
             break;
         default:
             break;
@@ -556,7 +568,7 @@ function keyUpAction(ev) {
         case 'ArrowUp':
             break;
         case 'ArrowDown':
-            yMove.press.up();
+            yMove.release();
             break;
         default:
             break;
@@ -661,7 +673,7 @@ function resetTetrisShape() {
         endGame();
     }
 
-    timeTick -= timeTick % yMove.setting.fallV;
+    timeTick -= timeTick % yMove.calc();
         // this prevents the new tetris piece from jumping to the second lane prematurely.
 
     
@@ -773,7 +785,7 @@ function previewSlide() {
                 clearInterval(t);
             } }
 
-        , 10);
+        , 5);
 
 }   // end of previewSlide()
 
@@ -1071,7 +1083,7 @@ function integrateBlocks() {
     blockToGhost(translateMatrix.stay);
         // This reassigns the ghost to have the identical position as the tetris piece itself.
 
-    if ( ( ghost[0].floor() == ghost[0].ceil() ) && yMove.check.fallV() && onSolidGround ) {
+    if ( ( ghost[0].floor() == ghost[0].ceil() ) && (yMove.v_fall != 0 ) && onSolidGround ) {
         // Checks for several conditions:
         // (1) Is the block aligned to the grid? If it is, ghost[].floor() would equal ghost[].ceil().
         // (2) Is there a call for the tetris piece to keep falling? If not, there's no reason to integrate.
@@ -1124,7 +1136,7 @@ function integrateBlocks() {
                 blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[randomMatrix.current];
             }
             
-            timeTick -= timeTick % yMove.setting.fallV;
+            timeTick -= timeTick % yMove.calc();
                 // this prevents the new tetris piece from jumping to the second lane prematurely.
 
             
