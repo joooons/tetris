@@ -157,7 +157,7 @@
         total: 0,               // The total score for one game.
         top : 0,                // The top score over all games played.
         count : 0,              // Number of rows completed THIS ROUND.
-        next : 5,              // Complete this many lines to speed up.
+        next : 1,              // Complete this many lines to speed up.
         countTotal : 0,         // TOTAL number of rows completed in game.
         bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],     // The bonus multipliers.
         tally : function() {
@@ -313,13 +313,13 @@
         right : [ { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 }, { x:1, y:0 } ],
         down : [ { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 }, { x:0, y:1 } ],
         stay : [ { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 }, { x:0, y:0 } ],
-        downstep : 0.25 * yInc,
-        sidestep : xInc,
+        //downstep : 0.25 * yInc,
+        //sidestep : xInc,
         applyScalar : function() {
             for ( let i = 0 ; i <=3 ; i++ ) {
-                translateMatrix.left[i].x *= translateMatrix.sidestep;              // length of side step
-                translateMatrix.right[i].x *= translateMatrix.sidestep;             // length of side step
-                translateMatrix.down[i].y *= translateMatrix.downstep; }        // length of downward step
+                translateMatrix.left[i].x *= xStep;              // length of side step
+                translateMatrix.right[i].x *= xStep;             // length of side step
+                translateMatrix.down[i].y *= yStep; }        // length of downward step
             } };
         translateMatrix.applyScalar();
 
@@ -520,7 +520,8 @@ function keyDownAction(ev) {
             break;
         case 'KeyT':
             //test();
-            //previewSlide();
+            //createShadow();
+            //castShadow();
             break;
         case 'KeyP':
             pauseGame();
@@ -529,7 +530,8 @@ function keyDownAction(ev) {
             restartGame();
             break;
         case 'KeyV':
-            yMove.speedUp();
+            //yMove.speedUp();
+            //createShadow();
             break;
 
 
@@ -620,31 +622,55 @@ function createTitlePage() {
 
 
 function createTetrisPiece() {
-    // creates the four blocks of the tetris piece.
+    // Creates the four blocks of the tetris piece.
     // But the shape is not initiated. The shape should be initiated by a different function.
-    // createTetrisPiece() should be run only once. at the beginning.
-
+    // CreateTetrisPiece() should be run only once, at the beginning.
     for ( let i = 0 ; i <=3 ; i++ ) {
-
         var p = document.createElement('div');
-        
         decorateTetrisPiece(p);
-
         p.style.position = 'absolute';
-
         p.innerText = '>__<';
-        
-        //p.style.left = '0px';               // actually, this doesn't matter...
-        //p.style.top = -yInc + 'px';         // ... cuz this puts it outside the boundary. invisible.
-
-
-
         toyRoom.appendChild(p); 
-    
     }   // end of for loop
-
-
 }   // end of createTetrisPiece()
+
+
+
+
+function createShadow() {
+    // This function creates the shadowy tetris piece that shows where the real tetris piece would end up...
+    // ... if the player allowed the tetris piece to drop.
+    // The shadow will simply be the next four elements in the toyRoom, after the four elements of the tetris piece.
+
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        var p = document.createElement('div');
+        p.style.boxSizing = 'border-box';
+        //p.style.margin = '2px';
+        //p.style.border = '4px solid #FFF3';
+        //p.style.borderRadius = blockStyle.borderRadius;
+        p.style.borderRadius = '2px';
+        p.style.backgroundColor = '#0002';
+        p.style.width = xInc + 'px';
+        p.style.height = yInc + 'px';
+        p.style.position = 'absolute';
+        p.style.left = '0px';
+        p.style.top = -yInc + 'px';
+        toyRoom.appendChild(p);
+    }
+}   // end of createShadoe()
+
+
+
+
+
+function castShadow() {
+    // Puts the shadow on the board where the tetris piece would be if it dropped straight down.
+    blockToGhost(translateMatrix.stay);
+    do {
+        ghostToShadow();
+        ghostToGhost(translateMatrix.down);
+    } while ( crashFree() );
+}   // end of castShadow()
 
 
 
@@ -653,18 +679,16 @@ function createTetrisPiece() {
 
 
 function resetTetrisShape() {
-    // sets the shape of the tetris piece
-
+    // Resets the tetris piece back to the top. Also gives it a new random shape.
     randomMatrix.randomize();
-        // This drops the first array item and addes a new random number to the last item of the array.
-
+        // This drops the first array item of randomMatrix.buffer[].
+        // Then it adds a new random number to the last item of randomMatrix.buffer[].
     for ( let i = 0 ; i <=3 ; i++ ) {
-        // give the tetris piece its stating LOCATION and COLOR
+        // Gives the tetris piece its stating LOCATION and COLOR
         blockPile[i+numOfBlock.t].style.left = t_Forms.arr[randomMatrix.current][i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = t_Forms.arr[randomMatrix.current][i].y + 'px';
         blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[randomMatrix.current];
     }
-
     blockToGhost(translateMatrix.stay);
     if ( !crashFree() ) {
         // If the newly created tetris piece has nowhere to go, it's clearly GAMEOVER!
@@ -672,13 +696,12 @@ function resetTetrisShape() {
         // So, yes, you do need to run blockToGhost() first.
         endGame();
     }
-
     timeTick -= timeTick % yMove.calc();
-        // this prevents the new tetris piece from jumping to the second lane prematurely.
-
-    
+        // This prevents the new tetris piece from jumping to the second lane prematurely.
+        // yMove.calc() calculates the time interval that corresponds to the tetris piece speed.
+    castShadow();
     setPreview();
-        // This moves the preview tetris pieces to the left.
+        // This moves the preview tetris pieces all to the left.
 
 }   // end of resetTetrisShape()
 
@@ -771,22 +794,16 @@ function previewSlide() {
     // It stops moving when the first element is completely hidden beyond the left boundary.
     // This function does not actually remove any element. Should it?
 
-    let stepInc = 0.1 * xInc;         // Step Increment. Length of each step toward left.
+    let stepInc = 0.1 * xInc;           // Step Increment. Length of each step toward left.
     let stepTotal = 0;                  // Step Total. The total length travelled left.
     let c = preView.childNodes;         // This is an array with the child elements in it. So, it's c[].
     
     var t = setInterval( () => { 
             stepTotal += stepInc;
-            for ( let i = 0 ; i < randomMatrix.max ; i++ ) {
+            for ( let i = 0 ; i < randomMatrix.max ; i++ ) { 
                 c[i].style.left = pxOff(c[i].style.left) - stepInc + 'px';
             }
-    
-            if ( stepTotal >= p_Forms.slideDistance ) { 
-                clearInterval(t);
-            } }
-
-        , 5);
-
+            if ( stepTotal >= p_Forms.slideDistance ) clearInterval(t); } , 5);
 }   // end of previewSlide()
 
 
@@ -812,6 +829,8 @@ function blockToGhost( arr ) {
 }   // end of blockToGhost()
 
 
+
+
 function ghostToBlock() {
     // takes the data stored in ghost and insert back into the real tetris piece.
     // blockPile[].style.left and blockPile[].style.top are strings.
@@ -820,9 +839,26 @@ function ghostToBlock() {
         blockPile[i+numOfBlock.t].style.left = ghost[i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = ghost[i].y + 'px';
     }
-
 }   // end of ghostToBlock()
 
+
+
+
+function ghostToGhost( arr ) {
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        ghost[i].x = ghost[i].x + arr[i].x ;
+        ghost[i].y = ghost[i].y + arr[i].y ;
+    }
+}   // end of ghostToGhost()
+
+
+
+function ghostToShadow() {
+    for ( let i = 0 ; i <= 3 ; i++ ) {
+        blockPile[4+i+numOfBlock.t].style.left = ghost[i].x + 'px';
+        blockPile[4+i+numOfBlock.t].style.top = ghost[i].y + 'px';
+    }
+}   // end of ghostToShadow()
 
 
 
@@ -897,6 +933,8 @@ function dropMountain(filledRow) {
         }
     }
     for ( let k = 0 ; k < numOfBlock.x ; k++ ) blockPile[k].style.opacity = setOpacity.low;
+
+    castShadow();
 }   // end of dropMountain()
 
 
@@ -935,6 +973,7 @@ function moveHorizontal(arr) {
 
     blockToGhost(arr);
     if (crashFree()) ghostToBlock();
+    castShadow();
 
 }   // end of moveHorizontal()
 
@@ -981,6 +1020,7 @@ function moveRotate(text) {
         // this is where we crash-test the rotated position using the ghost object
         // if it passes the test, copy the positions into the actual tetris piece
         ghostToBlock(); 
+        castShadow();
         return;
     } else {
         // this is the SECOND CHANCE function.
@@ -992,9 +1032,11 @@ function moveRotate(text) {
         
         if ( crashFree() ) {
             ghostToBlock();
+            castShadow();
             return;
         }
     }
+
 
 }   // end of moveRotate()
 
@@ -1039,8 +1081,8 @@ function restartGame() {
 function crashFree() {
     // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
     // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
-    // yields TRUE if no collisions.
-    // this function requires that the block is perfectly aligned with the columns. Otherwise, ghost[i].floor will not work.
+    // Yields TRUE if no collisions.
+    // This function requires that the block is perfectly aligned with the columns. Otherwise, ghost[i].floor will not work.
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
 
@@ -1226,9 +1268,11 @@ function test() {
 
 // before the game starts...
 setBoard();
-checkRow();                 // after random blocks are generated, check for row completion
-createTetrisPiece();        // create the four elements for the tetris block
-resetTetrisShape();         // put the tetris piece on the board
+checkRow();                 // After random blocks are generated, check for row completion
+createTetrisPiece();        // Create the four elements for the tetris block
+createShadow();             // Creates the shadow of the tetris piece.
+resetTetrisShape();         // Put the tetris piece on the board
+
 previewSlide();
 
 //createTitlePage();
