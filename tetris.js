@@ -92,7 +92,7 @@
     var timeInc = 5;                // time interval used in timeFlow.[ms]
     var timeTick = 0;               // time counter in setInterval in timeAction()
     var paused = false;             // true if game is paused.
-    var count = {   set : { stagnant : 200,             // how long tetris piece should wait until it integrates into the pile
+    var count = {   set : { stagnant : 150,             // how long tetris piece should wait until it integrates into the pile
                             limit    : 800 },           // absolute limit for how long to wait until integration
                     stagnant : 0,                       // how long tetris piece has been stagnant right now
                     limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
@@ -153,29 +153,29 @@
 
 // GAME SCORE settings
     var score = {
-        unit : 100,
-        total: 0,
-        top : 0,
-        count : 0,              // number of rows completed this round.
-        countTotal : 0,         // total number of rows completed in game.
-        bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],
+        unit : 100,             // The score goes up by this increment, multiplied by bonus multipliers.
+        total: 0,               // The total score for one game.
+        top : 0,                // The top score over all games played.
+        count : 0,              // Number of rows completed THIS ROUND.
+        next : 5,              // Complete this many lines to speed up.
+        countTotal : 0,         // TOTAL number of rows completed in game.
+        bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],     // The bonus multipliers.
         tally : function() {
             this.total += this.unit * this.count * this.bonus[this.count];
             this.countTotal += this.count;
             this.count = 0;
+            yMove.v_mid = yMove.v_Low + (yMove.v_Inc * parseInt(this.countTotal/this.next));
+            yMove.update();
+            yMove.show();
             _points.innerText = this.total; 
-            _lines.innerText = this.countTotal;
-        },
-        update : function() {
-            this.top = Math.max(this.top, this.total); 
-            },
+            _lines.innerText = this.countTotal; },
+        update : function() { this.top = Math.max(this.top, this.total); },
         reset : function() {
             this.count = 0;
             this.total = 0;
             this.countTotal = 0;
             _points.innerText = this.total;
-            _lines.innerText = this.countTotal;
-        } };
+            _lines.innerText = this.countTotal; } };
 
 
     
@@ -520,7 +520,7 @@ function keyDownAction(ev) {
             break;
         case 'KeyT':
             //test();
-            previewSlide();
+            //previewSlide();
             break;
         case 'KeyP':
             pauseGame();
@@ -546,7 +546,7 @@ function keyDownAction(ev) {
             if (!paused) moveRotate('left');
             break;
         case 'ArrowDown':
-            yMove.press();         // accelerates falling speed
+            if (!paused) yMove.press();         // accelerates falling speed
             //yMove.act.fallInt = yMove.calc(yMove.set.speed);
             break;
         default:
@@ -568,7 +568,7 @@ function keyUpAction(ev) {
         case 'ArrowUp':
             break;
         case 'ArrowDown':
-            yMove.release();
+            if (!paused) yMove.release();
             break;
         default:
             break;
@@ -850,7 +850,6 @@ function checkRow() {
             // Triggers when the row is filled up.
 
             score.count++;
-
 
 
             let r = 0;
