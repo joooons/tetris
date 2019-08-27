@@ -9,18 +9,18 @@
 // blockPile[0] to blockPile[numOfBlock.t-1] are the background blocks. They toggle in opacity.
 // blockPile[numOfBlock.t] to blockPile[numOfBlock.t+3] are the four blocks forming the TETRIS piece.
 // blockPile[numOfBlock.t+4] to blockPile[numOfBlock.t+7] are the SHADOW tetris piece.
-// 
+
+
+
+
 
 
 
 // ---------- Declaration Section -------------------------------- //
 
-
 // DOM elements
     var toyRoom = document.getElementById('toyRoom');   
-        toyRoom.style.backgroundImage = "url('sky.jpg')";
-        toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
-    var blockPile = toyRoom.children;
+        var blockPile = toyRoom.children;
     var scoreBoard = document.getElementById('scoreBoard');
         var _points = document.getElementById('points');        // Child to scoreBoard
         var _lines = document.getElementById('lines');          // Child to scoreBoard
@@ -81,7 +81,7 @@
         border : '1px solid rgba(0, 0, 0, 1)' ,
         boxShadow : '0px 0px 5px 0px inset white' ,
         borderRadius : '15%' ,
-        opacity : 0.5 }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
+        opacity : 1 }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
 
     var tetrisColor = [];
         tetrisColor[0] = `rgba(250, 250, 250, ${blockStyle.opacity})`;
@@ -100,7 +100,7 @@
 
 // TIME settings
     var timeInc = 5;                // time interval used in timeFlow.[ms]
-    var timeTick = 0;               // time counter in setInterval in ActByTime()
+    var timeTick = 0;               // time counter in setInterval in actByTime()
     var paused = false;             // true if game is paused.
     var count = {   set : { stagnant : 150,             // how long tetris piece should wait until it integrates into the pile
                             limit    : 800 },           // absolute limit for how long to wait until integration
@@ -147,13 +147,13 @@
                 this.show(); },
         calc : function() { return parseInt(1000 * yStep / timeInc / this.v_drop ); },
         demand : function() {
-            // The falling motion of the tetris piece happens in the tempo of the ActByTime() function, which repeats itself...
+            // The falling motion of the tetris piece happens in the tempo of the actByTime() function, which repeats itself...
             // ... at an interval of timeInc microseconds.
-            // So, a slow moving tetris piece will do nothing, for example, for 99 iterations of ActByTime(), and then on the...
+            // So, a slow moving tetris piece will do nothing, for example, for 99 iterations of actByTime(), and then on the...
             // ... 100th iteration it will move down one step. Then repeat for the next 100 iterations. Etc.
-            // A fast moving tetris piece will do nothing, for example, for 19 iterations of ActByTime(), and then on the...
+            // A fast moving tetris piece will do nothing, for example, for 19 iterations of actByTime(), and then on the...
             // ... 20th iteration it will move down one step. Then repeat.
-            // yMove.demand is always called from inside ActByTime(). It yields true if it is time to move down one step.
+            // yMove.demand is always called from inside actByTime(). It yields true if it is time to move down one step.
             if (this.v_drop!=0) { return ( (timeTick % this.calc() ) == 0 ) ? true : false; }
             return false; } };
         yMove.reset();
@@ -233,12 +233,12 @@
         // The probability of a shape appearing is the number divided by the sum of all numbers.
         // For example, if tetrisChance was [1,1,0,0,0,0,0], the Long Bar would appear 50% of the time...
         // ... and the Square would never appear.
-        1 ,      // likelihood of the Long Bar tetris piece appearing
-        1 ,      // likelihood of the inverse 'L' shape
-        1 ,      // likelihood of the 'L' shape
-        1 ,      // likelihood of the inverse'Z' shape
-        1 ,      // likelihood of the 'Z' shape
-        1 ,      // likelihood of the 'T' shape
+        5 ,      // likelihood of the Long Bar tetris piece appearing
+        3 ,      // likelihood of the inverse 'L' shape
+        3 ,      // likelihood of the 'L' shape
+        3 ,      // likelihood of the inverse'Z' shape
+        3 ,      // likelihood of the 'Z' shape
+        5 ,      // likelihood of the 'T' shape
         1];     // likelihood of the Square shape
 
     var randomMatrix = {
@@ -369,7 +369,21 @@
 
 
 
-// ---------- Functions ------------------------------------------ //
+// ---------- FUNCTIONS ------------------------------------------ //
+
+
+function configureToyRoom() {
+    toyRoom.style.backgroundImage = "url('sky.jpg')";
+    toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
+    toyRoom.style.zIndex = 0;
+}
+
+
+
+
+
+
+
 
 
 function createBlockPile() {
@@ -596,10 +610,12 @@ function createShadow() {
         var p = document.createElement('div');
             p.style.boxSizing = 'border-box';
             p.style.borderRadius = '2px';
-            p.style.backgroundColor = '#0002';
+            //p.style.backgroundColor = '#0002';
+            p.style.backgroundColor = '#000';
             p.style.width = xInc + 'px';
             p.style.height = yInc + 'px';
             p.style.position = 'absolute';
+            p.style.zIndex = -1;
             p.style.left = '0px';
             p.style.top = -yInc + 'px';
         toyRoom.appendChild(p);
@@ -617,6 +633,12 @@ function castShadow() {
         ghostToShadow();
         ghostToGhost(translateMatrix.down);
     } while ( IsCrashFree() );
+
+    let a = pxOff(blockPile[4+numOfBlock.t].style.top) - pxOff(blockPile[numOfBlock.t].style.top);
+    a = (yDim-a)/yDim;
+    for ( let i = 4 + numOfBlock.t ; i <= 7 + numOfBlock.t ; i++ ) {
+        blockPile[i].style.opacity = 0.15 * (1 + a);
+    }
 }   // end of castShadow()
 
 
@@ -728,18 +750,16 @@ function slidePreview() {
 
 
 
-function ActByTime() {
-    // this function runs in --> var timeFlow = setInterval(ActByTime,timeInc);    
+function actByTime() {
+    // this function runs in --> var timeFlow = setInterval(actByTime,timeInc);    
 
     if (!paused) {
-        timeTick++                      // general use clicker
-        blinkTetrisPiece();                  // animates the facial expression. pretty useless.
-        moveDown();                      // make tetris fall continually
-        mergeTetrisPiece(); }            // integrate tetris into blockPile after some time.
+        timeTick++                       // General use clicker.
+        blinkTetrisPiece();              // Animates the facial expression. pretty useless.
+        moveDown();                      // Make tetris fall continually.
+        mergeTetrisPiece(); }            // Integrate tetris into blockPile after some time.
 
-}   // end of ActByTime()
-
-
+}   // end of actByTime()
 
 
 
@@ -757,7 +777,9 @@ function ActByTime() {
 
 
 
-function ActByKeyDown(ev) {
+
+
+function actByKeyDown(ev) {
     switch (ev.code) {
         case 'KeyA':    if (!paused) moveRotate('left');
                         break;
@@ -793,7 +815,7 @@ function ActByKeyDown(ev) {
                                 break;
         default:        break;
     }   // end of switch
-}   // end of ActByKeyDown()
+}   // end of actByKeyDown()
 
 
 
@@ -801,7 +823,7 @@ function ActByKeyDown(ev) {
 
 
 
-function ActByKeyUp(ev) {    
+function actByKeyUp(ev) {    
     switch (ev.code) {
         case 'ArrowUp':
             break;
@@ -811,7 +833,7 @@ function ActByKeyUp(ev) {
         default:
             break;
     }   // end of switch
-}   // end of ActByKeyUp()
+}   // end of actByKeyUp()
 
 
 
@@ -829,6 +851,7 @@ function moveDown() {
             for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = '>__<'; }
         }
     }
+    castShadow();
 }   // end of moveDown()
 
 
@@ -1007,7 +1030,11 @@ function checkRow() {
             let t = setInterval(rowSpin,10);
             function rowSpin() {
                 // Visually flips the row down.
-                r += 4;
+                
+                
+                r += 1;         // Determines how quickly the blocks rotate.
+
+
                 for ( let j = i ; j < i + numOfBlock.x ; j++ ) { blockPile[j].style.transform = "rotateX(" + r + "deg)"; }
                 if ( r > 90 ) {
                     clearInterval(t);
@@ -1036,8 +1063,8 @@ function dropRow(filledRow) {
     // From the filled row up, drop the pile of blocks.
     for ( let i = filledRow ; i >= numOfBlock.x ; i -= numOfBlock.x ) {
         for ( let j = i ; j < i+numOfBlock.x ; j++ ) {
-            let a = blockPile[j-numOfBlock.x].style.opacity;
-            blockPile[j].style.opacity = a;
+            blockPile[j].style.opacity = blockPile[j-numOfBlock.x].style.opacity;
+            blockPile[j].style.backgroundColor = blockPile[j-numOfBlock.x].style.backgroundColor;
         }
     }
     for ( let k = 0 ; k < numOfBlock.x ; k++ ) blockPile[k].style.opacity = setOpacity.low;
@@ -1085,9 +1112,13 @@ function restartGame() {
     paused = false;
     score.reset();
     yMove.reset();
-    
-
 }
+
+
+
+
+
+
 
 
 
@@ -1113,14 +1144,6 @@ function IsCrashFree() {
 
     return true;
 }   // end of IsCrashFree()
-
-
-
-
-
-
-
-
 
 
 
@@ -1175,21 +1198,11 @@ function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 // ----------------- MAIN BODY ----------------------------------------- //
 
 
 // before the game starts...
+configureToyRoom();
 createBlockPile();
 
 randomMatrix.randomize(randomMatrix.max);
@@ -1205,11 +1218,11 @@ slidePreview();
 
 
 // runs continuously
-var timeFlow = setInterval(ActByTime,timeInc);
+var timeFlow = setInterval(actByTime,timeInc);
 
 // event listeners
-document.addEventListener('keydown', ActByKeyDown);
-document.addEventListener('keyup', ActByKeyUp);
+document.addEventListener('keydown', actByKeyDown);
+document.addEventListener('keyup', actByKeyUp);
 
 
 
