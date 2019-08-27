@@ -43,7 +43,7 @@
 
 // DIMENSIONS variables
     var numOfBlock = {  x : 8,              // Number of blocks in the horizontal direction.
-                        y : 20,             // Number of blocks in the vertical direction.
+                        y : 18,             // Number of blocks in the vertical direction.
                         m : 0,              // Starting horizontal location of the tetris piece.
                         t : 0,              // Total number of blocks on the board, minus the tetris piece.
                         initiate : function() { 
@@ -99,17 +99,18 @@
 
 
 // TIME settings
-    var timeInc = 5;                // time interval used in timeFlow.[ms]
-    var timeTick = 0;               // time counter in setInterval in actByTime()
-    var paused = false;             // true if game is paused.
-    var count = {   set : { stagnant : 150,             // how long tetris piece should wait until it integrates into the pile
-                            limit    : 800 },           // absolute limit for how long to wait until integration
-                    stagnant : 0,                       // how long tetris piece has been stagnant right now
-                    limit : 0,                          // how long tetris piece has been stagnant, regardless of movement
-                    keyReleased : false,                // did keyup event with ArrowDown happen?
-                    reset : function() { this.stagnant = 0; },                          // resets stagnant
-                    resetlimit : function() { this.limit = 0; },                        // resets limit
-                    fill : function() { this.stagnant = this.set.stagnant; } };         // times up!
+    var timeInc = 5;                // Time interval used in timeFlow.[ms]
+    var timeTick = 0;               // Time counter in setInterval in actByTime()
+    var paused = false;             // True if game is paused.
+    var keyEnabled = true;          // Disables key input.
+    var count = {   set : { stagnant : 150,             // How long tetris piece should wait until it integrates into the pile
+                            limit    : 800 },           // Absolute limit for how long to wait until integration
+                    stagnant : 0,                       // How long tetris piece has been stagnant right now
+                    limit : 0,                          // How long tetris piece has been stagnant, regardless of movement
+                    keyReleased : false,                // Did keyup event with ArrowDown happen?
+                    reset : function() { this.stagnant = 0; },                          // Resets stagnant
+                    resetlimit : function() { this.limit = 0; },                        // Resets limit
+                    fill : function() { this.stagnant = this.set.stagnant; } };         // Times up!
 
 
 
@@ -130,10 +131,12 @@
                 this.update();
                 this.show(); },
         press : function() {
+                addFace('>__<');
                 this.v_drop = this.v_High;
                 this.v_fall = this.v_mid;
                 this.show(); },
         release : function() {
+                addFace('o__o');
                 this.v_drop = this.v_fall;
                 this.show(); },
         speedUp : function() {
@@ -376,6 +379,7 @@ function configureToyRoom() {
     toyRoom.style.backgroundImage = "url('sky.jpg')";
     toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
     toyRoom.style.zIndex = 0;
+    // toyRoom.style.display = 'inline-table';                 // This is to vertically center the Pause Sign.
 }
 
 
@@ -428,7 +432,7 @@ function createTetrisPiece() {
         var p = document.createElement('div');
             styleTetrisPiece(p);
             p.style.position = 'absolute';
-            p.innerText = '>__<';
+            p.innerText = 'o__o';
         toyRoom.appendChild(p); 
     }   // end of for loop
 }   // end of createTetrisPiece()
@@ -501,7 +505,7 @@ function blinkTetrisPiece() {
     let d = 40;                             // Time between eyes open and eyes closed.
     let arr = [ 0 , 0.5*d , d , 1.5*d ];    // Blink start time of each blocks scattered.
 
-    if (yMove.v_fall == 0) {
+    if (yMove.v_drop == 0) {
         let a = timeTick % interval;
         let b = [ ( (a>arr[0]) && (a<(arr[0]+d)) ),
                 ( (a>arr[1]) && (a<(arr[1]+d)) ),
@@ -510,8 +514,6 @@ function blinkTetrisPiece() {
         for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = (b[i])? "-__-" : "o__o"; }
     }
 }   // end of blinkTetrisPiece()
-
-
 
 
 
@@ -571,7 +573,7 @@ function mergeTetrisPiece() {
             // Integrates the tetris piece after the time runs out.
             // Then, resets to new tetris piece. 
             // Also checks for any full rows. Then the counter is reset back to zero.
-            for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = ">__<"; }
+            addFace('o__o');
                 // Gives tetris a face when reset to top.
             for ( let i=0 ; i<=3 ; i++ ) { 
                 // Integrated block has high opacity and color.
@@ -601,6 +603,16 @@ function mergeTetrisPiece() {
 
 
 
+function addFace(text) {
+    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = text; }; 
+}
+
+
+
+
+
+
+
 function createShadow() {
     // This function creates the shadowy tetris piece that shows where the real tetris piece would end up...
     // ... if the player allowed the tetris piece to drop.
@@ -609,7 +621,8 @@ function createShadow() {
     for ( let i = 0 ; i <= 3 ; i++ ) {
         var p = document.createElement('div');
             p.style.boxSizing = 'border-box';
-            p.style.borderRadius = '2px';
+            // p.style.borderRadius = '2px';
+            p.style.borderRadius = blockStyle.borderRadius;
             //p.style.backgroundColor = '#0002';
             p.style.backgroundColor = '#000';
             p.style.width = xInc + 'px';
@@ -648,30 +661,53 @@ function castShadow() {
 
 
 
-function createTitlePage() {
-    // Creates title page
-    // Make sure to create the title page AFTER you already set the board and tetris piece
-    // NOT USED right now... Fix this!!!
+function createPauseSign() {
+    // Creates the PAUSE sign. 
+    // This function has to run AFTER blockPile has been assigned to the board, tetris, and shadow already.
+    // Can be used for Game Over too?
 
     var p = document.createElement('div');
-        p.style.position = 'relative';
-        p.style.backgroundColor = '#0005';
-        p.style.left = '10px';
-        p.style.top = '10px';
-        p.style.width = '200px';
-        p.style.height = '500px';
-
-        p.style.color = '#FFF';
-        p.style.fontSize = '9pt';
-        p.style.borderRadius = '20px';
-        p.innerText = 'hello';
+        p.style.position = 'absolute';              // The text doesn't appear on screen if this is 'relative'.
+        p.style.left = 0.1 * xDim + 'px';
+        p.style.width = 0.8 * xDim + 'px';
+        // p.style.height = 0.2 * xDim + 'px';
+        p.style.boxSizing = 'border-box';
+        p.style.backgroundColor = '#FFF';
+        p.style.borderRadius = '10px';
+        p.style.border = '5px solid black';
+        p.style.color = '#000';
+        p.style.lineHeight = 0.15 * xDim + 'px';
+        p.style.fontSize = 0.14 * xDim + 'px';
+        p.style.textAlign = 'center';
+        // p.innerText = 'PAUSED';
     toyRoom.appendChild(p); 
 
-}   // end of createTitlePage()
+    togglePauseSign();                  // This initiates the position to outside the frame.
+}   // end of createPauseSign()
 
 
 
 
+
+function togglePauseSign() {
+    let a = yDim + 'px';
+    let b = 0.4 * yDim + 'px';
+    // let c = 0.2 * xDim + 'px';
+    blockPile[8+numOfBlock.t].innerText = 'PAUSED';
+    blockPile[8+numOfBlock.t].style.top = (blockPile[8+numOfBlock.t].style.top == a) ? b : a;
+
+}
+
+
+
+function toggleGameOverSign() {
+    let a = yDim + 'px';
+    let b = 0.4 * yDim + 'px';
+    blockPile[8+numOfBlock.t].innerText = 'GAME OVER';
+    blockPile[8+numOfBlock.t].style.top = (blockPile[8+numOfBlock.t].style.top == a) ? b : a;
+
+
+}
 
 
 
@@ -780,41 +816,42 @@ function actByTime() {
 
 
 function actByKeyDown(ev) {
-    switch (ev.code) {
-        case 'KeyA':    if (!paused) moveRotate('left');
-                        break;
-        case 'KeyS':    if (!paused) moveRotate('right');
-                        break;
-        case 'KeyN':    if (!paused) resetTetrisPiece();
-                        slidePreview();
-                        break;
-        case 'Space':   break;
-        case 'KeyF':    yMove.flip();         // toggles whether tetris slowly falls or not
-                        break;
-        case 'KeyT':    //test();
-                        //createShadow();
-                        //castShadow();
-                        break;
-        case 'KeyP':    pauseGame();
-                        break;
-        case 'KeyR':    restartGame();
-                        break;
-        case 'KeyV':    //yMove.speedUp();
-                        //createShadow();
-                        break;
-        case 'ArrowLeft':       count.reset();              // resets the counter for integrateBlock()
-                                if (!paused) moveLeftRight(translateMatrix.left);
-                                break;
-        case 'ArrowRight':      count.reset();              // resets the counter for intergrateBlock()
-                                if (!paused) moveLeftRight(translateMatrix.right);
-                                break;
-        case 'ArrowUp':         if (!paused) moveRotate('left');
-                                break;
-        case 'ArrowDown':       if (!paused) yMove.press();         // accelerates falling speed
-                                //yMove.act.fallInt = yMove.calc(yMove.set.speed);
-                                break;
-        default:        break;
-    }   // end of switch
+    
+    if (keyEnabled) {
+        switch (ev.code) {
+            case 'KeyA':    if (!paused) moveRotate('left');
+                            break;
+            case 'KeyS':    if (!paused) moveRotate('right');
+                            break;
+            case 'KeyN':    if (!paused) resetTetrisPiece();
+                            if (!paused) slidePreview();
+                            break;
+            case 'Space':   break;
+            case 'KeyF':    yMove.flip();         // toggles whether tetris slowly falls or not
+                            break;
+            case 'KeyT':    //toggleGameOverSign();
+                            break;
+            case 'KeyP':    pauseGame();
+                            break;
+            case 'KeyR':    //restartGame();
+                            break;
+            case 'KeyV':    //yMove.speedUp();
+                            //createShadow();
+                            break;
+            case 'ArrowLeft':       if (!paused) count.reset();              // resets the counter for integrateBlock()
+                                    if (!paused) moveLeftRight(translateMatrix.left);
+                                    break;
+            case 'ArrowRight':      if (!paused) count.reset();              // resets the counter for intergrateBlock()
+                                    if (!paused) moveLeftRight(translateMatrix.right);
+                                    break;
+            case 'ArrowUp':         if (!paused) moveRotate('left');
+                                    break;
+            case 'ArrowDown':       if (!paused) yMove.press();         // accelerates falling speed
+                                    //yMove.act.fallInt = yMove.calc(yMove.set.speed);
+                                    break;
+            default:        break;
+        }   // end of switch
+    }   // end of if
 }   // end of actByKeyDown()
 
 
@@ -848,7 +885,7 @@ function moveDown() {
         blockToGhost(translateMatrix.down);
         if (IsCrashFree()) {
             ghostToBlock();
-            for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = '>__<'; }
+            addFace('>__<');
         }
     }
     castShadow();
@@ -1031,9 +1068,7 @@ function checkRow() {
             function rowSpin() {
                 // Visually flips the row down.
                 
-                
-                r += 1;         // Determines how quickly the blocks rotate.
-
+                r += 4;         // Determines how quickly the blocks rotate.
 
                 for ( let j = i ; j < i + numOfBlock.x ; j++ ) { blockPile[j].style.transform = "rotateX(" + r + "deg)"; }
                 if ( r > 90 ) {
@@ -1084,20 +1119,29 @@ function dropRow(filledRow) {
 
 
 function pauseGame() {
+    // Toggles the 'paused' boolean. Toggles Pause Sign.
+    // Disables many of the game functions.
+    // Changes tetris piece face expression.
     paused = !paused;
-    
-    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = "x__x"; }
-
-    if (paused) console.log('paused!'); 
+    togglePauseSign();
+    (paused) ? addFace('x__x') : addFace('o__o');
 }
 
 
 
 function endGame() {
-    // sets all of blockPile to low opacity. All except the tetris piece.
-    // And pauses the game
-    pauseGame();
-
+    paused = true;
+    addFace('x__x');
+    toggleGameOverSign();
+    keyEnabled = false;
+    var t = setInterval( () => {            
+            toggleGameOverSign();
+            addFace('o__o');
+            paused = false;
+            keyEnabled = true;
+            restartGame();
+            clearInterval(t);
+    }, 5000);
 }
 
 
@@ -1108,7 +1152,7 @@ function restartGame() {
     }
 
     resetTetrisPiece();
-    blinkTetrisPiece();
+    // blinkTetrisPiece();
     paused = false;
     score.reset();
     yMove.reset();
@@ -1205,16 +1249,17 @@ function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
 configureToyRoom();
 createBlockPile();
 
-randomMatrix.randomize(randomMatrix.max);
+randomMatrix.randomize(randomMatrix.max);       // Randomize the randomMatrix.buffer[].
 
-checkRow();                 // After random blocks are generated, check for row completion
+// checkRow();                 // After random blocks are generated, check for row completion
 createTetrisPiece();        // Create the four elements for the tetris block
 createShadow();             // Creates the shadow of the tetris piece.
+createPauseSign();
+
 resetTetrisPiece();         // Put the tetris piece on the board
+slidePreview();             // Slide the first tetris piece on the preview, immediately for use.
 
-slidePreview();
 
-//createTitlePage();
 
 
 // runs continuously
