@@ -116,8 +116,6 @@
 // TIME settings
     var timeInc = 5;                // Time interval used in timeFlow.[ms]
     var timeTick = 0;               // Time counter in setInterval in actByTime()
-    // var paused = false;             // True if game is paused.
-    // var keyEnabled = true;          // Disables key input.
     var count = {   set : { stagnant : 150,             // How long tetris piece should wait until it integrates into the pile
                             limit    : 800 },           // Absolute limit for how long to wait until integration
                     stagnant : 0,                       // How long tetris piece has been stagnant right now
@@ -394,7 +392,9 @@
 function openTitlePage() {
     // This is the first thing that users see when they open this website.
 
-    gameMode.current = 'nothing';
+    gameMode.current = 'nothing';           // Disables key input
+    
+    score.top = sessionStorage.getItem('topScore');
     
 
     toyRoom.style.textAlign = 'center';
@@ -414,7 +414,7 @@ function openTitlePage() {
         //     p.innerText = 'press any key';
         // toyRoom.appendChild(p);
         gameMode.starting();
-    } , 3000);
+    } , 1000);
 
 
     
@@ -442,7 +442,7 @@ function startGame() {
     createTetrisPiece();        // Create the four elements for the tetris block
     createShadow();             // Creates the shadow of the tetris piece.
     createPauseSign();
-    restartGame();
+    resetGame();
 
     // Runs continuously
     var timeFlow = setInterval(actByTime,timeInc);
@@ -902,6 +902,7 @@ function actByTime() {
             break;
         case 'playing':
             timeTick++                       // General use clicker.
+                console.log(timeTick);
             blinkTetrisPiece();              // Animates the facial expression. pretty useless.
             moveDown();                      // Make tetris fall continually.
             mergeTetrisPiece();              // Integrate tetris into blockPile after some time.
@@ -990,7 +991,7 @@ function actByKeyDown(ev) {
             default:        break; } }
 
     else if (gameMode.current=='dead') {
-        // restartGame();
+        // resetGame();
         window.location.reload(true);
     
     }
@@ -1293,6 +1294,12 @@ function pauseGame(text) {
 function endGame() {
     addFace('x__x');
     score.update();
+    
+    
+    sessionStorage.setItem('topScore',score.top);
+
+    
+
     toggleGameOverSign('on');
     gameMode.dead();
 
@@ -1300,7 +1307,7 @@ function endGame() {
 }
 
 
-function restartGame() {
+function resetGame() {
 
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         blockPile[i].style.opacity = setOpacity.low;
@@ -1316,6 +1323,7 @@ function restartGame() {
     toggleGameOverSign('off');
     score.reset();
     yMove.reset();
+    timeTick = 0;
 }
 
 
@@ -1419,7 +1427,7 @@ openTitlePage();
     // createTetrisPiece();        // Create the four elements for the tetris block
     // createShadow();             // Creates the shadow of the tetris piece.
     // createPauseSign();
-    // restartGame();
+    // resetGame();
 
     // // Runs continuously
     // var timeFlow = setInterval(actByTime,timeInc);
