@@ -41,6 +41,21 @@
 
 
 
+// GAME MODE variables
+    var gameMode = {
+        current : 'starting',
+        starting : function() { this.current = 'starting'; },
+        playing : function() { this.current = 'playing'; },
+        paused : function() { this.current = 'paused'; },
+        dead : function() { this.current = 'dead'; }
+    }
+
+
+
+
+
+
+
 // DIMENSIONS variables
     var numOfBlock = {  x : 8,              // Number of blocks in the horizontal direction.
                         y : 18,             // Number of blocks in the vertical direction.
@@ -101,8 +116,8 @@
 // TIME settings
     var timeInc = 5;                // Time interval used in timeFlow.[ms]
     var timeTick = 0;               // Time counter in setInterval in actByTime()
-    var paused = false;             // True if game is paused.
-    var keyEnabled = true;          // Disables key input.
+    // var paused = false;             // True if game is paused.
+    // var keyEnabled = true;          // Disables key input.
     var count = {   set : { stagnant : 150,             // How long tetris piece should wait until it integrates into the pile
                             limit    : 800 },           // Absolute limit for how long to wait until integration
                     stagnant : 0,                       // How long tetris piece has been stagnant right now
@@ -170,7 +185,7 @@
         total: 0,               // The total score for one game.
         top : 0,                // The top score over all games played.
         count : 0,              // Number of rows completed THIS ROUND.
-        next : 1,              // Complete this many lines to speed up.
+        next : 1,               // Complete this many lines to speed up.
         countTotal : 0,         // TOTAL number of rows completed in game.
         bonus : [ 0 , 1 , 1.25 , 1.5 , 2 ],     // The bonus multipliers.
         tally : function() {
@@ -375,6 +390,71 @@
 // ---------- FUNCTIONS ------------------------------------------ //
 
 
+
+function openTitlePage() {
+    // This is the first thing that users see when they open this website.
+
+    gameMode.current = 'nothing';
+    
+
+    toyRoom.style.textAlign = 'center';
+    toyRoom.style.lineHeight = 4;
+    toyRoom.style.fontFamily = 'snes';
+    toyRoom.style.fontSize = '90pt';
+    
+    toyRoom.innerText = 'TETRIS\n';
+
+    var t = setTimeout( () => {
+        toyRoom.style.lineHeight = 20;
+        toyRoom.style.fontSize = '20pt';
+        toyRoom.innerText = 'press any key';
+        // var p = createElement('p');
+        //     p.style.fontFamily = 'calibri';
+        //     p.style.fontSize = '12pt';
+        //     p.innerText = 'press any key';
+        // toyRoom.appendChild(p);
+        gameMode.starting();
+    } , 3000);
+
+
+    
+
+    
+
+}
+
+
+
+
+function closeTitlePage() {
+
+    // toyRoom.style.textAlign = 'left';
+    toyRoom.style.fontFamily = 'calibri';
+    toyRoom.innerText = '';
+
+}
+
+
+function startGame() {
+
+    configureToyRoom();
+    createBlockPile();
+    createTetrisPiece();        // Create the four elements for the tetris block
+    createShadow();             // Creates the shadow of the tetris piece.
+    createPauseSign();
+    restartGame();
+
+    // Runs continuously
+    var timeFlow = setInterval(actByTime,timeInc);
+
+}
+
+
+
+
+
+
+
 function configureToyRoom() {
     toyRoom.style.backgroundImage = "url('sky.jpg')";
     toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
@@ -445,6 +525,7 @@ function createTetrisPiece() {
 
 function resetTetrisPiece() {
     // Resets the tetris piece back to the top. Also gives it a new random shape.
+    addFace('o__o');
     randomMatrix.randomize();
         // This drops the first array item of randomMatrix.buffer[].
         // Then it adds a new random number to the last item of randomMatrix.buffer[].
@@ -682,31 +763,57 @@ function createPauseSign() {
         // p.innerText = 'PAUSED';
     toyRoom.appendChild(p); 
 
-    togglePauseSign();                  // This initiates the position to outside the frame.
+    togglePauseSign('off');                  // This initiates the position to outside the frame.
 }   // end of createPauseSign()
 
 
 
 
 
-function togglePauseSign() {
+function togglePauseSign(text) {
     let a = yDim + 'px';
     let b = 0.4 * yDim + 'px';
-    // let c = 0.2 * xDim + 'px';
+    
     blockPile[8+numOfBlock.t].innerText = 'PAUSED';
-    blockPile[8+numOfBlock.t].style.top = (blockPile[8+numOfBlock.t].style.top == a) ? b : a;
+    blockPile[8+numOfBlock.t].style.top = (text=='on') ? b : a;
 
 }
 
 
 
-function toggleGameOverSign() {
+function toggleGameOverSign(text) {
+    // This reuses the Pause Sign, rewrite it as 'Game Over', and makes it pop up.
     let a = yDim + 'px';
     let b = 0.4 * yDim + 'px';
+    let c = 0;
+    let d;
+    let interval;
+
     blockPile[8+numOfBlock.t].innerText = 'GAME OVER';
-    blockPile[8+numOfBlock.t].style.top = (blockPile[8+numOfBlock.t].style.top == a) ? b : a;
+    blockPile[8+numOfBlock.t].style.top = (text=='on') ? b : a;
 
-
+    if (score.total < 1000) {
+        d = 1;
+        interval = 1000 / score.total;
+        var t = setInterval( function() {
+            blockPile[8+numOfBlock.t].innerText = 'GAMEOVER\nScore: ' + c + '\nBest: ' + score.top;
+            if (c==score.total) {
+                clearInterval(t);
+            }
+            c += d;
+        } , interval);
+    } else {
+        d = 50;
+        interval = d * 1000 / score.total;
+        var t = setInterval( function() {
+            blockPile[8+numOfBlock.t].innerText = 'GAMEOVER\nScore: ' + c + '\nBest: ' + score.top;
+            if (c==score.total) {
+                clearInterval(t);
+            }
+            c += d;
+        } , interval);
+    } 
+    
 }
 
 
@@ -787,14 +894,26 @@ function slidePreview() {
 
 
 function actByTime() {
-    // this function runs in --> var timeFlow = setInterval(actByTime,timeInc);    
+    // This function runs in --> var timeFlow = setInterval(actByTime,timeInc);    
 
-    if (!paused) {
-        timeTick++                       // General use clicker.
-        blinkTetrisPiece();              // Animates the facial expression. pretty useless.
-        moveDown();                      // Make tetris fall continually.
-        mergeTetrisPiece(); }            // Integrate tetris into blockPile after some time.
 
+    switch (gameMode.current) {
+        case 'starting':
+            break;
+        case 'playing':
+            timeTick++                       // General use clicker.
+            blinkTetrisPiece();              // Animates the facial expression. pretty useless.
+            moveDown();                      // Make tetris fall continually.
+            mergeTetrisPiece();              // Integrate tetris into blockPile after some time.
+            break;
+        case 'paused':
+            break;
+        case 'dead':
+            break;
+        default:
+            break;
+    }
+    
 }   // end of actByTime()
 
 
@@ -817,41 +936,67 @@ function actByTime() {
 
 function actByKeyDown(ev) {
     
-    if (keyEnabled) {
+
+    if (gameMode.current=='starting') {
+        // switch (ev.code) {
+        //     case 'KeyA':    
+        //                     break;
+        //     default:        break; } 
+        
+        gameMode.playing();
+        closeTitlePage();
+        startGame();
+        
+        }
+    else if (gameMode.current=='playing') {
         switch (ev.code) {
-            case 'KeyA':    if (!paused) moveRotate('left');
+            case 'KeyA':    moveRotate('left');
                             break;
-            case 'KeyS':    if (!paused) moveRotate('right');
+            case 'KeyS':    moveRotate('right');
                             break;
-            case 'KeyN':    if (!paused) resetTetrisPiece();
-                            if (!paused) slidePreview();
+            case 'KeyN':    resetTetrisPiece();
+                            slidePreview();
                             break;
             case 'Space':   break;
             case 'KeyF':    yMove.flip();         // toggles whether tetris slowly falls or not
                             break;
-            case 'KeyT':    //toggleGameOverSign();
+            case 'KeyT':    endGame();              // This is just a test.
                             break;
-            case 'KeyP':    pauseGame();
+            case 'KeyP':    pauseGame('on');
                             break;
-            case 'KeyR':    //restartGame();
+            case 'KeyR':    score.total += 100;
                             break;
             case 'KeyV':    //yMove.speedUp();
                             //createShadow();
                             break;
-            case 'ArrowLeft':       if (!paused) count.reset();              // resets the counter for integrateBlock()
-                                    if (!paused) moveLeftRight(translateMatrix.left);
+            case 'ArrowLeft':       count.reset();              // resets the counter for integrateBlock()
+                                    moveLeftRight(translateMatrix.left);
                                     break;
-            case 'ArrowRight':      if (!paused) count.reset();              // resets the counter for intergrateBlock()
-                                    if (!paused) moveLeftRight(translateMatrix.right);
+            case 'ArrowRight':      count.reset();              // resets the counter for intergrateBlock()
+                                    moveLeftRight(translateMatrix.right);
                                     break;
-            case 'ArrowUp':         if (!paused) moveRotate('left');
+            case 'ArrowUp':         moveRotate('left');
                                     break;
-            case 'ArrowDown':       if (!paused) yMove.press();         // accelerates falling speed
+            case 'ArrowDown':       yMove.press();         // accelerates falling speed
                                     //yMove.act.fallInt = yMove.calc(yMove.set.speed);
                                     break;
-            default:        break;
-        }   // end of switch
-    }   // end of if
+            default:        break; } }
+
+    else if (gameMode.current=='paused') {
+        switch (ev.code) {
+            case 'KeyP':    pauseGame('off');
+                            yMove.release();        // This fixes the glitch where the speed gets stuck if you pause while dropping.
+                            break;
+            default:        break; } }
+
+    else if (gameMode.current=='dead') {
+        // restartGame();
+        window.location.reload(true);
+    
+    }
+
+
+
 }   // end of actByKeyDown()
 
 
@@ -861,15 +1006,31 @@ function actByKeyDown(ev) {
 
 
 function actByKeyUp(ev) {    
-    switch (ev.code) {
-        case 'ArrowUp':
-            break;
-        case 'ArrowDown':
-            if (!paused) yMove.release();
-            break;
-        default:
-            break;
-    }   // end of switch
+    
+
+    
+    if (gameMode.current=='starting') {
+        switch (ev.code) {
+            case 'KeyA':    break;
+            default:        break; } }
+    
+    else if (gameMode.current=='playing') {
+        switch (ev.code) {
+            case 'ArrowUp':     break;
+            case 'ArrowDown':   yMove.release();
+                                break;
+            default:            break; } }
+
+    else if (gameMode.current=='paused') {
+        switch (ev.code) {
+            case 'KeyA':    break;
+            default:        break; } }
+
+    else if (gameMode.current=='dead') {
+        switch (ev.code) {
+            case 'KeyA':    break;
+            default:        break; } }
+
 }   // end of actByKeyUp()
 
 
@@ -1118,30 +1279,24 @@ function dropRow(filledRow) {
 
 
 
-function pauseGame() {
+function pauseGame(text) {
     // Toggles the 'paused' boolean. Toggles Pause Sign.
     // Disables many of the game functions.
     // Changes tetris piece face expression.
-    paused = !paused;
-    togglePauseSign();
-    (paused) ? addFace('x__x') : addFace('o__o');
+    (gameMode.current != 'paused') ? gameMode.paused() : gameMode.playing();
+    togglePauseSign(text);
+    (gameMode.current=='paused') ? addFace('x__x') : addFace('o__o');
 }
 
 
 
 function endGame() {
-    paused = true;
     addFace('x__x');
-    toggleGameOverSign();
-    keyEnabled = false;
-    var t = setInterval( () => {            
-            toggleGameOverSign();
-            addFace('o__o');
-            paused = false;
-            keyEnabled = true;
-            restartGame();
-            clearInterval(t);
-    }, 5000);
+    score.update();
+    toggleGameOverSign('on');
+    gameMode.dead();
+
+    
 }
 
 
@@ -1150,10 +1305,15 @@ function restartGame() {
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         blockPile[i].style.opacity = setOpacity.low;
     }
+    
+    // window.location.reload(true);
 
+    randomMatrix.randomize(randomMatrix.max);
     resetTetrisPiece();
-    // blinkTetrisPiece();
-    paused = false;
+    slidePreview();
+    
+    gameMode.playing();
+    toggleGameOverSign('off');
     score.reset();
     yMove.reset();
 }
@@ -1245,29 +1405,22 @@ function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
 // ----------------- MAIN BODY ----------------------------------------- //
 
 
-// before the game starts...
-configureToyRoom();
-createBlockPile();
+// Before the game starts...
 
-randomMatrix.randomize(randomMatrix.max);       // Randomize the randomMatrix.buffer[].
-
-// checkRow();                 // After random blocks are generated, check for row completion
-createTetrisPiece();        // Create the four elements for the tetris block
-createShadow();             // Creates the shadow of the tetris piece.
-createPauseSign();
-
-resetTetrisPiece();         // Put the tetris piece on the board
-slidePreview();             // Slide the first tetris piece on the preview, immediately for use.
-
-
-
-
-// runs continuously
-var timeFlow = setInterval(actByTime,timeInc);
-
-// event listeners
+// Event listeners
 document.addEventListener('keydown', actByKeyDown);
 document.addEventListener('keyup', actByKeyUp);
 
 
+openTitlePage();
+
+    // configureToyRoom();
+    // createBlockPile();
+    // createTetrisPiece();        // Create the four elements for the tetris block
+    // createShadow();             // Creates the shadow of the tetris piece.
+    // createPauseSign();
+    // restartGame();
+
+    // // Runs continuously
+    // var timeFlow = setInterval(actByTime,timeInc);
 

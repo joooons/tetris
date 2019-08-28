@@ -35,6 +35,7 @@ body {
     /* background-image: url('sky.jpg'); */
     background-position: center;
     background-size: cover;
+    /* font-family: snes, san-serif; */
 }
 
 
@@ -83,4 +84,8 @@ body {
 }
 
 
+@font-face {
+    font-family: snes;
+    src: url('snes.ttf');
+}
 
