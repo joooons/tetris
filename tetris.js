@@ -43,29 +43,24 @@
 
 // GAME MODE variables
     var gameMode = {
-        current : 'starting',
+        current : 'nothing',
+        // intro : function() { this.current = 'intro'; },
         starting : function() { this.current = 'starting'; },
         playing : function() { this.current = 'playing'; },
         paused : function() { this.current = 'paused'; },
-        dead : function() { this.current = 'dead'; }
-    }
-
-
-
-
+        dead : function() { this.current = 'dead'; } }
 
 
 
 // DIMENSIONS variables
-    var numOfBlock = {  x : 8,              // Number of blocks in the horizontal direction.
-                        y : 18,             // Number of blocks in the vertical direction.
+    var numOfBlock = {  x : 10,              // Number of blocks in the horizontal direction.
+                        y : 20,             // Number of blocks in the vertical direction.
                         m : 0,              // Starting horizontal location of the tetris piece.
                         t : 0,              // Total number of blocks on the board, minus the tetris piece.
                         initiate : function() { 
                             this.m = Math.floor( this.x / 2 ) - 2;
                             this.t = this.x * this.y; } }
-        numOfBlock.initiate();
-
+                        numOfBlock.initiate();
     var yInc = 4 * Math.ceil( 0.25 * ( screen.y * screen.t ) / numOfBlock.y );
         // The vertical length of a typical block.
         // dividing by 4 and multilying by 4 ensures the half-steps are still integer steps.
@@ -82,22 +77,17 @@
     var xStep = xInc;
         // Horizontal distance travelled by the tetris piece when it takes one step sideways.
         // This has to be the same as the length of the block. Otherwise, the game will not work.
-        toyRoom.style.height = yDim + 'px';
-        toyRoom.style.width = xDim + 'px';
-            // making toyRoom fit the screen vertically
         preView.style.height = 3 * yInc + 'px';
-            //scoreBoard.style.width = '300px';
 
 
 
 // APPEARANCE settings
     var blockStyle = {
-        bkgdColor : 'rgba(50, 150, 250, 0.3)' ,         // Nothing uses this right now.
+        // bkgdColor : 'rgba(50, 150, 250, 0.3)' ,         // Nothing uses this right now.
         border : '1px solid rgba(0, 0, 0, 1)' ,
         boxShadow : '0px 0px 5px 0px inset white' ,
         borderRadius : '15%' ,
         opacity : 1 }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
-
     var tetrisColor = [];
         tetrisColor[0] = `rgba(250, 250, 250, ${blockStyle.opacity})`;
         tetrisColor[1] = `rgba(250, 000, 000, ${blockStyle.opacity})`;
@@ -106,7 +96,6 @@
         tetrisColor[4] = `rgba(000, 250, 000, ${blockStyle.opacity})`;
         tetrisColor[5] = `rgba(150, 050, 250, ${blockStyle.opacity})`;
         tetrisColor[6] = `rgba(000, 000, 000, ${blockStyle.opacity})`;
-
     var setOpacity = {  low : 0,        // Low setting of opacity. 
                         high : 1,       // High setting of opacity.
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
@@ -176,7 +165,6 @@
         
 
 
-
 // GAME SCORE settings
     var score = {
         unit : 100,             // The score goes up by this increment, multiplied by bonus multipliers.
@@ -202,7 +190,6 @@
             this.countTotal = 0;
             _points.innerText = this.total;
             _lines.innerText = this.countTotal; } };
-
 
     
 
@@ -255,7 +242,7 @@
         3 ,      // likelihood of the inverse'Z' shape
         3 ,      // likelihood of the 'Z' shape
         5 ,      // likelihood of the 'T' shape
-        1];     // likelihood of the Square shape
+        1 ];     // likelihood of the Square shape
 
     var randomMatrix = {
         // Object that contains the array of probability of each shape.
@@ -352,6 +339,7 @@
         // Whatever change you want to make on the tetris piece, apply it to the ghost first!
         // Use the ghost to test for collisions, against walls or other blocks.
         // If no collision is detected, then apply the ghost back to the tetris piece on blockPile[]!
+    
     function ghostType(x, y) {
         this.x = x,         // number, not string
         this.y = y,         // number, not string
@@ -365,18 +353,10 @@
 
     var wall = {    
         // Used for collision check.
-        // left, right, ceiling, and floor represents the four edges of the toyRoom box.
         left : 0,
         right : xDim - xInc,
         ceiling : 0,
         floor : yDim - yInc };
-
-
-
-
-
-    
-
 
 
 
@@ -387,67 +367,22 @@
 
 // ---------- FUNCTIONS ------------------------------------------ //
 
-
-
-function openTitlePage() {
-    // This is the first thing that users see when they open this website.
-
-    gameMode.current = 'nothing';           // Disables key input
-    
-    score.top = sessionStorage.getItem('topScore');
-    
-
-    toyRoom.style.textAlign = 'center';
-    toyRoom.style.lineHeight = 4;
-    toyRoom.style.fontFamily = 'snes';
-    toyRoom.style.fontSize = '90pt';
-    
-    toyRoom.innerText = 'TETRIS\n';
+function delayIntro() {
+    // This function displays the text 'Press Any Key' after 2 seconds.
+    // After 2 seconds, it also enables the game to start when a key is pressed.
 
     var t = setTimeout( () => {
-        toyRoom.style.lineHeight = 20;
-        toyRoom.style.fontSize = '20pt';
-        toyRoom.innerText = 'press any key';
-        // var p = createElement('p');
-        //     p.style.fontFamily = 'calibri';
-        //     p.style.fontSize = '12pt';
-        //     p.innerText = 'press any key';
-        // toyRoom.appendChild(p);
+        var p = document.createElement('p');
+            p.style.fontSize = '20pt';
+            p.style.letterSpacing = '0px';
+            p.style.position = 'relative';
+            p.style.top = '-230px';
+            p.innerText = 'press any key';
+        toyRoom.appendChild(p);
         gameMode.starting();
-    } , 1000);
+    } , 2000);
+}   // end of delayIntro()
 
-
-    
-
-    
-
-}
-
-
-
-
-function closeTitlePage() {
-
-    // toyRoom.style.textAlign = 'left';
-    toyRoom.style.fontFamily = 'calibri';
-    toyRoom.innerText = '';
-
-}
-
-
-function startGame() {
-
-    configureToyRoom();
-    createBlockPile();
-    createTetrisPiece();        // Create the four elements for the tetris block
-    createShadow();             // Creates the shadow of the tetris piece.
-    createPauseSign();
-    resetGame();
-
-    // Runs continuously
-    var timeFlow = setInterval(actByTime,timeInc);
-
-}
 
 
 
@@ -456,12 +391,20 @@ function startGame() {
 
 
 function configureToyRoom() {
+    // This function configures the style of the toyRoom.
+    // It includes the font setting, removal of innerHTML, and background image.
+    // It does not include filling the element with children elements.
+    
+    toyRoom.style.height = yDim + 'px';
+    toyRoom.style.width = xDim + 'px';
+    toyRoom.style.fontFamily = 'calibri';
+    toyRoom.style.lineHeight = 20;
+    toyRoom.style.fontSize = '20pt';
+    toyRoom.style.letterSpacing = '0px';
+    toyRoom.innerHTML = '';
     toyRoom.style.backgroundImage = "url('sky.jpg')";
-    toyRoom.style.backgroundColor = '#DEF';                 // Does this even matter?
     toyRoom.style.zIndex = 0;
-    // toyRoom.style.display = 'inline-table';                 // This is to vertically center the Pause Sign.
-}
-
+}   // end of configureToyRoom()
 
 
 
@@ -507,7 +450,6 @@ function createTetrisPiece() {
     // ...until all of its array items are randomly generated.
 
     randomMatrix.randomize(randomMatrix.max);
-
     for ( let i = 0 ; i <=3 ; i++ ) {
         var p = document.createElement('div');
             styleTetrisPiece(p);
@@ -523,14 +465,14 @@ function createTetrisPiece() {
 
 
 
+
 function resetTetrisPiece() {
     // Resets the tetris piece back to the top. Also gives it a new random shape.
+
     addFace('o__o');
     randomMatrix.randomize();
-        // This drops the first array item of randomMatrix.buffer[].
-        // Then it adds a new random number to the last item of randomMatrix.buffer[].
     for ( let i = 0 ; i <=3 ; i++ ) {
-        // Gives the tetris piece its stating LOCATION and COLOR
+        // Gives the tetris piece its starting LOCATION and COLOR.
         blockPile[i+numOfBlock.t].style.left = t_Forms.arr[randomMatrix.current][i].x + 'px';
         blockPile[i+numOfBlock.t].style.top = t_Forms.arr[randomMatrix.current][i].y + 'px';
         blockPile[i+numOfBlock.t].style.backgroundColor = tetrisColor[randomMatrix.current];
@@ -547,7 +489,11 @@ function resetTetrisPiece() {
         // yMove.calc() calculates the time interval that corresponds to the tetris piece speed.
     castShadow();
     resetPreview();
+    slidePreview();
 }   // end of resetTetrisPiece()
+
+
+
 
 
 
@@ -563,12 +509,10 @@ function styleTetrisPiece(elem) {
     elem.style.fontWeight = 'bold';
     elem.style.textAlign = 'center';
     elem.style.lineHeight = 2.4;
-        
     elem.style.boxSizing = 'border-box';
     elem.style.border = blockStyle.border;
     elem.style.borderRadius = blockStyle.borderRadius;
     elem.style.boxShadow = blockStyle.boxShadow;
-
     elem.style.width = xInc + 'px';
     elem.style.height = yInc + 'px';
 }   // end of styleTetrisPiece()
@@ -578,14 +522,15 @@ function styleTetrisPiece(elem) {
 
 
 
+
+
 function blinkTetrisPiece() {
-    // Makes the tetris piece facial expression blink
+    // Makes the tetris piece facial expression blink.
     // Pretty useless. But I couldn't help myself...
 
     let interval = 800;                     // Time increment between blinks.
     let d = 40;                             // Time between eyes open and eyes closed.
     let arr = [ 0 , 0.5*d , d , 1.5*d ];    // Blink start time of each blocks scattered.
-
     if (yMove.v_drop == 0) {
         let a = timeTick % interval;
         let b = [ ( (a>arr[0]) && (a<(arr[0]+d)) ),
@@ -600,6 +545,9 @@ function blinkTetrisPiece() {
 
 
 
+
+
+
 function mergeTetrisPiece() {
     // Integrates tetris piece into the blockPile.
     // Afterward, it calls the resetTetrisPiece() function.
@@ -609,9 +557,9 @@ function mergeTetrisPiece() {
     let onSolidGround = !IsCrashFree();
         // This confirms that the tetris piece has made contact with a level surface.
         // To check this, a ghost that is one yInc lower had to be generated.
-    
     blockToGhost(translateMatrix.stay);
         // This reassigns the ghost to have the identical position as the tetris piece itself.
+
 
     if ( ( ghost[0].floor() == ghost[0].ceil() ) && (yMove.v_fall != 0 ) && onSolidGround ) {
         // Checks for several conditions:
@@ -625,28 +573,21 @@ function mergeTetrisPiece() {
             // Makes the tetris blocks display a number that counts to 10, instead of that stupid face.
             // The number 4 here is arbitrary. It just has to be a low number.
             // I put the 4 here because otherwise the stupid face is interrupted at unfortunate times.
-
             if ( count.limit < (count.set.limit - count.set.stagnant + 5 ) ) {
                 // This checks whether the counter is still well under the absolute time limit.
                 // The number 5 here is also arbitrary...
                 // The counter counts backward from 10 to 1.
-                for ( let i=0 ; i<=3 ; i++ ) { 
-                    blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( count.stagnant / (count.set.stagnant / 10) ); 
-                }
+                for ( let i=0 ; i<=3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( count.stagnant / (count.set.stagnant / 10) ); }
             } else {
                 // This else condition is met if the counter is close to the absolute time limit.
                 // The counter counts backward from 10 to 1.
-                for ( let i=0 ; i<=3 ; i++ ) { 
-                    blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( ( count.limit - count.set.limit + count.set.stagnant ) / (count.set.stagnant / 10) ); 
-                }
+                for ( let i=0 ; i<=3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = 11 - Math.ceil( ( count.limit - count.set.limit + count.set.stagnant ) / (count.set.stagnant / 10) ); }
             }
         }
-        
         document.addEventListener('keyup', (ev) => { count.keyReleased = true; } );
         document.addEventListener('keydown', (ev) => { 
             if ( (ev.code=='ArrowDown') && count.keyReleased ) { count.fill(); };
-            count.keyReleased = false;
-            } );
+            count.keyReleased = false; } );
             // Checks for two things: (1) key release, and (2) the ArrowDown key being pressed.
             // When these conditions are met, it instantly bypasses the countdown.
 
@@ -655,38 +596,26 @@ function mergeTetrisPiece() {
             // Then, resets to new tetris piece. 
             // Also checks for any full rows. Then the counter is reset back to zero.
             addFace('o__o');
-                // Gives tetris a face when reset to top.
             for ( let i=0 ; i<=3 ; i++ ) { 
-                // Integrated block has high opacity and color.
                 blockPile[ghost[i].ceil()].style.opacity = setOpacity.high; 
                 blockPile[ghost[i].ceil()].style.backgroundColor = tetrisColor[randomMatrix.current];
             }
             timeTick -= timeTick % yMove.calc();    // Prevents new tetris piece from jumping to second lane prematurely.
             resetTetrisPiece();
-            slidePreview();
+            // slidePreview();
             checkRow();
             count.reset();
         } else { 
             count.stagnant++; 
             if (count.limit++ == count.set.limit) count.fill();
         }
-
     } else { 
         count.reset(); 
         count.resetlimit();
         count.keyReleased = false;
-    }
-
+    }   // end of the main if-else statement in this function.
 }   // end of mergeTetrisPiece()
 
-
-
-
-
-
-function addFace(text) {
-    for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = text; }; 
-}
 
 
 
@@ -702,9 +631,7 @@ function createShadow() {
     for ( let i = 0 ; i <= 3 ; i++ ) {
         var p = document.createElement('div');
             p.style.boxSizing = 'border-box';
-            // p.style.borderRadius = '2px';
             p.style.borderRadius = blockStyle.borderRadius;
-            //p.style.backgroundColor = '#0002';
             p.style.backgroundColor = '#000';
             p.style.width = xInc + 'px';
             p.style.height = yInc + 'px';
@@ -720,14 +647,18 @@ function createShadow() {
 
 
 
+
+
+
 function castShadow() {
     // Puts the shadow on the board where the tetris piece would be if it dropped straight down.
+    // Also adjusts opacity based on how close the tetris piece is to the shadow.
+
     blockToGhost(translateMatrix.stay);
     do {
         ghostToShadow();
         ghostToGhost(translateMatrix.down);
     } while ( IsCrashFree() );
-
     let a = pxOff(blockPile[4+numOfBlock.t].style.top) - pxOff(blockPile[numOfBlock.t].style.top);
     a = (yDim-a)/yDim;
     for ( let i = 4 + numOfBlock.t ; i <= 7 + numOfBlock.t ; i++ ) {
@@ -751,7 +682,6 @@ function createPauseSign() {
         p.style.position = 'absolute';              // The text doesn't appear on screen if this is 'relative'.
         p.style.left = 0.1 * xDim + 'px';
         p.style.width = 0.8 * xDim + 'px';
-        // p.style.height = 0.2 * xDim + 'px';
         p.style.boxSizing = 'border-box';
         p.style.backgroundColor = '#FFF';
         p.style.borderRadius = '10px';
@@ -760,9 +690,7 @@ function createPauseSign() {
         p.style.lineHeight = 0.15 * xDim + 'px';
         p.style.fontSize = 0.14 * xDim + 'px';
         p.style.textAlign = 'center';
-        // p.innerText = 'PAUSED';
     toyRoom.appendChild(p); 
-
     togglePauseSign('off');                  // This initiates the position to outside the frame.
 }   // end of createPauseSign()
 
@@ -770,36 +698,44 @@ function createPauseSign() {
 
 
 
+
+
+
 function togglePauseSign(text) {
+    // Moves the already existing PauseSign to visible part of screen.
+    // Also gives it the message: "PAUSED".
+    
     let a = yDim + 'px';
     let b = 0.4 * yDim + 'px';
-    
     blockPile[8+numOfBlock.t].innerText = 'PAUSED';
     blockPile[8+numOfBlock.t].style.top = (text=='on') ? b : a;
+}   // end of togglePauseSign()
 
-}
+
+
+
+
 
 
 
 function toggleGameOverSign(text) {
     // This reuses the Pause Sign, rewrite it as 'Game Over', and makes it pop up.
+    // This also displays the score and the top score.
+    // The current score shows as a number that increases rapidly until the score is reached.
+    // The speed with which the number increases varies depending on whether the score is less than 1000 or not.
+
     let a = yDim + 'px';
     let b = 0.4 * yDim + 'px';
     let c = 0;
-    let d;
-    let interval;
-
+    let d, interval;
     blockPile[8+numOfBlock.t].innerText = 'GAME OVER';
     blockPile[8+numOfBlock.t].style.top = (text=='on') ? b : a;
-
     if (score.total < 1000) {
         d = 1;
         interval = 1000 / score.total;
         var t = setInterval( function() {
             blockPile[8+numOfBlock.t].innerText = 'GAMEOVER\nScore: ' + c + '\nBest: ' + score.top;
-            if (c==score.total) {
-                clearInterval(t);
-            }
+            if (c==score.total) { clearInterval(t); }
             c += d;
         } , interval);
     } else {
@@ -807,14 +743,16 @@ function toggleGameOverSign(text) {
         interval = d * 1000 / score.total;
         var t = setInterval( function() {
             blockPile[8+numOfBlock.t].innerText = 'GAMEOVER\nScore: ' + c + '\nBest: ' + score.top;
-            if (c==score.total) {
-                clearInterval(t);
-            }
+            if (c==score.total) { clearInterval(t); }
             c += d;
         } , interval);
-    } 
-    
-}
+    }   // end of if-else
+}   // end of toggleGameOverSign()
+
+
+
+
+
 
 
 
@@ -830,19 +768,16 @@ function resetPreview() {
         // It's a bit overkill, but it does prevent misalignment from adding up over along time.
         if (preView.hasChildNodes()==true) { preView.removeChild(preView.lastChild); }
     }
-
     let wrapperLength;                  // Hypothetical horizontal length of the 'wrapper' element
     let gapDistance = 0.2 * xInc;       // Distance between 'wrappers'.
     let xPosition = gapDistance;        // Horizontal position of the 'wrappers'.
-
     for ( let i = 0 ; i < randomMatrix.max ; i++ ) {
-        // Creating the 'wrappers'
+        // Creating the 'wrappers'.
         wrapperLength = 0;
         var p = document.createElement('div');            
             p.style.position = 'relative';
             p.style.opacity = (randomMatrix.max - i) / randomMatrix.max;
         preView.appendChild(p);
-
         for ( let j = 0 ; j <= 3 ; j++ ) { 
             // Creating the preview tetris piece inside the wrapper.
             var p = document.createElement('div');    
@@ -854,7 +789,6 @@ function resetPreview() {
             preView.lastChild.appendChild(p);
             wrapperLength = Math.max(wrapperLength , p_Forms.arr[randomMatrix.buffer[i]][j].x + xInc );
         } // end of for
-
         if (i==0) p_Forms.slideDistance = gapDistance + wrapperLength; 
             // p_Forms.slideDistance is used by slidePreview()
         preView.lastChild.style.left = xPosition + 'px';
@@ -869,6 +803,7 @@ function resetPreview() {
 
 
 
+
 function slidePreview() {
     // Moves all children of preView to the left.
     // It stops moving when the first element is completely hidden beyond the left boundary.
@@ -876,8 +811,7 @@ function slidePreview() {
 
     let stepInc = 0.1 * xInc;           // Step Increment. Length of each step toward left.
     let stepTotal = 0;                  // Step Total. The total length travelled left.
-    let c = preView.childNodes;         // This is an array with the child elements in it. So, it's c[].
-    
+    let c = preView.childNodes;         // This is an array with the child elements in it. So, it's c[].    
     var t = setInterval( () => { 
             stepTotal += stepInc;
             for ( let i = 0 ; i < randomMatrix.max ; i++ ) { 
@@ -894,27 +828,20 @@ function slidePreview() {
 
 
 function actByTime() {
+    // Action taken at regular intervals.
     // This function runs in --> var timeFlow = setInterval(actByTime,timeInc);    
 
-
     switch (gameMode.current) {
-        case 'starting':
-            break;
-        case 'playing':
-            timeTick++                       // General use clicker.
-                console.log(timeTick);
-            blinkTetrisPiece();              // Animates the facial expression. pretty useless.
-            moveDown();                      // Make tetris fall continually.
-            mergeTetrisPiece();              // Integrate tetris into blockPile after some time.
-            break;
-        case 'paused':
-            break;
-        case 'dead':
-            break;
-        default:
-            break;
+        case 'starting':    break;
+        case 'playing':     timeTick++                       // General use clicker.
+                            blinkTetrisPiece();              // Animates the facial expression. pretty useless.
+                            moveDown();                      // Make tetris fall continually.
+                            mergeTetrisPiece();              // Integrate tetris into blockPile after some time.
+                            break;
+        case 'paused':      break;
+        case 'dead':        break;
+        default:            break;
     }
-    
 }   // end of actByTime()
 
 
@@ -924,64 +851,40 @@ function actByTime() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 function actByKeyDown(ev) {
+    // Action taken when a key is pressed.
+    // The options change depending on what 'mode' the game is currently in.
     
-
-    if (gameMode.current=='starting') {
-        // switch (ev.code) {
-        //     case 'KeyA':    
-        //                     break;
-        //     default:        break; } 
-        
+    if (gameMode.current=="nothing") {        }
+    
+    else if (gameMode.current=='starting') {
         gameMode.playing();
-        closeTitlePage();
-        startGame();
-        
-        }
+        startGame(); }
+    
     else if (gameMode.current=='playing') {
         switch (ev.code) {
-            case 'KeyA':    moveRotate('left');
-                            break;
-            case 'KeyS':    moveRotate('right');
-                            break;
-            case 'KeyN':    resetTetrisPiece();
-                            slidePreview();
-                            break;
-            case 'Space':   break;
-            case 'KeyF':    yMove.flip();         // toggles whether tetris slowly falls or not
-                            break;
-            case 'KeyT':    endGame();              // This is just a test.
-                            break;
-            case 'KeyP':    pauseGame('on');
-                            break;
-            case 'KeyR':    score.total += 100;
-                            break;
-            case 'KeyV':    //yMove.speedUp();
-                            //createShadow();
-                            break;
-            case 'ArrowLeft':       count.reset();              // resets the counter for integrateBlock()
-                                    moveLeftRight(translateMatrix.left);
+            case 'KeyA':            moveRotate('left');
                                     break;
-            case 'ArrowRight':      count.reset();              // resets the counter for intergrateBlock()
-                                    moveLeftRight(translateMatrix.right);
+            case 'KeyS':            moveRotate('right');
+                                    break;
+            case 'KeyN':            resetTetrisPiece();
+                                    break;
+            case 'Space':           break;
+            case 'KeyF':            yMove.flip();           // toggles whether tetris slowly falls or not
+                                    break;
+            case 'KeyT':            endGame();              // This function exists just for testing purposes.
+                                    break;
+            case 'KeyP':            pauseGame('on');
+                                    break;
+            case 'ArrowLeft':       moveLeftRight(translateMatrix.left);
+                                    break;
+            case 'ArrowRight':      moveLeftRight(translateMatrix.right);
                                     break;
             case 'ArrowUp':         moveRotate('left');
                                     break;
-            case 'ArrowDown':       yMove.press();         // accelerates falling speed
-                                    //yMove.act.fallInt = yMove.calc(yMove.set.speed);
+            case 'ArrowDown':       yMove.press();
                                     break;
-            default:        break; } }
+            default:                break; } }
 
     else if (gameMode.current=='paused') {
         switch (ev.code) {
@@ -991,13 +894,10 @@ function actByKeyDown(ev) {
             default:        break; } }
 
     else if (gameMode.current=='dead') {
-        // resetGame();
         window.location.reload(true);
-    
-    }
-
-
-
+            // The game gets glitchy when you play for too long. I suspect it's the overloaded cache.
+            // This resets the cache by reseting the page.
+    }   // end of if-else-if-else chain
 }   // end of actByKeyDown()
 
 
@@ -1006,33 +906,18 @@ function actByKeyDown(ev) {
 
 
 
-function actByKeyUp(ev) {    
-    
 
+function actByKeyUp(ev) {    
+    // Action taken when a key that is already pressed is now released.
     
-    if (gameMode.current=='starting') {
+    if (gameMode.current=='playing') {
         switch (ev.code) {
-            case 'KeyA':    break;
-            default:        break; } }
-    
-    else if (gameMode.current=='playing') {
-        switch (ev.code) {
-            case 'ArrowUp':     break;
             case 'ArrowDown':   yMove.release();
                                 break;
             default:            break; } }
-
-    else if (gameMode.current=='paused') {
-        switch (ev.code) {
-            case 'KeyA':    break;
-            default:        break; } }
-
-    else if (gameMode.current=='dead') {
-        switch (ev.code) {
-            case 'KeyA':    break;
-            default:        break; } }
-
 }   // end of actByKeyUp()
+
+
 
 
 
@@ -1043,6 +928,7 @@ function moveDown() {
     // Makes the tetris piece fall slowly, if there is a demand for the tetris piece to fall.
     // Includes both natural falling and manual dropping.
     // Before applying the new coordinates, checks for collision first using ghost.
+
     if ( yMove.demand() ) {
         blockToGhost(translateMatrix.down);
         if (IsCrashFree()) {
@@ -1059,15 +945,19 @@ function moveDown() {
 
 
 
+
 function moveLeftRight(arr) {
     // Moves box left or right depending on xStep.
     // arr is expected to have the format [{x,y}, {x,y}, {x,y}, {x,y}]
     // Copy the tetris piece coordinate info to ghost. then check ghost for collision.
     // If no collision, then move the ghost data back to blockPile.
+
+    count.reset();
     blockToGhost(arr);
     if (IsCrashFree()) ghostToBlock();
     castShadow();
 }   // end of moveLeftRight()
+
 
 
 
@@ -1086,7 +976,6 @@ function moveRotate(text) {
 
     if (randomMatrix.current==6) { return };        // Don't rotate the SQUARE tetris!
     blockToGhost(translateMatrix.stay);
-
     if (randomMatrix.current==0) {
         // Change the pivot coordinate if the tetris piece is the LONG BAR.
         longBarPivot.calc( ghost[0].x, ghost[0].y, ghost[3].x, ghost[3].y );
@@ -1126,31 +1015,8 @@ function moveRotate(text) {
             castShadow();
             return;
         }
-    }   // end of if-else
+    }
 }   // end of moveRotate()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1175,8 +1041,12 @@ function blockToGhost( arr ) {
 
 
 
+
+
+
+
 function ghostToBlock() {
-    // takes the data stored in ghost and insert back into the real tetris piece.
+    // Takes the data stored in ghost and insert back into the real tetris piece.
     // blockPile[].style.left and blockPile[].style.top are strings.
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
@@ -1188,7 +1058,14 @@ function ghostToBlock() {
 
 
 
+
+
+
+
 function ghostToGhost( arr ) {
+    // Moves the ghost over in the direction specified by arr.
+    // Please use translateMatrix left, right, down, or stay.
+
     for ( let i = 0 ; i <= 3 ; i++ ) {
         ghost[i].x = ghost[i].x + arr[i].x ;
         ghost[i].y = ghost[i].y + arr[i].y ;
@@ -1197,13 +1074,19 @@ function ghostToGhost( arr ) {
 
 
 
+
+
+
+
+
 function ghostToShadow() {
+    // Transfers the ghost coordinates to the Shadow.
+
     for ( let i = 0 ; i <= 3 ; i++ ) {
         blockPile[4+i+numOfBlock.t].style.left = ghost[i].x + 'px';
         blockPile[4+i+numOfBlock.t].style.top = ghost[i].y + 'px';
     }
 }   // end of ghostToShadow()
-
 
 
 
@@ -1258,6 +1141,9 @@ function checkRow() {
 
 function dropRow(filledRow) {
     // From the filled row up, drop the pile of blocks.
+    // Specifically, each block copies the opacity and background color of the block above it.
+    // The location of the shadow is adjusted accordingly.
+
     for ( let i = filledRow ; i >= numOfBlock.x ; i -= numOfBlock.x ) {
         for ( let j = i ; j < i+numOfBlock.x ; j++ ) {
             blockPile[j].style.opacity = blockPile[j-numOfBlock.x].style.opacity;
@@ -1275,15 +1161,34 @@ function dropRow(filledRow) {
 
 
 
+function startGame() {
+    // Starts all the one time use functions that create the elements of the game.
+    // This should run only onces every time you refresh the game.
+    // It also kickstarts the time dependent function actByTime().
+    // Also, copies the top score from the session storage.
+
+    score.top = sessionStorage.getItem('topScore');
+    configureToyRoom();
+    createBlockPile();
+    createTetrisPiece();        // Create the four elements for the tetris block
+    createShadow();             // Creates the shadow of the tetris piece.
+    createPauseSign();
+    resetGame();
+    var timeFlow = setInterval(actByTime,timeInc);
+}   // end of startGame()
 
 
 
 
 
-function pauseGame(text) {
+
+
+
+function pauseGame( text ) {
     // Toggles the 'paused' boolean. Toggles Pause Sign.
     // Disables many of the game functions.
     // Changes tetris piece face expression.
+
     (gameMode.current != 'paused') ? gameMode.paused() : gameMode.playing();
     togglePauseSign(text);
     (gameMode.current=='paused') ? addFace('x__x') : addFace('o__o');
@@ -1291,34 +1196,39 @@ function pauseGame(text) {
 
 
 
+
+
+
+
+
 function endGame() {
+    // Ends the game. Because. You dead.
+    // Updates the score and the top score. 
+    // Saves the top score into session storage.
+    // Displays the Game Over sign and the scores.
+
     addFace('x__x');
-    score.update();
-    
-    
+    score.update();    
     sessionStorage.setItem('topScore',score.top);
-
-    
-
     toggleGameOverSign('on');
     gameMode.dead();
-
-    
 }
 
 
+
+
+
+
+
+
 function resetGame() {
+    // Resets game parameters to starting condition.
 
     for ( let i = 0 ; i < numOfBlock.t ; i++ ) {
         blockPile[i].style.opacity = setOpacity.low;
     }
-    
-    // window.location.reload(true);
-
     randomMatrix.randomize(randomMatrix.max);
     resetTetrisPiece();
-    slidePreview();
-    
     gameMode.playing();
     toggleGameOverSign('off');
     score.reset();
@@ -1333,38 +1243,22 @@ function resetGame() {
 
 
 
-
 function IsCrashFree() {
+    // Yields TRUE if the ghost did not collide into anything.
     // (1) compares the GHOST[] to wall.left, wall.right, and wall.floor.
     // (2) compares ghost[] to blockPile[] with opacity at setOpacity.high
-    // Yields TRUE if no collisions.
     // This function requires that the block is perfectly aligned with the columns. Otherwise, ghost[i].floor will not work.
 
     for ( let i = 0 ; i <= 3 ; i++ ) {
-
-        // check walls first
         if (ghost[i].x < wall.left) return false;
         if (ghost[i].x > wall.right) return false;
         if (ghost[i].y < wall.ceiling) return false;
         if (ghost[i].y > wall.floor) return false;
-
-        // check for block collisions
-        // requires ghost[i].floor and .ceil to yield integers
         if ( blockPile[ ghost[i].floor() ].style.opacity == setOpacity.high ) return false;
         if ( blockPile[ ghost[i].ceil()  ].style.opacity == setOpacity.high ) return false;
     }
-
     return true;
 }   // end of IsCrashFree()
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1376,15 +1270,11 @@ function IsCrashFree() {
 // ---------------------- SHORTCUT FUNCTIONS --------------------------- //
 // just some math functions and other general use functions.
 
+function addFace(text) { for ( let i = 0 ; i <= 3 ; i++ ) { blockPile[i+numOfBlock.t].innerText = text; }; }
 
 function RadToDeg(a) { return a * 180 / Math.PI; }
 
 function DegToRad(a) { return a * Math.PI / 180; }
-
-function displayGhost(a) {
-    // The console displays the provided array.
-    // The array has to have this format: [ {x,y}, {x,y}, {x,y}, {x,y} ]
-    console.log(`(${a[0].x},${a[0].y}) (${a[1].x},${a[1].y}) (${a[2].x},${a[2].y}) (${a[3].x},${a[3].y})`); }
 
 function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
     // Assumes arr is an array of {x,y} objects.
@@ -1397,11 +1287,6 @@ function arrayAddMultiply(arr, xAdd, xMul, yAdd, yMul) {
         arr[i].y *= yMul; } }
 
 function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
-        
-
-
-
-
 
 
 
@@ -1413,22 +1298,9 @@ function pxOff(text) { return eval( text.substring(0, text.length - 2) ) };
 // ----------------- MAIN BODY ----------------------------------------- //
 
 
-// Before the game starts...
-
 // Event listeners
-document.addEventListener('keydown', actByKeyDown);
-document.addEventListener('keyup', actByKeyUp);
+    document.addEventListener('keydown', actByKeyDown);
+    document.addEventListener('keyup', actByKeyUp);
 
-
-openTitlePage();
-
-    // configureToyRoom();
-    // createBlockPile();
-    // createTetrisPiece();        // Create the four elements for the tetris block
-    // createShadow();             // Creates the shadow of the tetris piece.
-    // createPauseSign();
-    // resetGame();
-
-    // // Runs continuously
-    // var timeFlow = setInterval(actByTime,timeInc);
-
+// The game itself
+    delayIntro();
