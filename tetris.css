@@ -4,7 +4,7 @@ body {
     font-family: calibri, sans-serif;
     font-size: 10pt;
     color: black;
-    background-size: cover;
+    /* background-size: cover; */
     user-select: none;
 }
 
@@ -13,6 +13,8 @@ body {
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
+    /* align-items: center; */
+    /* align-content: stretch; */
 }
 
 .item {
@@ -20,7 +22,8 @@ body {
     border: 2px black solid;
     display: flex;
     flex-flow: column nowrap;
-    justify-content: flex-start;
+    /* justify-content: flex-start; */
+    justify-content: space-between;
 }
 
 .item > div {
@@ -63,7 +66,7 @@ body {
     font-size: 14pt;
     font-weight: bold;
     padding: 10px;
-    background-color: #BDF;
+    background-color: #5AF;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -83,20 +86,44 @@ body {
 
 
 #preView {
-    width: 500px;
+    width: 400px;
     background-color: #AAA;
     display: inline;
     overflow: hidden;
 }
 
 
-
-
 .info {
     padding: 10px;
-    background-color: #BDF;
-    text-align: left;
-    line-height: 0.2;
+    background-color: #5AF;
+    /* text-align: left; */
+    /* line-height: 0.2; */
+    display: normal;
+}
+
+.alpha {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    background-color: #FFF;
+    display: inline-block;
+    text-align: center;
+    line-height: 0.9;
+    font-size: 24pt;
+    font-weight: bold;
+}
+
+.explain {
+    font-size: 12pt;
+}
+
+.info line {
+    width: 50px;
+    height: 50px;
+    stroke-linecap: round;
+    stroke-width: 2px;
+    stroke: #000;
+    display:  inline-block;
 }
 
 

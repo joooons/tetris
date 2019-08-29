@@ -120,6 +120,7 @@
     const plopSound = new Sound('plop.mp3');
     const thudSound = new Sound('thud.mp3');
     const mainMusic = new Sound('mainM.mp3');
+        mainMusic.elem.loop = true;
 
 
 
@@ -731,6 +732,7 @@ function togglePauseSign(text) {
     let b = 0.4 * yDim + 'px';
     blockPile[8+numOfBlock.t].innerText = 'PAUSED';
     blockPile[8+numOfBlock.t].style.top = (text=='on') ? b : a;
+    (text=='on') ? mainMusic.pause() : mainMusic.play();
 }   // end of togglePauseSign()
 
 
@@ -1218,6 +1220,7 @@ function pauseGame( text ) {
     (gameMode.current != 'paused') ? gameMode.paused() : gameMode.playing();
     togglePauseSign(text);
     (gameMode.current=='paused') ? addFace('x__x') : addFace('o__o');
+
 }
 
 
