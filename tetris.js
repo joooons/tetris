@@ -34,7 +34,7 @@
     var screen = {  x : window.screen.width,
                     y : window.screen.height,
                     //r : window.devicePixelRatio,
-                    t : 0.65 }                      // 't' for 'trim'. Percentage to vertically shrink toyRoom by.
+                    t : 0.60 }                      // 't' for 'trim'. Percentage to vertically shrink toyRoom by.
         // screen.t is the percentage of the verical length of screen that we want toyRoom to occupy.
         // I thought that screen.t was necessary to prevent the browser from generating a vertical scroll bar.
         // if the toyRoom is too big, the browser puts on a scroll bar, and this interferes with the up and down button operation.
@@ -78,6 +78,7 @@
         // Horizontal distance travelled by the tetris piece when it takes one step sideways.
         // This has to be the same as the length of the block. Otherwise, the game will not work.
         preView.style.height = 3 * yInc + 'px';
+        // alert(xDim + ' ' + yDim);
 
 
 
@@ -99,6 +100,26 @@
     var setOpacity = {  low : 0,        // Low setting of opacity. 
                         high : 1,       // High setting of opacity.
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
+
+
+
+// SOUND seetings
+    class Sound {
+        constructor(src) {
+            this.elem = document.createElement('audio');
+            this.elem.src = src;
+            this.elem.setAttribute('preload', 'auto');
+            this.elem.setAttribute('controls', 'none');
+            this.elem.style.display = 'none';
+            document.body.appendChild(this.elem);
+            this.play = function() {this.elem.play();}
+            this.pause = function() {this.elem.pause();}
+        }
+    }
+    const blingSound = new Sound('shroom.wav');
+    const plopSound = new Sound('plop.mp3');
+    const thudSound = new Sound('thud.mp3');
+    const mainMusic = new Sound('mainM.mp3');
 
 
 
@@ -662,7 +683,8 @@ function castShadow() {
     let a = pxOff(blockPile[4+numOfBlock.t].style.top) - pxOff(blockPile[numOfBlock.t].style.top);
     a = (yDim-a)/yDim;
     for ( let i = 4 + numOfBlock.t ; i <= 7 + numOfBlock.t ; i++ ) {
-        blockPile[i].style.opacity = 0.15 * (1 + a);
+        // blockPile[i].style.opacity = 0.15 * (1 + a);
+        blockPile[i].style.opacity = 0.1 + (0.4 * a);
     }
 }   // end of castShadow()
 
@@ -859,6 +881,7 @@ function actByKeyDown(ev) {
     
     else if (gameMode.current=='starting') {
         gameMode.playing();
+        blingSound.play();
         startGame(); }
     
     else if (gameMode.current=='playing') {
@@ -934,6 +957,8 @@ function moveDown() {
         if (IsCrashFree()) {
             ghostToBlock();
             addFace('>__<');
+        } else {
+            thudSound.play();
         }
     }
     castShadow();
@@ -1107,6 +1132,7 @@ function checkRow() {
         for (let j=i; j<i+numOfBlock.x ; j++) { count += (blockPile[j].style.opacity==setOpacity.high) ? 1 : 0; }
         if (count == numOfBlock.x) {
             // Triggers when the row is filled up.
+            plopSound.play();
             score.count++;
             let r = 0;
             let t = setInterval(rowSpin,10);
@@ -1234,6 +1260,7 @@ function resetGame() {
     score.reset();
     yMove.reset();
     timeTick = 0;
+    mainMusic.play();
 }
 
 
