@@ -85,18 +85,18 @@
 // APPEARANCE settings
     var blockStyle = {
         // bkgdColor : 'rgba(50, 150, 250, 0.3)' ,         // Nothing uses this right now.
-        border : '1px solid rgba(0, 0, 0, 1)' ,
-        boxShadow : '0px 0px 5px 0px inset white' ,
-        borderRadius : '15%' ,
-        opacity : 1 }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
+        border : '0.5px solid rgba(255, 255, 255, 1)' ,
+        boxShadow : '0px 0px 4px 0px inset #CCC' ,
+        borderRadius : '10%' ,
+        opacity : '40%' }         // This determines the opacity of the tetris background color, NOT the whole tetris piece.
     var tetrisColor = [];
         tetrisColor[0] = `rgba(250, 250, 250, ${blockStyle.opacity})`;
-        tetrisColor[1] = `rgba(250, 000, 000, ${blockStyle.opacity})`;
-        tetrisColor[2] = `rgba(000, 000, 250, ${blockStyle.opacity})`;
-        tetrisColor[3] = `rgba(250, 250, 000, ${blockStyle.opacity})`;
-        tetrisColor[4] = `rgba(000, 250, 000, ${blockStyle.opacity})`;
+        tetrisColor[1] = `rgba(250, 100, 100, ${blockStyle.opacity})`;
+        tetrisColor[2] = `rgba(100, 100, 250, ${blockStyle.opacity})`;
+        tetrisColor[3] = `rgba(250, 250, 100, ${blockStyle.opacity})`;
+        tetrisColor[4] = `rgba(100, 250, 100, ${blockStyle.opacity})`;
         tetrisColor[5] = `rgba(150, 050, 250, ${blockStyle.opacity})`;
-        tetrisColor[6] = `rgba(000, 000, 000, ${blockStyle.opacity})`;
+        tetrisColor[6] = `rgba(250, 150, 250, ${blockStyle.opacity})`;
     var setOpacity = {  low : 0,        // Low setting of opacity. 
                         high : 1,       // High setting of opacity.
                         flip : function(num) {return (num == this.low) ? this.high : this.low;} };
@@ -258,13 +258,13 @@
         // The probability of a shape appearing is the number divided by the sum of all numbers.
         // For example, if tetrisChance was [1,1,0,0,0,0,0], the Long Bar would appear 50% of the time...
         // ... and the Square would never appear.
-        5 ,      // likelihood of the Long Bar tetris piece appearing
+        6 ,      // likelihood of the Long Bar tetris piece appearing
         3 ,      // likelihood of the inverse 'L' shape
         3 ,      // likelihood of the 'L' shape
         3 ,      // likelihood of the inverse'Z' shape
         3 ,      // likelihood of the 'Z' shape
-        5 ,      // likelihood of the 'T' shape
-        1 ];     // likelihood of the Square shape
+        3 ,      // likelihood of the 'T' shape
+        3 ];     // likelihood of the Square shape
 
     var randomMatrix = {
         // Object that contains the array of probability of each shape.

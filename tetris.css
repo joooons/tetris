@@ -74,19 +74,18 @@ body {
 }
 
 .numbers {
-    background-color: rgba( 255, 255, 255, 0);
-    box-shadow: 0px 0px 25px 0px white;
-    border-radius: 12px;
-    
+    background-color: rgba( 255, 255, 255, 1);
+    /* box-shadow: 0px 0px 25px 0px white; */
+    border-radius: 6px;
     width: 120px;
-    height: 30px;
-    min-height: 30px;
+    height: 20px;
+    /* min-height: 30px; */
     text-align: center;    
 }
 
 
 #preView {
-    width: 400px;
+    /* width: 400px; */
     background-color: #AAA;
     display: inline;
     overflow: hidden;
