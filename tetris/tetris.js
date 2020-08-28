@@ -427,6 +427,7 @@ function configureToyRoom() {
     toyRoom.style.letterSpacing = '0px';
     toyRoom.innerHTML = '';
     toyRoom.style.backgroundImage = "url('./tetris/sky.jpg')";
+    toyRoom.style.backgroundSize = "cover";
     toyRoom.style.zIndex = 0;
 }   // end of configureToyRoom()
 
