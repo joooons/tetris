@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 
 <head>
-    <title>
-        Wait... is this Tetris?
-    </title>
+    <title>Tetris</title>
 
-    <link rel='stylesheet' href='tetris.css'>
-    <link rel='shortcut icon' href='icon.png'>
+    <link rel='stylesheet' href='./tetris/tetris.css'>
+    <link rel='shortcut icon' href='./tetris/icon.png'>
 
     <style>
     </style>
@@ -17,156 +15,229 @@
 
 <body>
 
-    <div class='flexbox'>
-        
-        <div class='item'>
-            <div id="toyRoom" >
-                <span>T</span>
-                <span>E</span>
-                <span>T</span>
-                <span>R</span>
-                <span>I</span>
-                <span>S</span>
-            </div>
-        </div>
 
+    <div id="wall">
 
-
-        <div class='item'> 
+        <div class='flexbox'>
             
-            <div id='scoreBoard'>
-                <table>
-                    <tr>
-                        <td width='60'>SCORE</td>
-                        <td id="points" class="numbers">0</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>LINES</td>
-                        <td id="lines" class="numbers">0</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>SPEED</td>
-                        <td id="speed" class="numbers">0</td>
-                        <td>pixels/sec</td>
-                    </tr>
-                </table>                
+            <div class='item'>
+                <div id="toyRoom" >
+                    <span>T</span>
+                    <span>E</span>
+                    <span>T</span>
+                    <span>R</span>
+                    <span>I</span>
+                    <span>S</span>
+                </div>
             </div>
 
-            <div id="preView">
+
+
+            <div class='item second'> 
                 
-            </div>
+                <div id='scoreBoard'>
+                    <table>
+                        <tr>
+                            <td width='60'>SCORE</td>
+                            <td id="points" class="numbers">0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>LINES</td>
+                            <td id="lines" class="numbers">0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>SPEED</td>
+                            <td id="speed" class="numbers">0</td>
+                            <td>pixels/sec</td>
+                        </tr>
+                    </table>                
+                </div>
 
-            <div class="info" >
-                <!-- <span>INSTRUCTIONS</span> -->
-                <table border="0">
-                    <tr>
-                        <td colspan="2">
-                            <span class="alpha">P</span>
-                            <svg width="90" height="30">
-                                <line x1="4" x2="86" y1="19" y2="19" />
-                                <line x1="4" x2="7" y1="19" y2="16" />
-                                <line x1="4" x2="7" y1="19" y2="22" />
-                            </svg>
-                        </td>
-                        <td colspan="5">
-                            <span class="explain">PAUSE</span>
-                        </td>
-                    </tr>
+                <div id="preView">
+                    
+                </div>
 
-                    <tr>
-                        <td colspan="1">
-                            <span class="explain">ROTATE</span>
-                        </td>
-                        <td colspan="2">
-                            <svg width="80" height="30">
-                                <line x1="4" x2="76" y1="17" y2="17" />
-                                <line x1="76" x2="73" y1="17" y2="14" />
-                                <line x1="76" x2="73" y1="17" y2="20" />
-                            </svg>
-                        </td>
-                        <td>
-                            <span class="alpha">↑</span>
-                        </td>
-                        <td colspan="3">
-                        </td>
-                    </tr>
+                <div class="info" >
+                    <!-- <span>INSTRUCTIONS</span> -->
+                    <!-- <table border="0">
+                        <tr>
+                            <td colspan="2">
+                                <span class="alpha">P</span>
+                                <svg width="90" height="30">
+                                    <line x1="4" x2="86" y1="19" y2="19" />
+                                    <line x1="4" x2="7" y1="19" y2="16" />
+                                    <line x1="4" x2="7" y1="19" y2="22" />
+                                </svg>
+                            </td>
+                            <td colspan="5">
+                                <span class="explain">PAUSE</span>
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td colspan="1">
-                            <span class="explain">MOVE LEFT</span>
-                        </td>
-                        <td>
-                            <svg width="45" height="30">
-                                <line x1="4" x2="41" y1="17" y2="17" />
-                                <line x1="41" x2="38" y1="17" y2="14" />
-                                <line x1="41" x2="38" y1="17" y2="20" />
-                            </svg>
-                        </td>
-                        <td>
-                            <span class="alpha">←</span>
-                        </td>
-                        <td>
-                            <span class="alpha">↓</span>
-                        </td>
-                        <td>
-                            <span class="alpha">→</span>
-                        </td>
-                        <td>
-                            <svg width="45" height="30">
-                                <line x1="4" x2="41" y1="17" y2="17" />
-                                <line x1="4" x2="7" y1="17" y2="14" />
-                                <line x1="4" x2="7" y1="17" y2="20" />
-                            </svg>
-                        </td>
-                        <td>
-                            <span class="explain">MOVE RIGHT</span>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="1">
+                                <span class="explain">ROTATE</span>
+                            </td>
+                            <td colspan="2">
+                                <svg width="80" height="30">
+                                    <line x1="4" x2="76" y1="17" y2="17" />
+                                    <line x1="76" x2="73" y1="17" y2="14" />
+                                    <line x1="76" x2="73" y1="17" y2="20" />
+                                </svg>
+                            </td>
+                            <td>
+                                <span class="alpha">↑</span>
+                            </td>
+                            <td colspan="3">
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td colspan="3">
-                        </td>
-                        <td colspan="3">
-                            <svg width="116" height="30">
-                                <line x1="16" x2="112" y1="17" y2="17" />
-                                <line x1="16" x2="16" y1="17" y2="4" />
-                                <line x1="16" x2="19" y1="4" y2="7" />
-                                <line x1="16" x2="13" y1="4" y2="7" />
-                            </svg>
-                        </td>
-                        <td>
-                            <span class="explain">DROP</span>
-                        </td>
-                    </tr>
-                </table>
-                
-                
-                
-            </div>
+                        <tr>
+                            <td colspan="1">
+                                <span class="explain">MOVE LEFT</span>
+                            </td>
+                            <td>
+                                <svg width="45" height="30">
+                                    <line x1="4" x2="41" y1="17" y2="17" />
+                                    <line x1="41" x2="38" y1="17" y2="14" />
+                                    <line x1="41" x2="38" y1="17" y2="20" />
+                                </svg>
+                            </td>
+                            <td>
+                                <span class="alpha">←</span>
+                            </td>
+                            <td>
+                                <span class="alpha">↓</span>
+                            </td>
+                            <td>
+                                <span class="alpha">→</span>
+                            </td>
+                            <td>
+                                <svg width="45" height="30">
+                                    <line x1="4" x2="41" y1="17" y2="17" />
+                                    <line x1="4" x2="7" y1="17" y2="14" />
+                                    <line x1="4" x2="7" y1="17" y2="20" />
+                                </svg>
+                            </td>
+                            <td>
+                                <span class="explain">MOVE RIGHT</span>
+                            </td>
+                        </tr>
 
-            <div class="info" >
-                <p>This is Vanilla Tetris. It was made entirely from vanilla JS.</p>
-                <p>Some of it's features are: It works! Until it doesn't. Well, </p>
-                <p>I guess it does work pretty well </p>
-                <p>except that it sometimes doesn't. I can say for sure that this </p>
-            </div>
+                        <tr>
+                            <td colspan="3">
+                            </td>
+                            <td colspan="3">
+                                <svg width="116" height="30">
+                                    <line x1="16" x2="112" y1="17" y2="17" />
+                                    <line x1="16" x2="16" y1="17" y2="4" />
+                                    <line x1="16" x2="19" y1="4" y2="7" />
+                                    <line x1="16" x2="13" y1="4" y2="7" />
+                                </svg>
+                            </td>
+                            <td>
+                                <span class="explain">DROP</span>
+                            </td>
+                        </tr>
+                    </table> -->
+                    <svg width="380" height="160">
+                        <rect x='10' y='10' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><rect x='10' y='50' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><rect x='170' y='90' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><rect x='210' y='90' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><rect x='250' y='90' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><rect x='210' y='50' width='30' height='30' fill=#fff stroke-width=1 stroke=#000 rx='5' /><line x1='225' y1='54' x2='225' y2='76' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='174' y1='105' x2='196' y2='105' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='225' y1='94' x2='225' y2='116' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='254' y1='105' x2='276' y2='105' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='225' y1='54' x2='215' y2='64' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='225' y1='54' x2='235' y2='64' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='174' y1='105' x2='184' y2='95' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='174' y1='105' x2='184' y2='115' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='225' y1='116' x2='235' y2='106' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='225' y1='116' x2='215' y2='106' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='276' y1='105' x2='266' y2='95' stroke=#000 stroke-width='4px' stroke-linecap=round /><line x1='276' y1='105' x2='266' y2='115' stroke=#000 stroke-width='4px' stroke-linecap=round />
+                        <text x='16' y='35' class="explain big">P</text>
+                        <text x='46' y='30' class="explain">PAUSE</text>
+                        <text x='14' y='75' class="explain big">N</text>
+                        <text x='46' y='70' class="explain">NEXT PIECE</text>
+                        <text x='86' y='110' class="explain">MOVE LEFT</text>
+                        <text x='290' y='110' class="explain">MOVE RIGHT</text>
+                        <text x='206' y='138' class="explain">DROP</text>
+                        <text x='200' y='42' class="explain">ROTATE</text>
+                    </svg>
+                    
+                    
+                    
+                </div>
 
-        </div>        
+                <div class="info" id="description">
+                    <h3>About this version of Tetris</h3>
+                    <p>This is the first personal project I worked on after the 'hello world' 
+                        initiation into the world of javascript. I intentionally made this with 
+                        vanilla javascript as a way to get acquainted with the basics. 
+                        Since the tetris pieces are made of &lt;div&gt; elements, the script makes 
+                        heavy use of DOM element manipulation. The data for the pieces were organized 
+                        into objects made from class constructors. A little bit of SVG was 
+                        used for the instruction window that shows what keys to press. The title uses 
+                        a simple CSS animation.
+                    </p>
+                    <p>Some other features in this game:</p>
+                    <ul>
+                        <li>A shadow lets the player know where the piece will fall.</li>
+                        <li>A countdown begins when the tetris piece makes contact with the surface.
+                            If movement is detected during countdown, the countdown is reset. 
+                        </li>
+                        <li>
+                            There is an absolute time limit after which moving the piece does not
+                            reset the countdown. 
+                        </li>
+                        <li>
+                            Pressing down again after making contact with the surface will bypass the countdown.
+                        </li>
+                        <li>
+                            When a piece is too close to the wall to rotate, some pieces 
+                            will shift over one square to make room for the rotation.
+                        </li>
+                        <li>
+                            Simultaneously clearing multiple rows multiplies the score 
+                            earned by a set number. The best way to earn a higher score 
+                            is to clear four rows at a time.
+                        </li>
+                        <li>
+                            The speed of natural descent of the tetris piece increases 
+                            every time a line is cleared. Note: the speed displayed on 
+                            the dashboard is not entirely accurate. 
+                            The speed calculation does not account for other functions 
+                            interfering with the processing speed of the drop function.
+                        </li>
+                        <li>
+                            Pressing <b>F</b> stops the natural descent of the tetris piece. 
+                        </li>
+                        <li>
+                            Pressing <b>A</b> and <b>S</b> rotate the pieces counterclockwise and clockwise, respectively. 
+                        </li>
+                        <li>
+                            Pressing <b>T</b> terminates the game. 
+                        </li>
+                        <li>
+                            Clicking anywhere on the board creates a single floating block on that location.</li>
+                        </li>
+                        <li>
+                            Clicking on any block other than the falling tetris piece removes it from the board.
+                        </li>
+                        
+                            
+                            
+                            
+                            
+                    </ul>
+                    
+                </div>
+
+            </div>        
+
+        </div>
+        
+
+        <footer>
+        </footer>
 
     </div>
-    
-    
-
-
-
-    <footer>
-    </footer>
-
 
     <!--script at end of body tag-->
-    <script src="tetris.js">
+    <script src="./tetris/tetris.js">
     </script>
+
+
+
+
 
 </body>

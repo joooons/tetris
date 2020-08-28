@@ -1,3 +1,5 @@
+"use strict";
+
 // JS for tetris
 
 // Notes:
@@ -26,7 +28,7 @@
         var _lines = document.getElementById('lines');          // Child to scoreBoard
         var _speed = document.getElementById('speed');          // Child to scoreBoard
     var preView = document.getElementById('preView');
-        preView.style.backgroundImage = "url('sky.jpg')";
+        preView.style.backgroundImage = "url('/tetris/sky.jpg')";
     
 
 
@@ -116,10 +118,10 @@
             this.pause = function() {this.elem.pause();}
         }
     }
-    const blingSound = new Sound('shroom.wav');
-    const plopSound = new Sound('plop.mp3');
-    const thudSound = new Sound('thud.mp3');
-    const mainMusic = new Sound('mainM.mp3');
+    const blingSound = new Sound('./tetris/shroom.wav');
+    const plopSound = new Sound('./tetris/plop.mp3');
+    const thudSound = new Sound('./tetris/thud.mp3');
+    const mainMusic = new Sound('./tetris/mainM.mp3');
         mainMusic.elem.loop = true;
 
 
@@ -424,7 +426,7 @@ function configureToyRoom() {
     toyRoom.style.fontSize = '20pt';
     toyRoom.style.letterSpacing = '0px';
     toyRoom.innerHTML = '';
-    toyRoom.style.backgroundImage = "url('sky.jpg')";
+    toyRoom.style.backgroundImage = "url('./tetris/sky.jpg')";
     toyRoom.style.zIndex = 0;
 }   // end of configureToyRoom()
 

@@ -1,13 +1,26 @@
 /* This is the top */
 
+
 body {
     font-family: calibri, sans-serif;
     font-size: 10pt;
     color: black;
+    /* background: #0009; */    
     /* background-size: cover; */
     user-select: none;
 }
 
+
+
+
+#wall {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: linear-gradient(to top, #102 0%, #330867 100%);
+}
 
 .flexbox {
     display: flex;
@@ -20,14 +33,21 @@ body {
 .item {
     margin: 10px;
     border: 2px black solid;
+    background: white;
     display: flex;
     flex-flow: column nowrap;
     /* justify-content: flex-start; */
     justify-content: space-between;
 }
 
+.item.second {
+    background: black;
+    background-image: linear-gradient(to top, #3CA 0%, #5AF 100%);
+}
+
 .item > div {
-    margin: 6px;
+    margin: 0px;
+    /* border: 1px solid black; */
 }
 
 #toyRoom {
@@ -66,26 +86,48 @@ body {
     font-size: 14pt;
     font-weight: bold;
     padding: 10px;
-    background-color: #5AF;
+    /* background-color: #5DF; */
+    /* background-image: linear-gradient(to top, #3CA 0%, #5AF 100%); */
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
 
 }
 
+
+#description {
+    overflow-y: scroll;
+    width: 380px;
+    /* width:50%; */
+    height: 150px;
+}
+
+#description p {
+    text-indent: 2em;
+    padding-bottom: 0.5em;
+    margin: 0;
+    text-align: justify;
+}
+
+#description ul {
+    margin: 0;
+    text-align: justify;
+}
+
 .numbers {
-    background-color: rgba( 255, 255, 255, 1);
-    /* box-shadow: 0px 0px 25px 0px white; */
-    border-radius: 6px;
+    background-color: rgba( 255, 255, 255, 0);
+    box-shadow: 0px 0px 25px 0px white;
+    border-radius: 12px;
+    
     width: 120px;
-    height: 20px;
-    /* min-height: 30px; */
+    height: 30px;
+    min-height: 30px;
     text-align: center;    
 }
 
 
 #preView {
-    /* width: 400px; */
+    width: 400px;
     background-color: #AAA;
     display: inline;
     overflow: hidden;
@@ -94,10 +136,8 @@ body {
 
 .info {
     padding: 10px;
-    background-color: #5AF;
-    /* text-align: left; */
-    /* line-height: 0.2; */
     display: normal;
+    /* border: 1px solid; */
 }
 
 .alpha {
@@ -114,6 +154,11 @@ body {
 
 .explain {
     font-size: 12pt;
+}
+
+.explain.big {
+    font-size: 25pt;
+    font-weight: bold;
 }
 
 .info line {
